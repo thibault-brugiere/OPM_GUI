@@ -1,0 +1,335 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jan 30 15:50:32 2025
+
+@author: tbrugiere
+"""
+
+from io import BytesIO
+import math
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+import numpy as np
+import cv2
+
+from PySide6.QtCore import QTime, QThread, Signal
+from PySide6.QtGui import QPixmap,QImage
+from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QVBoxLayout, QWidget, QGraphicsPixmapItem
+
+class functions_ui():
+    
+    # Field of view
+    
+    def set_pos(pos,size,chipsize):
+        """
+    Adjusts the position of a subarray within the camera sensor.
+    
+    This function ensures that the given position (`pos`) of a subarray respects two constraints:
+    1. The position must not exceed the maximum allowed value, which is determined by 
+       the difference between the total sensor size (`chipsize`) and the subarray size (`size`).
+       If the position is too large, it is set to this maximum value.
+    2. The position must be a multiple of 4, as required by the camera constraints.
+       If `pos` is not a multiple of 4, it is rounded down to the nearest lower multiple of 4.
+    
+    Parameters:
+    - pos (int): The desired position of the subarray.
+    - size (int): The size of the subarray.
+    - chipsize (int): The total size of the camera sensor.
+    
+    Returns:
+    - int: The corrected position that meets the constraints.
+    """
+        if pos >chipsize - size:
+            pos = chipsize - size
+            
+        pos = 4*(math.floor(pos/4))
+        
+        return(pos)
+    
+    def set_size(size,chipsize):
+        """
+        Adjusts the size of a subarray within the camera sensor.
+        
+        This function ensures that the given subarray size (`size`) of a subarray respects two constraints:
+        1. The size must not exceed the total sensor size (`chipsize`).
+           If the position is too large, it is set to the total sensor size (`chipsize`).
+        2. The size must be a multiple of 4, as required by the camera constraints.
+           If `size` is not a multiple of 4, it is rounded down to the nearest lower multiple of 4.
+        
+        Parameters:
+        - size (int): The desired size of the subarray.
+        - chipsize (int): The total size of the camera sensor.
+        
+        Returns:
+        - int: The corrected position that meets the constraints.
+        """
+        if size > chipsize:
+            size = chipsize
+        size = 4*(math.floor(size/4))
+        
+        return(size)
+    
+    # Timelaps functions
+    
+    def QTime_to_seconds(time):
+        """ 
+        Convert a QTime object to a duration in seconds.
+        
+        Args:
+            time (QTime): A QTime object containing the time to convert.
+        
+        Returns:
+            float: The total duration in seconds, including milliseconds.
+        """
+        hours = time.hour()
+        minutes = time.minute()
+        seconds=time.second()
+        milliseconds=time.msec()
+        total_seconds = hours * 3600 + minutes * 60 + seconds + 0.001 * milliseconds
+        
+        return total_seconds
+    
+    def seconds_to_QTime(seconds):
+        """
+        Convert a duration in seconds to a QTime object.
+
+        Args:
+            seconds (float): The duration in seconds, including fractional parts for milliseconds.
+
+        Returns:
+            QTime: A QTime object representing the given duration in hours, minutes, seconds, and milliseconds.
+            """
+        hours, seconds =  divmod(seconds, 3600)
+        minutes, seconds = divmod(seconds, 60)
+        seconds, milliseconds = divmod(seconds, 1)
+        milliseconds, _ = divmod(milliseconds, 0.001) #unused variable renamed to "_"
+        time=QTime(hours,minutes,seconds,milliseconds)
+        
+        return time
+    
+    # Preview functions
+    
+    def show_saturation(frame):
+        """
+        Convert a grayscale image (uint8) to a colorized image:
+        - Black pixels (0) become blue (0, 0, 255).
+        - White pixels (255) become red (255, 0, 0).
+        - Other pixels remain grayscale (R=G=B=value).
+        
+        Args:
+            frame (np.ndarray): Input grayscale image (uint8).
+        
+        Returns:
+            np.ndarray: Colorized image (h, w, 3) in uint8.
+        """
+        h, w = frame.shape
+    
+        # Create an empty RGB image
+        color_frame = np.zeros((h, w, 3), dtype=np.uint8)
+    
+        # Apply grayscale to all pixels (default)
+        color_frame[:, :, 0] = frame  # Red channel
+        color_frame[:, :, 1] = frame  # Green channel
+        color_frame[:, :, 2] = frame  # Blue channel
+    
+        # Set black pixels (0) to blue (0, 0, 255)
+        mask_black = (frame == 0)
+        color_frame[mask_black] = [0, 0, 255]
+    
+        # Set white pixels (255) to red (255, 0, 0)
+        mask_white = (frame == 255)
+        color_frame[mask_white] = [255, 0, 0]
+    
+        return color_frame
+    
+    def create_preview(frame, LUT, min_grayscale, max_grayscale, zoom):
+        """
+        Processes a grayscale image for preview by adjusting its intensity range and applying optional color mapping.
+        
+        Parameters:
+        - frame (np.ndarray): The input grayscale image.
+        - LUT (str): Lookup table selection, used to determine whether to highlight saturated pixels.
+        - min_grayscale (int): The minimum grayscale value to consider.
+        - max_grayscale (int): The maximum grayscale value to consider.
+        - zoom (float) : factor to change the image size before preview (between 0.25 and 2)
+        
+        Returns:
+        - QImage: The processed image, either in grayscale or with a colormap highlighting saturated pixels.
+        """
+        
+        h , w = frame.shape # get dimensions of the image
+        
+        
+        frame = np.clip(frame,min_grayscale , max_grayscale ) #Remove grey value bellow and above a certain value
+        # frame = ((frame - min_grayscale ) * coef_grayscale ).astype(np.uint8) #Change values between 0 and 255 for displaying
+        frame = ((frame - min_grayscale ) * (255/(max_grayscale - min_grayscale)) ).astype(np.uint8) #Change values between 0 and 255 for displaying
+        
+        h , w = int(h * zoom ) , int (w * zoom)
+        
+        frame = cv2.resize(frame, (w, h), interpolation=cv2.INTER_LINEAR)
+        
+        if  LUT == 'show_saturation':
+            color_frame = functions_ui.show_saturation(frame)
+            qt_image = QImage(color_frame.data, w, h, w * 3, QImage.Format_RGB888)
+        elif LUT == 'grayscale':
+            qt_image = QImage(frame.data, w, h, w, QImage.Format_Grayscale8) #create the QT image
+        
+        return qt_image
+        
+    def create_gray_hystogram(frame, min_grayscale=10000, max_grayscale=50000,
+                              w_px = 1200, h_px=600, dpi=100, line_width=1, font_size=12):
+        """Generate a histogram of the grayscale image and display it in a QGraphicsView.
+        
+        Args:
+            frame (ndarray): 16-bit grayscale image.
+            w_px (int): Desired width in pixels.
+            h_px (int): Desired height in pixels.
+            dpi (int): Resolution in dots per inch.
+            line_width (int): Thickness of the histogram line.
+            font_size (int): Size of the font for axis labels and ticks.
+        """
+        
+        hist, bins = np.histogram(frame, bins=256, range=(0, 65535))
+    
+        # Création du graphique
+        fig = plt.Figure(figsize=(w_px / dpi, h_px / dpi), dpi=dpi)
+        canvas = FigureCanvas(fig)
+        ax = fig.add_subplot(111)
+        
+        # Tracé de l'histogramme
+        ax.plot(bins[:-1], hist, color="black", linewidth=line_width)
+        ax.set_xlim(0, 65535)
+        
+        # Set font size for axes labels and ticks
+        ax.tick_params(axis='both', which='major', labelsize=font_size)
+        ax.set_xlabel('Gray Value', fontsize=font_size)
+        ax.set_ylabel('Frequency', fontsize=font_size)
+        
+        # Ajoute les position des min et max gray value
+        ax.axvline(x=min_grayscale, color='red', linestyle='--', linewidth=line_width)
+        ax.axvline(x=max_grayscale, color='blue', linestyle='--', linewidth=line_width)
+        
+        ax.set_yticklabels([])
+        
+        # Convertir directement en QPixmap
+        canvas.draw()
+        w, h = canvas.get_width_height()
+        image_data = np.frombuffer(canvas.buffer_rgba(), dtype=np.uint8).reshape(h, w, 4)
+
+        qimage = QImage(image_data, w, h, w * 4, QImage.Format_RGBA8888)
+        
+        return qimage
+        
+    # General functions
+    
+    def set_comboBox (combo,options_list,index=0):
+        """
+        Updates the given combo box with a new list of options.
+    
+        This function clears the current items in the combo box, replaces them with the provided
+        options list, and set the selection to the choosen item. Signals are temporarily blocked
+        to prevent triggering connected functions during the update.
+    
+        Parameters:
+        - combo (QComboBox): The combo box to update.
+        - options_list (list of str): The list of new options to populate the combo box.
+        - index (int or str): choosen item or index to select (default = 0)
+        """
+        combo.blockSignals(True) #blocks signals from `comboBox_camera` while updating its items 
+                                                    #to prevent unwanted signal emissions.
+        combo.clear()
+        combo.addItems(options_list)
+        
+        try:
+            if type(index)==int:
+                combo.setCurrentIndex(index)
+            elif type(index)==str:
+                combo.setCurrentText(index)
+        except:
+            combo.setCurrentIndex(0)
+                    
+                    
+        combo.blockSignals(False)
+        
+    def set_spinBox(spin,value):
+        #Not used
+        """
+        Updates the given spin box with a new value.
+    
+        This function temporarily block signals to prevent triggering
+        connected functions during the update.
+    
+        Parameters:
+        - spin (QSpinBox): The spin box to update.
+        - value (int of float): value to set to the spin box
+        """
+        spin.blockSignals(True)
+        spin.setValue(value)
+        spin.blockSignals(False)
+
+class HistogramThread(QThread):
+    """Generate a histogram of the grayscale image and display it in a QGraphicsView.
+    
+    Args:
+        frame (ndarray): 16-bit grayscale image.
+        w_px (int): Desired width in pixels.
+        h_px (int): Desired height in pixels.
+        dpi (int): Resolution in dots per inch.
+        line_width (int): Thickness of the histogram line.
+        font_size (int): Size of the font for axis labels and ticks.
+    """
+    # Signal pour envoyer la scène du graphique une fois le travail terminé
+    histogram_ready = Signal(np.ndarray, int, int)
+
+    def __init__(self, frame, min_grayscale=10000, max_grayscale=50000, w_px=1200, h_px=600, dpi=200, line_width=0.5, font_size=8):
+        super().__init__()
+        self.frame = frame
+        self.min_grayscale = min_grayscale
+        self.max_grayscale = max_grayscale
+        self.w_px = w_px
+        self.h_px = h_px
+        self.dpi = dpi
+        self.line_width = line_width
+        self.font_size = font_size
+
+    def run(self):
+        """ Cette fonction sera exécutée dans un thread séparé. Elle crée le graphique et l'envoie au thread principal. """
+            
+        hist, bins = np.histogram(self.frame, bins=256, range=(0, 65535))
+
+        # Crée la figure et l'axe
+        fig = plt.Figure(figsize=(self.w_px / self.dpi, self.h_px / self.dpi), dpi=self.dpi)
+        canvas = FigureCanvas(fig)
+        ax = fig.add_subplot(111)
+
+        # Trace l'histogramme
+        ax.plot(bins[:-1], hist, color="black", linewidth=self.line_width)
+        ax.set_xlim(0, 65535)
+
+        # Définir la taille de la police pour les axes
+        ax.tick_params(axis='both', which='major', labelsize=self.font_size)
+        ax.set_xlabel('Gray Value', fontsize=self.font_size)
+        ax.set_ylabel('Frequency', fontsize=self.font_size)
+
+        # Ajoute les position des min et max gray value
+        ax.axvline(x=self.min_grayscale, color='blue', linestyle='--', linewidth=self.line_width)
+        ax.axvline(x=self.max_grayscale, color='red', linestyle='--', linewidth=self.line_width)
+
+
+        # Masquer l'axe y
+        ax.set_yticklabels([])
+
+        # Convertir le graphique en image
+        canvas.draw()
+        w, h = canvas.get_width_height()
+        image_data = np.frombuffer(canvas.buffer_rgba(), dtype=np.uint8).reshape(h, w, 4)
+        
+        # Émettre le signal pour informer le thread principal que l'histogramme est prêt
+        self.histogram_ready.emit(image_data, w, h)
+        
+    def stop(self):
+        """Arrête proprement l'acquisition."""
+        self.running = False
+        self.quit()
+        self.wait()
+        
