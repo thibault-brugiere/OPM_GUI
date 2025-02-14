@@ -17,17 +17,18 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QComboBox,
-    QDateTimeEdit, QDoubleSpinBox, QFrame, QHBoxLayout,
-    QLCDNumber, QLabel, QLineEdit, QMainWindow,
-    QMenu, QMenuBar, QPushButton, QRadioButton,
-    QSizePolicy, QSlider, QSpacerItem, QSpinBox,
-    QStatusBar, QTimeEdit, QVBoxLayout, QWidget)
+    QDateTimeEdit, QDoubleSpinBox, QFrame, QGroupBox,
+    QHBoxLayout, QLCDNumber, QLabel, QLineEdit,
+    QMainWindow, QMenu, QMenuBar, QPushButton,
+    QRadioButton, QSizePolicy, QSlider, QSpacerItem,
+    QSpinBox, QStatusBar, QTimeEdit, QVBoxLayout,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1873, 1163)
+        MainWindow.resize(1880, 1163)
         MainWindow.setAutoFillBackground(False)
         MainWindow.setAnimated(True)
         MainWindow.setDockNestingEnabled(True)
@@ -47,8 +48,8 @@ class Ui_MainWindow(object):
         self.actionExperience_Name.setObjectName(u"actionExperience_Name")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.horizontalLayout_31 = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_31.setObjectName(u"horizontalLayout_31")
+        self.horizontalLayout_32 = QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_32.setObjectName(u"horizontalLayout_32")
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.label_saving = QLabel(self.centralwidget)
@@ -61,8 +62,8 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.label_saving)
 
-        self.horizontalLayout_6 = QHBoxLayout()
-        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.horizontalLayout_18 = QHBoxLayout()
+        self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
         self.label_data_path = QLabel(self.centralwidget)
         self.label_data_path.setObjectName(u"label_data_path")
         palette = QPalette()
@@ -78,15 +79,15 @@ class Ui_MainWindow(object):
         self.label_data_path.setAutoFillBackground(True)
         self.label_data_path.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
-        self.horizontalLayout_6.addWidget(self.label_data_path)
+        self.horizontalLayout_18.addWidget(self.label_data_path)
 
         self.pb_data_path = QPushButton(self.centralwidget)
         self.pb_data_path.setObjectName(u"pb_data_path")
 
-        self.horizontalLayout_6.addWidget(self.pb_data_path)
+        self.horizontalLayout_18.addWidget(self.pb_data_path)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_6)
+        self.verticalLayout.addLayout(self.horizontalLayout_18)
 
         self.lineEdit_exp_name = QLineEdit(self.centralwidget)
         self.lineEdit_exp_name.setObjectName(u"lineEdit_exp_name")
@@ -244,80 +245,363 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_28)
 
-        self.line_3 = QFrame(self.centralwidget)
-        self.line_3.setObjectName(u"line_3")
-        self.line_3.setFrameShape(QFrame.Shape.HLine)
-        self.line_3.setFrameShadow(QFrame.Shadow.Sunken)
+        self.line_8 = QFrame(self.centralwidget)
+        self.line_8.setObjectName(u"line_8")
+        self.line_8.setFrameShape(QFrame.Shape.HLine)
+        self.line_8.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.verticalLayout.addWidget(self.line_3)
+        self.verticalLayout.addWidget(self.line_8)
 
-        self.label_scanner_settings = QLabel(self.centralwidget)
-        self.label_scanner_settings.setObjectName(u"label_scanner_settings")
-        self.label_scanner_settings.setFont(font)
-        self.label_scanner_settings.setAlignment(Qt.AlignCenter)
+        self.label_channels_settings = QLabel(self.centralwidget)
+        self.label_channels_settings.setObjectName(u"label_channels_settings")
+        self.label_channels_settings.setFont(font)
+        self.label_channels_settings.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayout.addWidget(self.label_scanner_settings)
+        self.verticalLayout.addWidget(self.label_channels_settings)
 
-        self.slider_scanner_position = QSlider(self.centralwidget)
-        self.slider_scanner_position.setObjectName(u"slider_scanner_position")
-        self.slider_scanner_position.setMinimum(-200)
-        self.slider_scanner_position.setMaximum(200)
-        self.slider_scanner_position.setOrientation(Qt.Vertical)
+        self.horizontalLayout_12 = QHBoxLayout()
+        self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
+        self.lineEdit_channel_name = QLineEdit(self.centralwidget)
+        self.lineEdit_channel_name.setObjectName(u"lineEdit_channel_name")
+        self.lineEdit_channel_name.setMinimumSize(QSize(80, 0))
 
-        self.verticalLayout.addWidget(self.slider_scanner_position)
+        self.horizontalLayout_12.addWidget(self.lineEdit_channel_name)
 
-        self.label_scanner_position = QLabel(self.centralwidget)
-        self.label_scanner_position.setObjectName(u"label_scanner_position")
-        font1 = QFont()
-        font1.setPointSize(8)
-        font1.setBold(False)
-        self.label_scanner_position.setFont(font1)
-        self.label_scanner_position.setAlignment(Qt.AlignCenter)
+        self.comboBox_channel_name = QComboBox(self.centralwidget)
+        self.comboBox_channel_name.addItem("")
+        self.comboBox_channel_name.addItem("")
+        self.comboBox_channel_name.addItem("")
+        self.comboBox_channel_name.addItem("")
+        self.comboBox_channel_name.setObjectName(u"comboBox_channel_name")
 
-        self.verticalLayout.addWidget(self.label_scanner_position)
+        self.horizontalLayout_12.addWidget(self.comboBox_channel_name)
 
-        self.spinBox_scanner_position = QSpinBox(self.centralwidget)
-        self.spinBox_scanner_position.setObjectName(u"spinBox_scanner_position")
-        self.spinBox_scanner_position.setMinimum(-200)
-        self.spinBox_scanner_position.setMaximum(200)
+        self.pb_channel_save = QPushButton(self.centralwidget)
+        self.pb_channel_save.setObjectName(u"pb_channel_save")
+        self.pb_channel_save.setEnabled(True)
 
-        self.verticalLayout.addWidget(self.spinBox_scanner_position)
+        self.horizontalLayout_12.addWidget(self.pb_channel_save)
 
-        self.pb_scanner_center = QPushButton(self.centralwidget)
-        self.pb_scanner_center.setObjectName(u"pb_scanner_center")
+        self.pb_channel_add = QPushButton(self.centralwidget)
+        self.pb_channel_add.setObjectName(u"pb_channel_add")
 
-        self.verticalLayout.addWidget(self.pb_scanner_center)
+        self.horizontalLayout_12.addWidget(self.pb_channel_add)
 
-        self.label_scan_range = QLabel(self.centralwidget)
-        self.label_scan_range.setObjectName(u"label_scan_range")
+        self.pb_channel_remove = QPushButton(self.centralwidget)
+        self.pb_channel_remove.setObjectName(u"pb_channel_remove")
+        self.pb_channel_remove.setEnabled(True)
 
-        self.verticalLayout.addWidget(self.label_scan_range)
-
-        self.spinBox_scan_range = QDoubleSpinBox(self.centralwidget)
-        self.spinBox_scan_range.setObjectName(u"spinBox_scan_range")
-        self.spinBox_scan_range.setMaximum(300.000000000000000)
-        self.spinBox_scan_range.setValue(20.000000000000000)
-
-        self.verticalLayout.addWidget(self.spinBox_scan_range)
+        self.horizontalLayout_12.addWidget(self.pb_channel_remove)
 
 
-        self.horizontalLayout_31.addLayout(self.verticalLayout)
+        self.verticalLayout.addLayout(self.horizontalLayout_12)
+
+        self.horizontalLayout_17 = QHBoxLayout()
+        self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
+        self.lcdNumber_laser_405 = QLCDNumber(self.centralwidget)
+        self.lcdNumber_laser_405.setObjectName(u"lcdNumber_laser_405")
+        palette1 = QPalette()
+        brush1 = QBrush(QColor(226, 137, 255, 255))
+        brush1.setStyle(Qt.SolidPattern)
+        palette1.setBrush(QPalette.Active, QPalette.Light, brush1)
+        palette1.setBrush(QPalette.Active, QPalette.Base, brush)
+        brush2 = QBrush(QColor(0, 0, 0, 255))
+        brush2.setStyle(Qt.SolidPattern)
+        palette1.setBrush(QPalette.Active, QPalette.Window, brush2)
+        palette1.setBrush(QPalette.Inactive, QPalette.Light, brush1)
+        palette1.setBrush(QPalette.Inactive, QPalette.Base, brush)
+        palette1.setBrush(QPalette.Inactive, QPalette.Window, brush2)
+        palette1.setBrush(QPalette.Disabled, QPalette.Light, brush1)
+        palette1.setBrush(QPalette.Disabled, QPalette.Base, brush2)
+        palette1.setBrush(QPalette.Disabled, QPalette.Window, brush2)
+        self.lcdNumber_laser_405.setPalette(palette1)
+        self.lcdNumber_laser_405.setAutoFillBackground(True)
+        self.lcdNumber_laser_405.setSmallDecimalPoint(False)
+        self.lcdNumber_laser_405.setProperty(u"value", 405.000000000000000)
+
+        self.horizontalLayout_17.addWidget(self.lcdNumber_laser_405)
+
+        self.lcdNumber_laser_488 = QLCDNumber(self.centralwidget)
+        self.lcdNumber_laser_488.setObjectName(u"lcdNumber_laser_488")
+        palette2 = QPalette()
+        brush3 = QBrush(QColor(85, 255, 255, 255))
+        brush3.setStyle(Qt.SolidPattern)
+        palette2.setBrush(QPalette.Active, QPalette.Light, brush3)
+        palette2.setBrush(QPalette.Active, QPalette.Base, brush)
+        palette2.setBrush(QPalette.Active, QPalette.Window, brush2)
+        palette2.setBrush(QPalette.Inactive, QPalette.Light, brush3)
+        palette2.setBrush(QPalette.Inactive, QPalette.Base, brush)
+        palette2.setBrush(QPalette.Inactive, QPalette.Window, brush2)
+        palette2.setBrush(QPalette.Disabled, QPalette.Light, brush3)
+        palette2.setBrush(QPalette.Disabled, QPalette.Base, brush2)
+        palette2.setBrush(QPalette.Disabled, QPalette.Window, brush2)
+        self.lcdNumber_laser_488.setPalette(palette2)
+        self.lcdNumber_laser_488.setAutoFillBackground(True)
+        self.lcdNumber_laser_488.setSmallDecimalPoint(False)
+        self.lcdNumber_laser_488.setProperty(u"value", 488.000000000000000)
+
+        self.horizontalLayout_17.addWidget(self.lcdNumber_laser_488)
+
+        self.lcdNumber_laser_561 = QLCDNumber(self.centralwidget)
+        self.lcdNumber_laser_561.setObjectName(u"lcdNumber_laser_561")
+        palette3 = QPalette()
+        brush4 = QBrush(QColor(255, 255, 127, 255))
+        brush4.setStyle(Qt.SolidPattern)
+        palette3.setBrush(QPalette.Active, QPalette.Light, brush4)
+        palette3.setBrush(QPalette.Active, QPalette.Base, brush)
+        palette3.setBrush(QPalette.Active, QPalette.Window, brush2)
+        palette3.setBrush(QPalette.Inactive, QPalette.Light, brush4)
+        palette3.setBrush(QPalette.Inactive, QPalette.Base, brush)
+        palette3.setBrush(QPalette.Inactive, QPalette.Window, brush2)
+        palette3.setBrush(QPalette.Disabled, QPalette.Light, brush4)
+        palette3.setBrush(QPalette.Disabled, QPalette.Base, brush2)
+        palette3.setBrush(QPalette.Disabled, QPalette.Window, brush2)
+        self.lcdNumber_laser_561.setPalette(palette3)
+        self.lcdNumber_laser_561.setAutoFillBackground(True)
+        self.lcdNumber_laser_561.setSmallDecimalPoint(False)
+        self.lcdNumber_laser_561.setProperty(u"value", 561.000000000000000)
+
+        self.horizontalLayout_17.addWidget(self.lcdNumber_laser_561)
+
+        self.lcdNumber_laser_640 = QLCDNumber(self.centralwidget)
+        self.lcdNumber_laser_640.setObjectName(u"lcdNumber_laser_640")
+        palette4 = QPalette()
+        brush5 = QBrush(QColor(255, 0, 0, 255))
+        brush5.setStyle(Qt.SolidPattern)
+        palette4.setBrush(QPalette.Active, QPalette.Light, brush5)
+        palette4.setBrush(QPalette.Active, QPalette.Base, brush)
+        palette4.setBrush(QPalette.Active, QPalette.Window, brush2)
+        palette4.setBrush(QPalette.Inactive, QPalette.Light, brush5)
+        palette4.setBrush(QPalette.Inactive, QPalette.Base, brush)
+        palette4.setBrush(QPalette.Inactive, QPalette.Window, brush2)
+        palette4.setBrush(QPalette.Disabled, QPalette.Light, brush5)
+        palette4.setBrush(QPalette.Disabled, QPalette.Base, brush2)
+        palette4.setBrush(QPalette.Disabled, QPalette.Window, brush2)
+        self.lcdNumber_laser_640.setPalette(palette4)
+        self.lcdNumber_laser_640.setAutoFillBackground(True)
+        self.lcdNumber_laser_640.setSmallDecimalPoint(False)
+        self.lcdNumber_laser_640.setProperty(u"value", 640.000000000000000)
+
+        self.horizontalLayout_17.addWidget(self.lcdNumber_laser_640)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_17)
+
+        self.horizontalLayout_19 = QHBoxLayout()
+        self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.horizontalSpacer = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_6.addItem(self.horizontalSpacer)
+
+        self.checkBox_laser_405 = QCheckBox(self.centralwidget)
+        self.checkBox_laser_405.setObjectName(u"checkBox_laser_405")
+
+        self.horizontalLayout_6.addWidget(self.checkBox_laser_405)
+
+        self.horizontalSpacer_2 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_6.addItem(self.horizontalSpacer_2)
+
+
+        self.horizontalLayout_19.addLayout(self.horizontalLayout_6)
+
+        self.horizontalLayout_9 = QHBoxLayout()
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.horizontalSpacer_6 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_9.addItem(self.horizontalSpacer_6)
+
+        self.checkBox_laser_488 = QCheckBox(self.centralwidget)
+        self.checkBox_laser_488.setObjectName(u"checkBox_laser_488")
+
+        self.horizontalLayout_9.addWidget(self.checkBox_laser_488)
+
+        self.horizontalSpacer_3 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_9.addItem(self.horizontalSpacer_3)
+
+
+        self.horizontalLayout_19.addLayout(self.horizontalLayout_9)
+
+        self.horizontalLayout_10 = QHBoxLayout()
+        self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
+        self.horizontalSpacer_7 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_10.addItem(self.horizontalSpacer_7)
+
+        self.checkBox_laser_561 = QCheckBox(self.centralwidget)
+        self.checkBox_laser_561.setObjectName(u"checkBox_laser_561")
+
+        self.horizontalLayout_10.addWidget(self.checkBox_laser_561)
+
+        self.horizontalSpacer_4 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_10.addItem(self.horizontalSpacer_4)
+
+
+        self.horizontalLayout_19.addLayout(self.horizontalLayout_10)
+
+        self.horizontalLayout_11 = QHBoxLayout()
+        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
+        self.horizontalSpacer_8 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_11.addItem(self.horizontalSpacer_8)
+
+        self.checkBox_laser_640 = QCheckBox(self.centralwidget)
+        self.checkBox_laser_640.setObjectName(u"checkBox_laser_640")
+
+        self.horizontalLayout_11.addWidget(self.checkBox_laser_640)
+
+        self.horizontalSpacer_5 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_11.addItem(self.horizontalSpacer_5)
+
+
+        self.horizontalLayout_19.addLayout(self.horizontalLayout_11)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_19)
+
+        self.label_laser_power = QLabel(self.centralwidget)
+        self.label_laser_power.setObjectName(u"label_laser_power")
+        self.label_laser_power.setAutoFillBackground(False)
+        self.label_laser_power.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout.addWidget(self.label_laser_power)
+
+        self.horizontalLayout_13 = QHBoxLayout()
+        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
+        self.spinBox_laser_405 = QSpinBox(self.centralwidget)
+        self.spinBox_laser_405.setObjectName(u"spinBox_laser_405")
+        self.spinBox_laser_405.setMaximum(100)
+
+        self.horizontalLayout_13.addWidget(self.spinBox_laser_405)
+
+        self.spinBox_laser_488 = QSpinBox(self.centralwidget)
+        self.spinBox_laser_488.setObjectName(u"spinBox_laser_488")
+        self.spinBox_laser_488.setMaximum(100)
+
+        self.horizontalLayout_13.addWidget(self.spinBox_laser_488)
+
+        self.spinBox_laser_561 = QSpinBox(self.centralwidget)
+        self.spinBox_laser_561.setObjectName(u"spinBox_laser_561")
+        self.spinBox_laser_561.setMaximum(100)
+
+        self.horizontalLayout_13.addWidget(self.spinBox_laser_561)
+
+        self.spinBox_laser_640 = QSpinBox(self.centralwidget)
+        self.spinBox_laser_640.setObjectName(u"spinBox_laser_640")
+        self.spinBox_laser_640.setMaximum(100)
+
+        self.horizontalLayout_13.addWidget(self.spinBox_laser_640)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_13)
+
+        self.horizontalLayout_14 = QHBoxLayout()
+        self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
+        self.slider_laser_405 = QSlider(self.centralwidget)
+        self.slider_laser_405.setObjectName(u"slider_laser_405")
+        self.slider_laser_405.setMaximumSize(QSize(16777215, 16777215))
+        self.slider_laser_405.setMaximum(100)
+        self.slider_laser_405.setOrientation(Qt.Vertical)
+
+        self.horizontalLayout_14.addWidget(self.slider_laser_405)
+
+        self.slider_laser_488 = QSlider(self.centralwidget)
+        self.slider_laser_488.setObjectName(u"slider_laser_488")
+        self.slider_laser_488.setMaximumSize(QSize(16777215, 16777215))
+        self.slider_laser_488.setMaximum(100)
+        self.slider_laser_488.setOrientation(Qt.Vertical)
+
+        self.horizontalLayout_14.addWidget(self.slider_laser_488)
+
+        self.slider_laser_561 = QSlider(self.centralwidget)
+        self.slider_laser_561.setObjectName(u"slider_laser_561")
+        self.slider_laser_561.setMaximumSize(QSize(16777215, 16777215))
+        self.slider_laser_561.setMaximum(100)
+        self.slider_laser_561.setOrientation(Qt.Vertical)
+
+        self.horizontalLayout_14.addWidget(self.slider_laser_561)
+
+        self.slider_laser_640 = QSlider(self.centralwidget)
+        self.slider_laser_640.setObjectName(u"slider_laser_640")
+        self.slider_laser_640.setMaximumSize(QSize(16777215, 16777215))
+        self.slider_laser_640.setMaximum(100)
+        self.slider_laser_640.setOrientation(Qt.Vertical)
+
+        self.horizontalLayout_14.addWidget(self.slider_laser_640)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_14)
+
+        self.label_channel_filter = QLabel(self.centralwidget)
+        self.label_channel_filter.setObjectName(u"label_channel_filter")
+        self.label_channel_filter.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout.addWidget(self.label_channel_filter)
+
+        self.comboBox_channel_filter = QComboBox(self.centralwidget)
+        self.comboBox_channel_filter.addItem("")
+        self.comboBox_channel_filter.addItem("")
+        self.comboBox_channel_filter.addItem("")
+        self.comboBox_channel_filter.addItem("")
+        self.comboBox_channel_filter.setObjectName(u"comboBox_channel_filter")
+
+        self.verticalLayout.addWidget(self.comboBox_channel_filter)
+
+        self.horizontalLayout_15 = QHBoxLayout()
+        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
+        self.comboBox_channel_camera = QComboBox(self.centralwidget)
+        self.comboBox_channel_camera.addItem("")
+        self.comboBox_channel_camera.setObjectName(u"comboBox_channel_camera")
+        self.comboBox_channel_camera.setEnabled(False)
+        self.comboBox_channel_camera.setMinimumSize(QSize(90, 0))
+
+        self.horizontalLayout_15.addWidget(self.comboBox_channel_camera)
+
+        self.spinBox_channel_exposure_time = QDoubleSpinBox(self.centralwidget)
+        self.spinBox_channel_exposure_time.setObjectName(u"spinBox_channel_exposure_time")
+        self.spinBox_channel_exposure_time.setDecimals(2)
+        self.spinBox_channel_exposure_time.setMinimum(8.699999999999999)
+        self.spinBox_channel_exposure_time.setMaximum(999.990000000000009)
+        self.spinBox_channel_exposure_time.setValue(8.699999999999999)
+
+        self.horizontalLayout_15.addWidget(self.spinBox_channel_exposure_time)
+
+        self.label_channel_exposure_time = QLabel(self.centralwidget)
+        self.label_channel_exposure_time.setObjectName(u"label_channel_exposure_time")
+        self.label_channel_exposure_time.setAlignment(Qt.AlignCenter)
+
+        self.horizontalLayout_15.addWidget(self.label_channel_exposure_time)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_15)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout.addItem(self.verticalSpacer)
+
+
+        self.horizontalLayout_32.addLayout(self.verticalLayout)
 
         self.line = QFrame(self.centralwidget)
         self.line.setObjectName(u"line")
         self.line.setFrameShape(QFrame.Shape.VLine)
         self.line.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_31.addWidget(self.line)
+        self.horizontalLayout_32.addWidget(self.line)
 
-        self.verticalLayout_2 = QVBoxLayout()
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_5 = QVBoxLayout()
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.label_timelaps_settings = QLabel(self.centralwidget)
         self.label_timelaps_settings.setObjectName(u"label_timelaps_settings")
         self.label_timelaps_settings.setFont(font)
         self.label_timelaps_settings.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayout_2.addWidget(self.label_timelaps_settings)
+        self.verticalLayout_5.addWidget(self.label_timelaps_settings)
 
         self.horizontalLayout_16 = QHBoxLayout()
         self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
@@ -334,7 +618,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_16.addWidget(self.label_timepoints)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_16)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_16)
 
         self.horizontalLayout_7 = QHBoxLayout()
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
@@ -364,7 +648,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_7.addWidget(self.label_time_interval)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_7)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_7)
 
         self.horizontalLayout_8 = QHBoxLayout()
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
@@ -390,409 +674,138 @@ class Ui_MainWindow(object):
         self.horizontalLayout_8.addWidget(self.label_total_duration)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_8)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_8)
+
+        self.line_3 = QFrame(self.centralwidget)
+        self.line_3.setObjectName(u"line_3")
+        self.line_3.setFrameShape(QFrame.Shape.HLine)
+        self.line_3.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.verticalLayout_5.addWidget(self.line_3)
+
+        self.label_scanner_settings = QLabel(self.centralwidget)
+        self.label_scanner_settings.setObjectName(u"label_scanner_settings")
+        self.label_scanner_settings.setFont(font)
+        self.label_scanner_settings.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_5.addWidget(self.label_scanner_settings)
+
+        self.horizontalLayout_20 = QHBoxLayout()
+        self.horizontalLayout_20.setObjectName(u"horizontalLayout_20")
+        self.horizontalSpacer_14 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_20.addItem(self.horizontalSpacer_14)
+
+        self.slider_scanner_position = QSlider(self.centralwidget)
+        self.slider_scanner_position.setObjectName(u"slider_scanner_position")
+        self.slider_scanner_position.setMinimumSize(QSize(0, 300))
+        self.slider_scanner_position.setMaximumSize(QSize(16777215, 300))
+        self.slider_scanner_position.setMinimum(-200)
+        self.slider_scanner_position.setMaximum(200)
+        self.slider_scanner_position.setOrientation(Qt.Vertical)
+
+        self.horizontalLayout_20.addWidget(self.slider_scanner_position)
+
+        self.horizontalSpacer_15 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_20.addItem(self.horizontalSpacer_15)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_20)
+
+        self.label_scanner_position = QLabel(self.centralwidget)
+        self.label_scanner_position.setObjectName(u"label_scanner_position")
+        font1 = QFont()
+        font1.setPointSize(8)
+        font1.setBold(False)
+        self.label_scanner_position.setFont(font1)
+        self.label_scanner_position.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_5.addWidget(self.label_scanner_position)
+
+        self.spinBox_scanner_position = QSpinBox(self.centralwidget)
+        self.spinBox_scanner_position.setObjectName(u"spinBox_scanner_position")
+        self.spinBox_scanner_position.setMinimum(-200)
+        self.spinBox_scanner_position.setMaximum(200)
+
+        self.verticalLayout_5.addWidget(self.spinBox_scanner_position)
+
+        self.pb_scanner_center = QPushButton(self.centralwidget)
+        self.pb_scanner_center.setObjectName(u"pb_scanner_center")
+
+        self.verticalLayout_5.addWidget(self.pb_scanner_center)
+
+        self.label_scan_range = QLabel(self.centralwidget)
+        self.label_scan_range.setObjectName(u"label_scan_range")
+
+        self.verticalLayout_5.addWidget(self.label_scan_range)
+
+        self.spinBox_scan_range = QDoubleSpinBox(self.centralwidget)
+        self.spinBox_scan_range.setObjectName(u"spinBox_scan_range")
+        self.spinBox_scan_range.setMaximum(300.000000000000000)
+        self.spinBox_scan_range.setValue(20.000000000000000)
+
+        self.verticalLayout_5.addWidget(self.spinBox_scan_range)
 
         self.line_4 = QFrame(self.centralwidget)
         self.line_4.setObjectName(u"line_4")
         self.line_4.setFrameShape(QFrame.Shape.HLine)
         self.line_4.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.verticalLayout_2.addWidget(self.line_4)
+        self.verticalLayout_5.addWidget(self.line_4)
 
-        self.label_channels_settings = QLabel(self.centralwidget)
-        self.label_channels_settings.setObjectName(u"label_channels_settings")
-        self.label_channels_settings.setFont(font)
-        self.label_channels_settings.setAlignment(Qt.AlignCenter)
+        self.horizontalLayout_31 = QHBoxLayout()
+        self.horizontalLayout_31.setObjectName(u"horizontalLayout_31")
+        self.spinBox_number_channels = QSpinBox(self.centralwidget)
+        self.spinBox_number_channels.setObjectName(u"spinBox_number_channels")
+        self.spinBox_number_channels.setMinimum(0)
+        self.spinBox_number_channels.setMaximum(10)
 
-        self.verticalLayout_2.addWidget(self.label_channels_settings)
+        self.horizontalLayout_31.addWidget(self.spinBox_number_channels)
 
-        self.horizontalLayout_20 = QHBoxLayout()
-        self.horizontalLayout_20.setObjectName(u"horizontalLayout_20")
-        self.lcdNumber_laser_405 = QLCDNumber(self.centralwidget)
-        self.lcdNumber_laser_405.setObjectName(u"lcdNumber_laser_405")
-        palette1 = QPalette()
-        brush1 = QBrush(QColor(226, 137, 255, 255))
-        brush1.setStyle(Qt.SolidPattern)
-        palette1.setBrush(QPalette.Active, QPalette.Light, brush1)
-        palette1.setBrush(QPalette.Active, QPalette.Base, brush)
-        brush2 = QBrush(QColor(0, 0, 0, 255))
-        brush2.setStyle(Qt.SolidPattern)
-        palette1.setBrush(QPalette.Active, QPalette.Window, brush2)
-        palette1.setBrush(QPalette.Inactive, QPalette.Light, brush1)
-        palette1.setBrush(QPalette.Inactive, QPalette.Base, brush)
-        palette1.setBrush(QPalette.Inactive, QPalette.Window, brush2)
-        palette1.setBrush(QPalette.Disabled, QPalette.Light, brush1)
-        palette1.setBrush(QPalette.Disabled, QPalette.Base, brush2)
-        palette1.setBrush(QPalette.Disabled, QPalette.Window, brush2)
-        self.lcdNumber_laser_405.setPalette(palette1)
-        self.lcdNumber_laser_405.setAutoFillBackground(True)
-        self.lcdNumber_laser_405.setSmallDecimalPoint(False)
-        self.lcdNumber_laser_405.setProperty(u"value", 405.000000000000000)
+        self.label_number_channels = QLabel(self.centralwidget)
+        self.label_number_channels.setObjectName(u"label_number_channels")
+        self.label_number_channels.setAutoFillBackground(False)
 
-        self.horizontalLayout_20.addWidget(self.lcdNumber_laser_405)
+        self.horizontalLayout_31.addWidget(self.label_number_channels)
 
-        self.lcdNumber_laser_488 = QLCDNumber(self.centralwidget)
-        self.lcdNumber_laser_488.setObjectName(u"lcdNumber_laser_488")
-        palette2 = QPalette()
-        brush3 = QBrush(QColor(85, 255, 255, 255))
-        brush3.setStyle(Qt.SolidPattern)
-        palette2.setBrush(QPalette.Active, QPalette.Light, brush3)
-        palette2.setBrush(QPalette.Active, QPalette.Base, brush)
-        palette2.setBrush(QPalette.Active, QPalette.Window, brush2)
-        palette2.setBrush(QPalette.Inactive, QPalette.Light, brush3)
-        palette2.setBrush(QPalette.Inactive, QPalette.Base, brush)
-        palette2.setBrush(QPalette.Inactive, QPalette.Window, brush2)
-        palette2.setBrush(QPalette.Disabled, QPalette.Light, brush3)
-        palette2.setBrush(QPalette.Disabled, QPalette.Base, brush2)
-        palette2.setBrush(QPalette.Disabled, QPalette.Window, brush2)
-        self.lcdNumber_laser_488.setPalette(palette2)
-        self.lcdNumber_laser_488.setAutoFillBackground(True)
-        self.lcdNumber_laser_488.setSmallDecimalPoint(False)
-        self.lcdNumber_laser_488.setProperty(u"value", 488.000000000000000)
 
-        self.horizontalLayout_20.addWidget(self.lcdNumber_laser_488)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_31)
 
-        self.lcdNumber_laser_561 = QLCDNumber(self.centralwidget)
-        self.lcdNumber_laser_561.setObjectName(u"lcdNumber_laser_561")
-        palette3 = QPalette()
-        brush4 = QBrush(QColor(255, 255, 127, 255))
-        brush4.setStyle(Qt.SolidPattern)
-        palette3.setBrush(QPalette.Active, QPalette.Light, brush4)
-        palette3.setBrush(QPalette.Active, QPalette.Base, brush)
-        palette3.setBrush(QPalette.Active, QPalette.Window, brush2)
-        palette3.setBrush(QPalette.Inactive, QPalette.Light, brush4)
-        palette3.setBrush(QPalette.Inactive, QPalette.Base, brush)
-        palette3.setBrush(QPalette.Inactive, QPalette.Window, brush2)
-        palette3.setBrush(QPalette.Disabled, QPalette.Light, brush4)
-        palette3.setBrush(QPalette.Disabled, QPalette.Base, brush2)
-        palette3.setBrush(QPalette.Disabled, QPalette.Window, brush2)
-        self.lcdNumber_laser_561.setPalette(palette3)
-        self.lcdNumber_laser_561.setAutoFillBackground(True)
-        self.lcdNumber_laser_561.setSmallDecimalPoint(False)
-        self.lcdNumber_laser_561.setProperty(u"value", 561.000000000000000)
+        self.groupBox_channel_order = QGroupBox(self.centralwidget)
+        self.groupBox_channel_order.setObjectName(u"groupBox_channel_order")
+        self.groupBox_channel_order.setMinimumSize(QSize(0, 0))
+        self.verticalLayout_2 = QVBoxLayout(self.groupBox_channel_order)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
 
-        self.horizontalLayout_20.addWidget(self.lcdNumber_laser_561)
+        self.verticalLayout_5.addWidget(self.groupBox_channel_order)
 
-        self.lcdNumber_laser_640 = QLCDNumber(self.centralwidget)
-        self.lcdNumber_laser_640.setObjectName(u"lcdNumber_laser_640")
-        palette4 = QPalette()
-        brush5 = QBrush(QColor(255, 0, 0, 255))
-        brush5.setStyle(Qt.SolidPattern)
-        palette4.setBrush(QPalette.Active, QPalette.Light, brush5)
-        palette4.setBrush(QPalette.Active, QPalette.Base, brush)
-        palette4.setBrush(QPalette.Active, QPalette.Window, brush2)
-        palette4.setBrush(QPalette.Inactive, QPalette.Light, brush5)
-        palette4.setBrush(QPalette.Inactive, QPalette.Base, brush)
-        palette4.setBrush(QPalette.Inactive, QPalette.Window, brush2)
-        palette4.setBrush(QPalette.Disabled, QPalette.Light, brush5)
-        palette4.setBrush(QPalette.Disabled, QPalette.Base, brush2)
-        palette4.setBrush(QPalette.Disabled, QPalette.Window, brush2)
-        self.lcdNumber_laser_640.setPalette(palette4)
-        self.lcdNumber_laser_640.setAutoFillBackground(True)
-        self.lcdNumber_laser_640.setSmallDecimalPoint(False)
-        self.lcdNumber_laser_640.setProperty(u"value", 640.000000000000000)
+        self.verticalSpacer_2 = QSpacerItem(20, 188, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.horizontalLayout_20.addWidget(self.lcdNumber_laser_640)
+        self.verticalLayout_5.addItem(self.verticalSpacer_2)
 
+        self.line_6 = QFrame(self.centralwidget)
+        self.line_6.setObjectName(u"line_6")
+        self.line_6.setFrameShape(QFrame.Shape.HLine)
+        self.line_6.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_20)
-
-        self.horizontalLayout_19 = QHBoxLayout()
-        self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
-        self.horizontalLayout_9 = QHBoxLayout()
-        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
-        self.horizontalSpacer = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_9.addItem(self.horizontalSpacer)
-
-        self.checkBox_laser_405 = QCheckBox(self.centralwidget)
-        self.checkBox_laser_405.setObjectName(u"checkBox_laser_405")
-
-        self.horizontalLayout_9.addWidget(self.checkBox_laser_405)
-
-        self.horizontalSpacer_2 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_9.addItem(self.horizontalSpacer_2)
-
-
-        self.horizontalLayout_19.addLayout(self.horizontalLayout_9)
-
-        self.horizontalLayout_10 = QHBoxLayout()
-        self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
-        self.horizontalSpacer_6 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_10.addItem(self.horizontalSpacer_6)
-
-        self.checkBox_laser_488 = QCheckBox(self.centralwidget)
-        self.checkBox_laser_488.setObjectName(u"checkBox_laser_488")
-
-        self.horizontalLayout_10.addWidget(self.checkBox_laser_488)
-
-        self.horizontalSpacer_3 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_10.addItem(self.horizontalSpacer_3)
-
-
-        self.horizontalLayout_19.addLayout(self.horizontalLayout_10)
-
-        self.horizontalLayout_17 = QHBoxLayout()
-        self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
-        self.horizontalSpacer_7 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_17.addItem(self.horizontalSpacer_7)
-
-        self.checkBox_laser_561 = QCheckBox(self.centralwidget)
-        self.checkBox_laser_561.setObjectName(u"checkBox_laser_561")
-
-        self.horizontalLayout_17.addWidget(self.checkBox_laser_561)
-
-        self.horizontalSpacer_4 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_17.addItem(self.horizontalSpacer_4)
-
-
-        self.horizontalLayout_19.addLayout(self.horizontalLayout_17)
-
-        self.horizontalLayout_18 = QHBoxLayout()
-        self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
-        self.horizontalSpacer_8 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_18.addItem(self.horizontalSpacer_8)
-
-        self.checkBox_laser_640 = QCheckBox(self.centralwidget)
-        self.checkBox_laser_640.setObjectName(u"checkBox_laser_640")
-
-        self.horizontalLayout_18.addWidget(self.checkBox_laser_640)
-
-        self.horizontalSpacer_5 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_18.addItem(self.horizontalSpacer_5)
-
-
-        self.horizontalLayout_19.addLayout(self.horizontalLayout_18)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_19)
-
-        self.label_laser_power = QLabel(self.centralwidget)
-        self.label_laser_power.setObjectName(u"label_laser_power")
-        self.label_laser_power.setAutoFillBackground(False)
-        self.label_laser_power.setAlignment(Qt.AlignCenter)
-
-        self.verticalLayout_2.addWidget(self.label_laser_power)
-
-        self.horizontalLayout_15 = QHBoxLayout()
-        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
-        self.spinBox_laser_405 = QSpinBox(self.centralwidget)
-        self.spinBox_laser_405.setObjectName(u"spinBox_laser_405")
-        self.spinBox_laser_405.setMaximum(100)
-
-        self.horizontalLayout_15.addWidget(self.spinBox_laser_405)
-
-        self.spinBox_laser_488 = QSpinBox(self.centralwidget)
-        self.spinBox_laser_488.setObjectName(u"spinBox_laser_488")
-        self.spinBox_laser_488.setMaximum(100)
-
-        self.horizontalLayout_15.addWidget(self.spinBox_laser_488)
-
-        self.spinBox_laser_561 = QSpinBox(self.centralwidget)
-        self.spinBox_laser_561.setObjectName(u"spinBox_laser_561")
-        self.spinBox_laser_561.setMaximum(100)
-
-        self.horizontalLayout_15.addWidget(self.spinBox_laser_561)
-
-        self.spinBox_laser_640 = QSpinBox(self.centralwidget)
-        self.spinBox_laser_640.setObjectName(u"spinBox_laser_640")
-        self.spinBox_laser_640.setMaximum(100)
-
-        self.horizontalLayout_15.addWidget(self.spinBox_laser_640)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_15)
-
-        self.horizontalLayout_11 = QHBoxLayout()
-        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
-        self.slider_laser_405 = QSlider(self.centralwidget)
-        self.slider_laser_405.setObjectName(u"slider_laser_405")
-        self.slider_laser_405.setMaximum(100)
-        self.slider_laser_405.setOrientation(Qt.Vertical)
-
-        self.horizontalLayout_11.addWidget(self.slider_laser_405)
-
-        self.slider_laser_488 = QSlider(self.centralwidget)
-        self.slider_laser_488.setObjectName(u"slider_laser_488")
-        self.slider_laser_488.setMaximum(100)
-        self.slider_laser_488.setOrientation(Qt.Vertical)
-
-        self.horizontalLayout_11.addWidget(self.slider_laser_488)
-
-        self.slider_laser_561 = QSlider(self.centralwidget)
-        self.slider_laser_561.setObjectName(u"slider_laser_561")
-        self.slider_laser_561.setMaximum(100)
-        self.slider_laser_561.setOrientation(Qt.Vertical)
-
-        self.horizontalLayout_11.addWidget(self.slider_laser_561)
-
-        self.slider_laser_640 = QSlider(self.centralwidget)
-        self.slider_laser_640.setObjectName(u"slider_laser_640")
-        self.slider_laser_640.setMaximum(100)
-        self.slider_laser_640.setOrientation(Qt.Vertical)
-
-        self.horizontalLayout_11.addWidget(self.slider_laser_640)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_11)
-
-        self.label_camera = QLabel(self.centralwidget)
-        self.label_camera.setObjectName(u"label_camera")
-        self.label_camera.setAutoFillBackground(False)
-        self.label_camera.setAlignment(Qt.AlignCenter)
-
-        self.verticalLayout_2.addWidget(self.label_camera)
-
-        self.horizontalLayout_12 = QHBoxLayout()
-        self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
-        self.comboBox_Camera_405 = QComboBox(self.centralwidget)
-        self.comboBox_Camera_405.addItem("")
-        self.comboBox_Camera_405.setObjectName(u"comboBox_Camera_405")
-        self.comboBox_Camera_405.setEnabled(False)
-
-        self.horizontalLayout_12.addWidget(self.comboBox_Camera_405)
-
-        self.comboBox_Camera_488 = QComboBox(self.centralwidget)
-        self.comboBox_Camera_488.addItem("")
-        self.comboBox_Camera_488.setObjectName(u"comboBox_Camera_488")
-        self.comboBox_Camera_488.setEnabled(False)
-
-        self.horizontalLayout_12.addWidget(self.comboBox_Camera_488)
-
-        self.comboBox_Camera_561 = QComboBox(self.centralwidget)
-        self.comboBox_Camera_561.addItem("")
-        self.comboBox_Camera_561.setObjectName(u"comboBox_Camera_561")
-        self.comboBox_Camera_561.setEnabled(False)
-
-        self.horizontalLayout_12.addWidget(self.comboBox_Camera_561)
-
-        self.comboBox_Camera_640 = QComboBox(self.centralwidget)
-        self.comboBox_Camera_640.addItem("")
-        self.comboBox_Camera_640.setObjectName(u"comboBox_Camera_640")
-        self.comboBox_Camera_640.setEnabled(False)
-
-        self.horizontalLayout_12.addWidget(self.comboBox_Camera_640)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_12)
-
-        self.label_exposure_time = QLabel(self.centralwidget)
-        self.label_exposure_time.setObjectName(u"label_exposure_time")
-        self.label_exposure_time.setAlignment(Qt.AlignCenter)
-
-        self.verticalLayout_2.addWidget(self.label_exposure_time)
-
-        self.horizontalLayout_13 = QHBoxLayout()
-        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
-        self.spinBox_exposure_time_405 = QDoubleSpinBox(self.centralwidget)
-        self.spinBox_exposure_time_405.setObjectName(u"spinBox_exposure_time_405")
-        self.spinBox_exposure_time_405.setDecimals(2)
-        self.spinBox_exposure_time_405.setMinimum(8.699999999999999)
-        self.spinBox_exposure_time_405.setMaximum(999.990000000000009)
-        self.spinBox_exposure_time_405.setValue(8.699999999999999)
-
-        self.horizontalLayout_13.addWidget(self.spinBox_exposure_time_405)
-
-        self.spinBox_exposure_time_488 = QDoubleSpinBox(self.centralwidget)
-        self.spinBox_exposure_time_488.setObjectName(u"spinBox_exposure_time_488")
-        self.spinBox_exposure_time_488.setDecimals(2)
-        self.spinBox_exposure_time_488.setMinimum(8.699999999999999)
-        self.spinBox_exposure_time_488.setMaximum(999.990000000000009)
-        self.spinBox_exposure_time_488.setValue(8.699999999999999)
-
-        self.horizontalLayout_13.addWidget(self.spinBox_exposure_time_488)
-
-        self.spinBox_exposure_time_561 = QDoubleSpinBox(self.centralwidget)
-        self.spinBox_exposure_time_561.setObjectName(u"spinBox_exposure_time_561")
-        self.spinBox_exposure_time_561.setMinimum(8.699999999999999)
-        self.spinBox_exposure_time_561.setMaximum(999.990000000000009)
-        self.spinBox_exposure_time_561.setValue(8.699999999999999)
-
-        self.horizontalLayout_13.addWidget(self.spinBox_exposure_time_561)
-
-        self.spinBox_exposure_time_640 = QDoubleSpinBox(self.centralwidget)
-        self.spinBox_exposure_time_640.setObjectName(u"spinBox_exposure_time_640")
-        self.spinBox_exposure_time_640.setMinimum(8.699999999999999)
-        self.spinBox_exposure_time_640.setMaximum(999.990000000000009)
-        self.spinBox_exposure_time_640.setValue(8.699999999999999)
-
-        self.horizontalLayout_13.addWidget(self.spinBox_exposure_time_640)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_13)
+        self.verticalLayout_5.addWidget(self.line_6)
 
         self.label_volume_duration = QLabel(self.centralwidget)
         self.label_volume_duration.setObjectName(u"label_volume_duration")
         self.label_volume_duration.setAutoFillBackground(False)
 
-        self.verticalLayout_2.addWidget(self.label_volume_duration)
-
-        self.horizontalLayout_14 = QHBoxLayout()
-        self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
-        self.comboBox_channel_order_405 = QComboBox(self.centralwidget)
-        self.comboBox_channel_order_405.addItem("")
-        self.comboBox_channel_order_405.addItem("")
-        self.comboBox_channel_order_405.addItem("")
-        self.comboBox_channel_order_405.addItem("")
-        self.comboBox_channel_order_405.addItem("")
-        self.comboBox_channel_order_405.setObjectName(u"comboBox_channel_order_405")
-        self.comboBox_channel_order_405.setEnabled(True)
-        self.comboBox_channel_order_405.setEditable(False)
-
-        self.horizontalLayout_14.addWidget(self.comboBox_channel_order_405)
-
-        self.comboBox_channel_order_488 = QComboBox(self.centralwidget)
-        self.comboBox_channel_order_488.addItem("")
-        self.comboBox_channel_order_488.addItem("")
-        self.comboBox_channel_order_488.addItem("")
-        self.comboBox_channel_order_488.addItem("")
-        self.comboBox_channel_order_488.addItem("")
-        self.comboBox_channel_order_488.setObjectName(u"comboBox_channel_order_488")
-        self.comboBox_channel_order_488.setEnabled(True)
-
-        self.horizontalLayout_14.addWidget(self.comboBox_channel_order_488)
-
-        self.comboBox_channel_order_561 = QComboBox(self.centralwidget)
-        self.comboBox_channel_order_561.addItem("")
-        self.comboBox_channel_order_561.addItem("")
-        self.comboBox_channel_order_561.addItem("")
-        self.comboBox_channel_order_561.addItem("")
-        self.comboBox_channel_order_561.addItem("")
-        self.comboBox_channel_order_561.setObjectName(u"comboBox_channel_order_561")
-        self.comboBox_channel_order_561.setEnabled(True)
-
-        self.horizontalLayout_14.addWidget(self.comboBox_channel_order_561)
-
-        self.comboBox_channel_order_640 = QComboBox(self.centralwidget)
-        self.comboBox_channel_order_640.addItem("")
-        self.comboBox_channel_order_640.addItem("")
-        self.comboBox_channel_order_640.addItem("")
-        self.comboBox_channel_order_640.addItem("")
-        self.comboBox_channel_order_640.addItem("")
-        self.comboBox_channel_order_640.setObjectName(u"comboBox_channel_order_640")
-        self.comboBox_channel_order_640.setEnabled(True)
-
-        self.horizontalLayout_14.addWidget(self.comboBox_channel_order_640)
+        self.verticalLayout_5.addWidget(self.label_volume_duration)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_14)
-
-
-        self.horizontalLayout_31.addLayout(self.verticalLayout_2)
+        self.horizontalLayout_32.addLayout(self.verticalLayout_5)
 
         self.line_2 = QFrame(self.centralwidget)
         self.line_2.setObjectName(u"line_2")
         self.line_2.setFrameShape(QFrame.Shape.VLine)
         self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_31.addWidget(self.line_2)
+        self.horizontalLayout_32.addWidget(self.line_2)
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
@@ -1013,12 +1026,12 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.addLayout(self.horizontalLayout_25)
 
 
-        self.horizontalLayout_31.addLayout(self.verticalLayout_4)
+        self.horizontalLayout_32.addLayout(self.verticalLayout_4)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1873, 26))
+        self.menubar.setGeometry(QRect(0, 0, 1880, 26))
         self.menuFichier = QMenu(self.menubar)
         self.menuFichier.setObjectName(u"menuFichier")
         self.menuSaving = QMenu(self.menuFichier)
@@ -1062,9 +1075,6 @@ class Ui_MainWindow(object):
         self.slider_max_grayscale.sliderMoved.connect(self.spinBox_max_grayscale.setValue)
 
         self.comboBox_setup.setCurrentIndex(1)
-        self.comboBox_channel_order_488.setCurrentIndex(0)
-        self.comboBox_channel_order_561.setCurrentIndex(0)
-        self.comboBox_channel_order_640.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -1080,7 +1090,7 @@ class Ui_MainWindow(object):
         self.actionData_path.setText(QCoreApplication.translate("MainWindow", u"Data path", None))
         self.actionExperience_Name.setText(QCoreApplication.translate("MainWindow", u"Experience Name", None))
         self.label_saving.setText(QCoreApplication.translate("MainWindow", u"Saving", None))
-        self.label_data_path.setText(QCoreApplication.translate("MainWindow", u"D:/EqSibarita/Python/Control_Microscope_GUI/Images", None))
+        self.label_data_path.setText(QCoreApplication.translate("MainWindow", u"D:/Projets_Python/OPM_GUI/Images", None))
         self.pb_data_path.setText(QCoreApplication.translate("MainWindow", u"...", None))
         self.lineEdit_exp_name.setText(QCoreApplication.translate("MainWindow", u"Image", None))
         self.comboBox_setup.setItemText(0, QCoreApplication.translate("MainWindow", u"Armin", None))
@@ -1130,43 +1140,20 @@ class Ui_MainWindow(object):
         self.comboBox_binning.setItemText(1, QCoreApplication.translate("MainWindow", u"2", None))
         self.comboBox_binning.setItemText(2, QCoreApplication.translate("MainWindow", u"4", None))
 
+#if QT_CONFIG(tooltip)
+        self.comboBox_binning.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Adjust the binning on the camera sensor. <span style=\" font-weight:600;\">NOTE:</span> the pixels and position, horizontal and vertical, doesn't take in account the binning</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.label.setText(QCoreApplication.translate("MainWindow", u"Binning", None))
-        self.label_scanner_settings.setText(QCoreApplication.translate("MainWindow", u"Scanner Settings", None))
-#if QT_CONFIG(tooltip)
-        self.slider_scanner_position.setToolTip(QCoreApplication.translate("MainWindow", u"Adjust the scanner position.\n"
-"Just for preview.", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_scanner_position.setText(QCoreApplication.translate("MainWindow", u"Scanner\n"
-"Position (\u00b5m)", None))
-#if QT_CONFIG(tooltip)
-        self.spinBox_scanner_position.setToolTip(QCoreApplication.translate("MainWindow", u"Adjust the scanner position.\n"
-"Just for preview.", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.pb_scanner_center.setToolTip(QCoreApplication.translate("MainWindow", u"Center the scanner position (set to 0).", None))
-#endif // QT_CONFIG(tooltip)
-        self.pb_scanner_center.setText(QCoreApplication.translate("MainWindow", u"Center", None))
-        self.label_scan_range.setText(QCoreApplication.translate("MainWindow", u"Scan Range (\u00b5m)", None))
-#if QT_CONFIG(tooltip)
-        self.spinBox_scan_range.setToolTip(QCoreApplication.translate("MainWindow", u"Set the scan range around the center (0 \u00b5m).\n"
-"This defines the maximum displacement during scanning.", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_timelaps_settings.setText(QCoreApplication.translate("MainWindow", u"Timelaps Settings", None))
-#if QT_CONFIG(tooltip)
-        self.spinBox_timepoints.setToolTip(QCoreApplication.translate("MainWindow", u"Set the number of timepoints in the timelapse experiment.\n"
-"This value is linked to the total duration and interval.", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_timepoints.setText(QCoreApplication.translate("MainWindow", u"Timepoints", None))
-        self.radioButton_time_intervals.setText("")
-#if QT_CONFIG(tooltip)
-        self.spinBox_time_interval.setToolTip(QCoreApplication.translate("MainWindow", u"Set the time interval between two consecutive timepoints.\n"
-"This value is linked to the total duration.", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_time_interval.setText(QCoreApplication.translate("MainWindow", u"Time interval (s)", None))
-        self.radioButton_total_duration.setText("")
-        self.timeEdit_total_duration.setDisplayFormat(QCoreApplication.translate("MainWindow", u"HH:mm:ss.zzz", None))
-        self.label_total_duration.setText(QCoreApplication.translate("MainWindow", u"Total duration", None))
         self.label_channels_settings.setText(QCoreApplication.translate("MainWindow", u"Channels Settings", None))
+        self.lineEdit_channel_name.setText("")
+        self.comboBox_channel_name.setItemText(0, QCoreApplication.translate("MainWindow", u"BFP", None))
+        self.comboBox_channel_name.setItemText(1, QCoreApplication.translate("MainWindow", u"GFP", None))
+        self.comboBox_channel_name.setItemText(2, QCoreApplication.translate("MainWindow", u"CY3.5", None))
+        self.comboBox_channel_name.setItemText(3, QCoreApplication.translate("MainWindow", u"TexRed", None))
+
+        self.pb_channel_save.setText(QCoreApplication.translate("MainWindow", u"Save", None))
+        self.pb_channel_add.setText(QCoreApplication.translate("MainWindow", u"Add", None))
+        self.pb_channel_remove.setText(QCoreApplication.translate("MainWindow", u"Remove", None))
 #if QT_CONFIG(tooltip)
         self.checkBox_laser_405.setToolTip(QCoreApplication.translate("MainWindow", u"Enable or disable the 405 nm channel for acquisition (Snoutscope protocol).", None))
 #endif // QT_CONFIG(tooltip)
@@ -1208,77 +1195,61 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(tooltip)
         self.slider_laser_640.setToolTip(QCoreApplication.translate("MainWindow", u"Set the laser power for the 640 nm channel as a percentage of its maximum output.", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_camera.setText(QCoreApplication.translate("MainWindow", u"Camera", None))
-        self.comboBox_Camera_405.setItemText(0, QCoreApplication.translate("MainWindow", u"Cam 1", None))
+        self.label_channel_filter.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
+        self.comboBox_channel_filter.setItemText(0, QCoreApplication.translate("MainWindow", u"BFP", None))
+        self.comboBox_channel_filter.setItemText(1, QCoreApplication.translate("MainWindow", u"GFP", None))
+        self.comboBox_channel_filter.setItemText(2, QCoreApplication.translate("MainWindow", u"CY3.5", None))
+        self.comboBox_channel_filter.setItemText(3, QCoreApplication.translate("MainWindow", u"TexRed", None))
+
+        self.comboBox_channel_camera.setItemText(0, QCoreApplication.translate("MainWindow", u"Camera 1", None))
 
 #if QT_CONFIG(tooltip)
-        self.comboBox_Camera_405.setToolTip(QCoreApplication.translate("MainWindow", u"Select the camera to be used for the 405 nm channel.", None))
-#endif // QT_CONFIG(tooltip)
-        self.comboBox_Camera_488.setItemText(0, QCoreApplication.translate("MainWindow", u"Cam 1", None))
-
-#if QT_CONFIG(tooltip)
-        self.comboBox_Camera_488.setToolTip(QCoreApplication.translate("MainWindow", u"Select the camera to be used for the 488 nm channel.", None))
-#endif // QT_CONFIG(tooltip)
-        self.comboBox_Camera_561.setItemText(0, QCoreApplication.translate("MainWindow", u"Cam 1", None))
-
-#if QT_CONFIG(tooltip)
-        self.comboBox_Camera_561.setToolTip(QCoreApplication.translate("MainWindow", u"Select the camera to be used for the 561 nm channel.", None))
-#endif // QT_CONFIG(tooltip)
-        self.comboBox_Camera_640.setItemText(0, QCoreApplication.translate("MainWindow", u"Cam 1", None))
-
-#if QT_CONFIG(tooltip)
-        self.comboBox_Camera_640.setToolTip(QCoreApplication.translate("MainWindow", u"Select the camera to be used for the 640 nm channel.", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_exposure_time.setText(QCoreApplication.translate("MainWindow", u"Exposure Time (ms)", None))
-#if QT_CONFIG(tooltip)
-        self.spinBox_exposure_time_405.setToolTip(QCoreApplication.translate("MainWindow", u"Set the exposure time for the 405 nm channel in milliseconds.", None))
+        self.comboBox_channel_camera.setToolTip(QCoreApplication.translate("MainWindow", u"Select the camera to be used for the 405 nm channel.", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        self.spinBox_exposure_time_488.setToolTip(QCoreApplication.translate("MainWindow", u"Set the exposure time for the 488 nm channel in milliseconds.", None))
+        self.spinBox_channel_exposure_time.setToolTip(QCoreApplication.translate("MainWindow", u"Set the exposure time for the 405 nm channel in milliseconds.", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_channel_exposure_time.setText(QCoreApplication.translate("MainWindow", u"Exposure Time (ms)", None))
+        self.label_timelaps_settings.setText(QCoreApplication.translate("MainWindow", u"Timelaps Settings", None))
+#if QT_CONFIG(tooltip)
+        self.spinBox_timepoints.setToolTip(QCoreApplication.translate("MainWindow", u"Set the number of timepoints in the timelapse experiment.\n"
+"This value is linked to the total duration and interval.", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_timepoints.setText(QCoreApplication.translate("MainWindow", u"Timepoints", None))
+        self.radioButton_time_intervals.setText("")
+#if QT_CONFIG(tooltip)
+        self.spinBox_time_interval.setToolTip(QCoreApplication.translate("MainWindow", u"Set the time interval between two consecutive timepoints.\n"
+"This value is linked to the total duration.", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_time_interval.setText(QCoreApplication.translate("MainWindow", u"Time interval (s)", None))
+        self.radioButton_total_duration.setText("")
+        self.timeEdit_total_duration.setDisplayFormat(QCoreApplication.translate("MainWindow", u"HH:mm:ss.zzz", None))
+        self.label_total_duration.setText(QCoreApplication.translate("MainWindow", u"Total duration", None))
+        self.label_scanner_settings.setText(QCoreApplication.translate("MainWindow", u"Scanner Settings", None))
+#if QT_CONFIG(tooltip)
+        self.slider_scanner_position.setToolTip(QCoreApplication.translate("MainWindow", u"Adjust the scanner position.\n"
+"Just for preview.", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_scanner_position.setText(QCoreApplication.translate("MainWindow", u"Scanner\n"
+"Position (\u00b5m)", None))
+#if QT_CONFIG(tooltip)
+        self.spinBox_scanner_position.setToolTip(QCoreApplication.translate("MainWindow", u"Adjust the scanner position.\n"
+"Just for preview.", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        self.spinBox_exposure_time_561.setToolTip(QCoreApplication.translate("MainWindow", u"Set the exposure time for the 561 nm channel in milliseconds.", None))
+        self.pb_scanner_center.setToolTip(QCoreApplication.translate("MainWindow", u"Center the scanner position (set to 0).", None))
 #endif // QT_CONFIG(tooltip)
+        self.pb_scanner_center.setText(QCoreApplication.translate("MainWindow", u"Center", None))
+        self.label_scan_range.setText(QCoreApplication.translate("MainWindow", u"Scan Range (\u00b5m)", None))
 #if QT_CONFIG(tooltip)
-        self.spinBox_exposure_time_640.setToolTip(QCoreApplication.translate("MainWindow", u"Set the exposure time for the 640 nm channel in milliseconds.", None))
+        self.spinBox_scan_range.setToolTip(QCoreApplication.translate("MainWindow", u"Set the scan range around the center (0 \u00b5m).\n"
+"This defines the maximum displacement during scanning.", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_volume_duration.setText(QCoreApplication.translate("MainWindow", u"Estimated volume duration: 0.000 s", None))
-        self.comboBox_channel_order_405.setItemText(0, QCoreApplication.translate("MainWindow", u"None", None))
-        self.comboBox_channel_order_405.setItemText(1, QCoreApplication.translate("MainWindow", u"1", None))
-        self.comboBox_channel_order_405.setItemText(2, QCoreApplication.translate("MainWindow", u"2", None))
-        self.comboBox_channel_order_405.setItemText(3, QCoreApplication.translate("MainWindow", u"3", None))
-        self.comboBox_channel_order_405.setItemText(4, QCoreApplication.translate("MainWindow", u"4", None))
-
-#if QT_CONFIG(tooltip)
-        self.comboBox_channel_order_405.setToolTip(QCoreApplication.translate("MainWindow", u"Select the execution order of the 405 nm channel on Thibault's setup during multidimensional acquisition.", None))
-#endif // QT_CONFIG(tooltip)
-        self.comboBox_channel_order_488.setItemText(0, QCoreApplication.translate("MainWindow", u"None", None))
-        self.comboBox_channel_order_488.setItemText(1, QCoreApplication.translate("MainWindow", u"1", None))
-        self.comboBox_channel_order_488.setItemText(2, QCoreApplication.translate("MainWindow", u"2", None))
-        self.comboBox_channel_order_488.setItemText(3, QCoreApplication.translate("MainWindow", u"3", None))
-        self.comboBox_channel_order_488.setItemText(4, QCoreApplication.translate("MainWindow", u"4", None))
-
-#if QT_CONFIG(tooltip)
-        self.comboBox_channel_order_488.setToolTip(QCoreApplication.translate("MainWindow", u"Select the execution order of the 488 nm channel on Thibault's setup during multidimensional acquisition.", None))
-#endif // QT_CONFIG(tooltip)
-        self.comboBox_channel_order_561.setItemText(0, QCoreApplication.translate("MainWindow", u"None", None))
-        self.comboBox_channel_order_561.setItemText(1, QCoreApplication.translate("MainWindow", u"1", None))
-        self.comboBox_channel_order_561.setItemText(2, QCoreApplication.translate("MainWindow", u"2", None))
-        self.comboBox_channel_order_561.setItemText(3, QCoreApplication.translate("MainWindow", u"3", None))
-        self.comboBox_channel_order_561.setItemText(4, QCoreApplication.translate("MainWindow", u"4", None))
-
-#if QT_CONFIG(tooltip)
-        self.comboBox_channel_order_561.setToolTip(QCoreApplication.translate("MainWindow", u"561 nm channel on Thibault's setup during multidimensional acquisition.", None))
-#endif // QT_CONFIG(tooltip)
-        self.comboBox_channel_order_640.setItemText(0, QCoreApplication.translate("MainWindow", u"None", None))
-        self.comboBox_channel_order_640.setItemText(1, QCoreApplication.translate("MainWindow", u"1", None))
-        self.comboBox_channel_order_640.setItemText(2, QCoreApplication.translate("MainWindow", u"2", None))
-        self.comboBox_channel_order_640.setItemText(3, QCoreApplication.translate("MainWindow", u"3", None))
-        self.comboBox_channel_order_640.setItemText(4, QCoreApplication.translate("MainWindow", u"4", None))
-
-#if QT_CONFIG(tooltip)
-        self.comboBox_channel_order_640.setToolTip(QCoreApplication.translate("MainWindow", u"Select the execution order of the 640 nm channel on Thibault's setup during multidimensional acquisition.", None))
-#endif // QT_CONFIG(tooltip)
+        self.label_number_channels.setText(QCoreApplication.translate("MainWindow", u"Number of channels", None))
+        self.groupBox_channel_order.setTitle(QCoreApplication.translate("MainWindow", u"Channels orders", None))
+        self.label_volume_duration.setText(QCoreApplication.translate("MainWindow", u"Frame thickness \u00b5m\n"
+"Number of frames/volumes\n"
+"Estimated volume duration: 0.000 s", None))
         self.label_image_preview.setText("")
         self.checkBox_show_saturation.setText(QCoreApplication.translate("MainWindow", u"Show saturation", None))
 #if QT_CONFIG(tooltip)
@@ -1320,10 +1291,10 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.pb_stop_preview.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
         self.comboBox_preview_channel.setItemText(0, QCoreApplication.translate("MainWindow", u"Preview Channel", None))
-        self.comboBox_preview_channel.setItemText(1, QCoreApplication.translate("MainWindow", u"405", None))
-        self.comboBox_preview_channel.setItemText(2, QCoreApplication.translate("MainWindow", u"488", None))
-        self.comboBox_preview_channel.setItemText(3, QCoreApplication.translate("MainWindow", u"561", None))
-        self.comboBox_preview_channel.setItemText(4, QCoreApplication.translate("MainWindow", u"640", None))
+        self.comboBox_preview_channel.setItemText(1, QCoreApplication.translate("MainWindow", u"BFP", None))
+        self.comboBox_preview_channel.setItemText(2, QCoreApplication.translate("MainWindow", u"GFP", None))
+        self.comboBox_preview_channel.setItemText(3, QCoreApplication.translate("MainWindow", u"CY3.5", None))
+        self.comboBox_preview_channel.setItemText(4, QCoreApplication.translate("MainWindow", u"TexRed", None))
 
         self.comboBox_preview_zoom.setItemText(0, QCoreApplication.translate("MainWindow", u"Image zoom", None))
         self.comboBox_preview_zoom.setItemText(1, QCoreApplication.translate("MainWindow", u"2x", None))

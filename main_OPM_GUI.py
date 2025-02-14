@@ -26,10 +26,11 @@ import tifffile
 from PySide6 import QtWidgets
 from PySide6.QtCore import QCoreApplication, QEventLoop, QTimer
 from PySide6.QtGui import QPixmap, QImage
-from PySide6.QtWidgets import QFileDialog, QMessageBox 
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
 
 from Functions_UI import functions_ui, HistogramThread
-from Functions_Hardware import camera, CameraThread, functions_camera, functions_daq, DAQ
+from Functions_Hardware import CameraThread, functions_camera, functions_daq, DAQ
+from configs.config import channel_config, camera
 from hardware.hamamatsu import HamamatsuCamera
 from ui_Control_Microscope_Main import Ui_MainWindow
 
@@ -62,12 +63,40 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.setup = "Thibault" #Permet de choisir entre le Setup de Thibault et celui d'Armin
         
-        ## Camera
+        ## Initialisation of the cameras
         
         self.camera = [camera(camera_id = 0 ),
                        camera(camera_id = 1)]
         
         self.camera_id = 0 # index de la caméra actuellement sélectionnée
+        
+        ## initialisation of the channels
+        
+        self.lasers = ["405","488","561","640"]
+        
+        self.channel_names = ['BFP','GFP','CY3.5','TexRed']
+        
+        self.channel = {}
+        
+        for channel in self.channel_names:
+            self.channel[channel] = channel_config(channel, self.lasers)
+        
+            ### Library to set the channels
+        
+        self.checkBox_laser = {"405" : self.checkBox_laser_405,
+                               "488" : self.checkBox_laser_488,
+                               "561" : self.checkBox_laser_561,
+                               "640" : self.checkBox_laser_640
+                               } #Dictionnary of the laser checkboxes
+        
+        self.spinBox_laser_power = {"405": self.spinBox_laser_405,
+                                    "488" : self.spinBox_laser_488,
+                                    "561" : self.spinBox_laser_561,
+                                    "640" : self.spinBox_laser_640
+                                    } # Dictionnary of the laser power spin boxes
+        
+        self.comboBoxes_channel_order = [] # Liste des combo boxes permettant de sélectionner les cannaux actifs
+        self.active_channels = [] #contiendra la liste et l'ordre des cannaux activés
         
         ## Scanner
         
@@ -79,40 +108,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.timepoints = 10 # Nombre de points dans le timelaps
         self.time_intervals = 1 #temps entre deux volumes du timelaps en secondes
         self.total_duration = 10 #Durée totale du timelaps en secondes
-        
-        ## Channels Settings
-        
-        self.is_active_laser = {"405" : False,
-                                  "488" : False,
-                                  "561" : False,
-                                  "640" : False
-                                  } #Dictionnary of the active channels
-        
-        self.channel_order = {"405" : "None",
-                              "488" : "None",
-                              "561" : "None",
-                              "640" : "None"
-                              } #Dictionnary of the channel order value
-        
-        ### 405 channel
-        self.laser_405_power = 0 #Laser power in %
-        self.camera_405 = 0 #Identification of the camera used for this channel
-        self.exposure_time_405 = 8.7 #Exposure time in ms
-        
-        ### 488 channel
-        self.laser_488_power = 0  #Laser power in %
-        self.camera_488 = 0 #Identification of the camera used for this channel
-        self.exposure_time_488 = 8.7 #Exposure time in ms
-        
-        ### 561 channel
-        self.laser_561_power = 0 #Laser power in %
-        self.camera_561 = 0 #Identification of the camera used for this channel
-        self.exposure_time_561 = 8.7 #Exposure time in ms
-
-        ### 640 channel
-        self.laser_640_power = 0 #Laser power in %
-        self.camera_640 = 0 #Identification of the camera used for this channel
-        self.exposure_time_640 = 8.7 #Exposure time in ms
         
         #Preview
         self.is_preview = False # Si une image est affichée dans le preview
@@ -126,37 +121,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.max_grayscale = 65535 #valeur de gris la plus haute du preview
         self.preview_zoom = 0.25 #rescale factor of the preview ()
         self.look_up_table = 'grayscale'
-        
-            ## Library used to set the interface
-        
-                ### for the channels
-        
-        self.checkBox_laser = {"405" : self.checkBox_laser_405,
-                               "488" : self.checkBox_laser_488,
-                               "561" : self.checkBox_laser_561,
-                               "640" : self.checkBox_laser_640
-                               } #Dictionnary of the laser checkboxes
-        
-        self.comboBox_camera_list = {"405": self.comboBox_Camera_405,
-                                    "488" : self.comboBox_Camera_488,
-                                    "561" : self.comboBox_Camera_561,
-                                    "640" : self.comboBox_Camera_640
-                                    } # Dictionnary of the camera comboBoxes
-        
-        self.spinBox_exposure_time = {"405": self.spinBox_exposure_time_405,
-                                      "488" : self.spinBox_exposure_time_488,
-                                      "561" : self.spinBox_exposure_time_561,
-                                      "640" : self.spinBox_exposure_time_640,
-                                      None : None
-                                      } #Dictionnaty of the exposure time spinBoxes
-        
-        self.comboBox_channel_values = ["None","1","2","3","4"] #List of the values of the channel comboBoxes
-        
-        self.comboBox_channel = {"405" : self.comboBox_channel_order_405,
-                                 "488" : self.comboBox_channel_order_488,
-                                 "561" : self.comboBox_channel_order_561,
-                                 "640" : self.comboBox_channel_order_640
-                                 } #Dictionnary of the channel comboBoxes
         
         #########################################
         ## Fonctions appelées pour les boutons ##
@@ -177,48 +141,43 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_center_FOV.clicked.connect(self.pb_center_FOV_clicked)
         self.comboBox_binning.currentIndexChanged.connect(self.comboBox_binning_value_changed)
         
-            ## Scanner
-        self.spinBox_scanner_position.valueChanged.connect(self.spinBox_scanner_position_value_changed)
-        self.pb_scanner_center.clicked.connect(self.pb_scanner_center_clicked_connect)
-        self.spinBox_scan_range.valueChanged.connect(self.spinBox_scan_range_value_changed)
-        
             ## Timelaps settings
         self.spinBox_timepoints.editingFinished.connect(self.spinBox_timepoints_value_changed)
         self.spinBox_time_interval.editingFinished.connect(self.spinBox_time_interval_value_changed)
         self.timeEdit_total_duration.editingFinished.connect(self.timeEdit_total_duration_value_changed)
         
+            ## Scanner
+        self.spinBox_scanner_position.valueChanged.connect(self.spinBox_scanner_position_value_changed)
+        self.pb_scanner_center.clicked.connect(self.pb_scanner_center_clicked_connect)
+        self.spinBox_scan_range.valueChanged.connect(self.spinBox_scan_range_value_changed)
+        
             ## Channels settings
+                ### Channel
+        self.comboBox_channel_name.currentIndexChanged.connect(self.comboBox_channel_name_update)
+        self.pb_channel_save.clicked.connect(self.pb_channel_save_clicked_connect)
+        self.pb_channel_add.clicked.connect(self.pb_channel_add_clicked_connect)
+        self.pb_channel_remove.clicked.connect(self.pb_channel_remove_clicked_connect)
+
+                ### laser check boxes ans spin boxes
+        self.checkBox_laser_405.stateChanged.connect(self.checkBox_laser_changed)
+        self.checkBox_laser_488.stateChanged.connect(self.checkBox_laser_changed)
+        self.checkBox_laser_561.stateChanged.connect(self.checkBox_laser_changed)
+        self.checkBox_laser_640.stateChanged.connect(self.checkBox_laser_changed)
         
-                ### 405 channel checkBox_laser_value_changed
         self.spinBox_laser_405.valueChanged.connect(self.spinBox_laser_405_value_changed)
-        self.comboBox_Camera_405.currentIndexChanged.connect(self.comboBox_Camera_405_value_changed)
-        self.spinBox_exposure_time_405.valueChanged.connect(self.spinBox_exposure_time_405_value_changed)
-        self.comboBox_channel_order_405.currentIndexChanged.connect(self.comboBox_channel_update)
-        
-                ### 488 channel
         self.spinBox_laser_488.valueChanged.connect(self.spinBox_laser_488_value_changed)
-        self.comboBox_Camera_488.currentIndexChanged.connect(self.comboBox_Camera_488_value_changed)
-        self.spinBox_exposure_time_488.valueChanged.connect(self.spinBox_exposure_time_488_value_changed)
-        self.comboBox_channel_order_488.currentIndexChanged.connect(self.comboBox_channel_update)
-        
-                ### 561 channel
         self.spinBox_laser_561.valueChanged.connect(self.spinBox_laser_561_value_changed)
-        self.comboBox_Camera_561.currentIndexChanged.connect(self.comboBox_Camera_561_value_changed)
-        self.spinBox_exposure_time_561.valueChanged.connect(self.spinBox_exposure_time_561_value_changed)
-        self.comboBox_channel_order_561.currentIndexChanged.connect(self.comboBox_channel_update)
-        
-                ### 640 channel
         self.spinBox_laser_640.valueChanged.connect(self.spinBox_laser_640_value_changed)
-        self.comboBox_Camera_640.currentIndexChanged.connect(self.comboBox_Camera_640_value_changed)
-        self.spinBox_exposure_time_640.valueChanged.connect(self.spinBox_exposure_time_640_value_changed)
-        self.comboBox_channel_order_640.currentIndexChanged.connect(self.comboBox_channel_update)
+                
+                ### Other parameters
+        self.spinBox_channel_exposure_time.editingFinished.connect(self.spinBox_channel_exposure_time_value_changed)
+        self.comboBox_channel_filter.currentIndexChanged.connect(self.comboBox_channel_filter_update)
         
-                ### Checkboxes laser
-        self.checkBox_laser_405.stateChanged.connect(self.checkBox_laser_value_changed)
-        self.checkBox_laser_488.stateChanged.connect(self.checkBox_laser_value_changed)
-        self.checkBox_laser_561.stateChanged.connect(self.checkBox_laser_value_changed)
-        self.checkBox_laser_640.stateChanged.connect(self.checkBox_laser_value_changed)
-        
+            ## Channel selection and orders
+            
+        self.spinBox_number_channels.valueChanged.connect(self.spinBox_number_channels_value_changed)
+
+
             ## Preview
         self.checkBox_show_saturation.stateChanged.connect(self.checkBox_show_saturation_value_changed)
         self.spinBox_min_grayscale.valueChanged.connect(self.spinBox_grayscale_value_changed)
@@ -491,132 +450,99 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_time_interval.setValue(self.time_intervals)
     
         ## Channels settings
-    
-            ### Check boxes
-            
-    def checkBox_laser_value_changed(self):
-        """
-        Updates the state of laser checkboxes while preventing signal loops.
         
-        This function iterates through all laser checkboxes stored in the `self.checkBox_laser` dictionary.
-        - It temporarily blocks signals to avoid triggering unwanted updates.
-        - If `self.setup` is set to "Thibault", it ensures that only one checkbox is checked.
-        - It then updates the `self.is_active_laser` dictionary to reflect the new checkbox states.
-        - Finally, it re-enables signals.
+            ### channel creation and save
         
-        Dictionaries used:
-        - `self.checkBox_laser`: Maps laser names (keys) to their corresponding `QCheckBox` widgets.
-        - `self.is_active_laser`: Stores the active state (`True`/`False`) of each laser.
+    def comboBox_channel_name_update(self):
+        pass
+    
+    def pb_channel_add_clicked_connect(self):
+        index = self.lineEdit_channel_name.text()
+        self.comboBox_channel_name.addItem(index)
+        self.comboBox_channel_name.setCurrentText(index)
         
-        """
-        for key, laser in self.checkBox_laser.items():
-            
-            laser.blockSignals(True) # Block signals to prevent infinite loops when modifying checkbox states
-            
-            # Specific condition for the "Thibault" setup:
-            # If the checkbox state is already reflected in `self.is_active_laser`, force it to False.
-            if self.setup == "Thibault" :
-                if self.is_active_laser[key] == laser.isChecked():
-                    laser.setChecked(False)
-            
-            self.is_active_laser[key] = laser.isChecked() # Update the dictionary storing the active state of lasers
-            
-            laser.blockSignals(False) # Re-enable signals after modifying the checkbox state
-            
-            if self.is_preview:
-                # TODO: allume ou éteint le laser sélectionné
-                pass
-                 
-                ### spinBox Laser Power
-    """
-    These functions handle value changes for laser power spin boxes.
-    
-    Each function corresponds to a specific laser wavelength (405 nm, 488 nm, 561 nm, or 640 nm)
-    and updates the associated power variable when the user modifies the spin box value.
-    
-    """
-    
-    def spinBox_laser_405_value_changed(self):
-        self.laser_488_power = self.spinBox_laser_405.value()
-        
-    def spinBox_laser_488_value_changed(self):
-        self.laser_488_power = self.spinBox_laser_405.value()
-        
-    def spinBox_laser_561_value_changed(self):
-        self.laser_488_power = self.spinBox_laser_405.value()
-        
-    def spinBox_laser_640_value_changed(self):
-        self.laser_488_power = self.spinBox_laser_405.value()
-    
-            ### comboBox camera
-    """
-    These functions handle value changes for camera combo boxes.
-    
-    Each function corresponds to a specific laser wavelength (405 nm, 488 nm, 561 nm, or 640 nm)
-    and updates the associated camera when the user modifies the combo box.
+        self.channel[index] = channel_config(index, self.lasers)
 
-    """
     
-    def comboBox_Camera_405_value_changed(self):
-        self.camera_405 = self.comboBox_Camera_405.currentIndex()
+    def pb_channel_remove_clicked_connect(self):
+        channel_id = self.comboBox_channel_name.currentText()
+        index = self.comboBox_channel_name.currentIndex()
         
-    def comboBox_Camera_488_value_changed(self):
-        self.camera_488 = self.comboBox_Camera_488.currentIndex()
-        
-    def comboBox_Camera_561_value_changed(self):
-        self.camera_561 = self.comboBox_Camera_561.currentIndex()
-        
-    def comboBox_Camera_640_value_changed(self):
-        self.camera_640 = self.comboBox_Camera_640.currentIndex()
-        
-            ### Exposure time
-    """
-    These functions handle value changes for exposure time spin boxes.
-    
-    Each function corresponds to a specific laser wavelength (405 nm, 488 nm, 561 nm, or 640 nm)
-    and updates the associated exposure time when the user modifies the spin box value.
-    
-    """
+        if index >= 0:
+            self.comboBox_channel_name.removeItem(index)
+            self.channel.pop(channel_id, None)
             
-    def spinBox_exposure_time_405_value_changed(self):
-        self.exposure_time_405 = self.spinBox_exposure_time_405.value()
-        
-    def spinBox_exposure_time_488_value_changed(self):
-        self.exposure_time_488 = self.spinBox_exposure_time_488.value()
-        
-    def spinBox_exposure_time_561_value_changed(self):
-        self.exposure_time_561 = self.spinBox_exposure_time_561.value()
-        
-    def spinBox_exposure_time_640_value_changed(self):
-        self.exposure_time_640 = self.spinBox_exposure_time_640.value()
+        print(list(self.channel))
+
     
-        ### comboBox channel order
+    
+    def pb_channel_save_clicked_connect(self):
+        channel = self.comboBox_channel_name.currentText()
         
-    def comboBox_channel_update(self): #J'ai réalisé cette fonction grace à chatGPT
+        self.channel[channel].camera = self.comboBox_channel_camera.currentIndex()
+        self.channel[channel].exposure_time = self.spinBox_channel_exposure_time.value()
+        self.channel[channel].filter = self.comboBox_channel_filter.currentText()
+        for laser in self.lasers :
+            self.channel[channel].laser_is_active[laser] = self.checkBox_laser[laser].isChecked()
+            self.channel[channel].laser_power[laser] = self.spinBox_laser_power[laser].value()
+    
+    def checkBox_laser_changed(self):
+        pass
+
+    def spinBox_laser_405_value_changed(self):
+        pass
+    
+    def spinBox_laser_488_value_changed(self):
+        pass
+    
+    def spinBox_laser_561_value_changed(self):
+        pass
+    
+    def spinBox_laser_640_value_changed(self):
+        pass
+        
+    def spinBox_channel_exposure_time_value_changed(self):
+        pass
+    
+    def comboBox_channel_filter_update(self):
+        pass
+    
+    def spinBox_number_channels_value_changed(self):
         """
-        Updates the available options in each QComboBox for channel_order to ensure that a value 
-        (except "None") is not selected in more than one combo box.
-    
-        This function:
-        - Updates the `self.channel_order` dictionary with the current selections.
-        - Removes values already selected in other combo boxes from the available choices.
-        - Ensures that "None" remains selectable in all combo boxes.
-        - Blocks signals temporarily to avoid triggering recursive updates.
+        Updates the number of QComboBoxes based on the value of spinBox_number_channels.
+        Preserves the current selections of existing QComboBoxes when adding or removing them.
         """
+        # Save current selection
+        current_selections = [comboBox.currentText() for comboBox in self.comboBoxes_channel_order]
         
-        for key, combo in self.comboBox_channel.items():
-            self.channel_order[key] = combo.currentText()
-    
-        selected_values = {combo.currentText() for combo in self.comboBox_channel.values()} - {"None"} #Get value used in other comboBox
+        for comboBox in self.comboBoxes_channel_order:
+            self.verticalLayout_2.removeWidget(comboBox)
+            comboBox.deleteLater()
+            
+        # Clear the list of QComboBoxes
+        self.comboBoxes_channel_order.clear()
         
-        for combo in self.comboBox_channel.values(): #For all comboBox in the library self.comboBox_channel
-            current_value = combo.currentText() #Get the actual value
+        # Add the appropriate number of QComboBoxes
+        for i in range(self.spinBox_number_channels.value()):
+            comboBox = QComboBox()
+            comboBox.addItems(['None'] + self.channel_names) # Choix parmis les canneaux proposés
+            self.verticalLayout_2.addWidget(comboBox)
+            self.comboBoxes_channel_order.append(comboBox)  # Ajouter à la liste
             
-            options_list = ["None"] + [val for val in self.comboBox_channel_values[1:]
-                                       if val not in selected_values or val == current_value]
+            # Connecter le signal pour mettre à jour active_channels
+            comboBox.currentIndexChanged.connect(self.updateActiveChannels)
             
-            functions_ui.set_comboBox(combo, options_list, index = current_value)
-   
+            # Restore selection if available
+            if i < len(current_selections):
+                index = comboBox.findText(current_selections[i])
+                if index >= 0:
+                    comboBox.setCurrentIndex(index)
+                    
+        self.updateActiveChannels()
+        
+    def updateActiveChannels(self):
+        self.active_channels = [comboBox.currentText() for comboBox in self.comboBoxes_channel_order]
+
         ## Preview
         
             ### Changement min / max grayscales
@@ -729,10 +655,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.camera_id = self.comboBox_camera.currentIndex()
             
             # Retrieve the exposure time from the corresponding spinBox, default to 10ms if not availables
-            if self.spinBox_exposure_time[self.preview_channel] is not None:
-                self.camera[self.camera_id].exposure_time = self.spinBox_exposure_time[self.preview_channel].value() /1000
-            else:
-                self.camera[self.camera_id].exposure_time = 0.01
+            # TODO: récupérer le exposure time du channel
+            self.camera[self.camera_id].exposure_time = 0.01
             
             # Initialize the camera object
             self.hcam = HamamatsuCamera()

@@ -333,3 +333,4 @@ class HistogramThread(QThread):
         self.quit()
         self.wait()
         
+        
