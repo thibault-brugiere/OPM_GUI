@@ -21,7 +21,7 @@ class functions_camera():
         """Configure les paramètres de la caméra."""
         camera_id = camera.camera_id
         
-        hcam.setACQMode("run_till_abort", 5, camera.camera_id) #5 correspond au nombre d'images dans le buffer
+        hcam.setACQMode("run_till_abort", 20, camera.camera_id) #5 correspond au nombre d'images dans le buffer
         
         hcam.setPropertyValue("subarray_hsize", camera.hsize, camera_id)
         hcam.setPropertyValue("subarray_vsize", camera.vsize, camera_id)

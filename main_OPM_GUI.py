@@ -17,11 +17,14 @@ TODO :
     
     => Faire afficher le streaming de la camera
 """
-import os
-import sys
 
+import copy
 import numpy as np
+import os
+import pickle
+import sys
 import tifffile
+
 from PySide6 import QtWidgets
 from PySide6.QtCore import QCoreApplication, QEventLoop, QTimer
 from PySide6.QtGui import QPixmap, QImage
@@ -53,34 +56,39 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.status_bar = self.statusBar()
         self.status_bar.showMessage("Ready") #Change le message de la status bar
         
-        ############################
-        ## Création des Variables ##
-        ############################
+    ############################
+    ## Création des Variables ##
+    ############################
         
-        ## Saving
+        ## Saving ##
         
         self.DATA_PATH = "D:/EqSibarita/Python/Control_Microscope_GUI/Images"
         self.EXP_NAME = "Image"
         
         self.setup = "Thibault" #Permet de choisir entre le Setup de Thibault et celui d'Armin
         
-        ## Initialisation of the cameras
+        ## Creation of the cameras
         
         self.camera = [camera(camera_id = 0 ),
                        camera(camera_id = 1)]
         
         self.camera_id = 0 # index de la caméra actuellement sélectionnée
         
-        ## initialisation of the channels
+        ## creation of the channels
         
         self.lasers = ["405","488","561","640"]
         
-        self.channel_names = ['BFP','GFP','CY3.5','TexRed']
+        self.default_channel = {}
+        self.channel_names = []
         
-        self.channel = {}
+        if self.load_channels() == False: #essaie de charger les cannaus, si cela n'est pas le cas
         
-        for channel in self.channel_names:
-            self.channel[channel] = channel_config(channel, self.lasers)
+            self.channel_names = ['BFP','GFP','CY3.5','TexReda']
+            
+            for channel in self.channel_names:
+                self.default_channel[channel] = channel_config(channel, self.lasers)
+                
+        self.channel = self.default_channel
         
             ### Library to set the channels
         
@@ -210,11 +218,16 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_snoutscope_acquisition.clicked.connect(self.pb_snoutscope_acquisition_clicked_connect)
         self.pb_multidimensional_acquisition.clicked.connect(self.pb_multidimensional_acquisition_clicked_connect)
         
-        ###############################################
-        ## Fonctions appelées par les menus d'action ##
-        ###############################################
+    ###############################################
+    ## Fonctions appelées par les menus d'action ##
+    ###############################################
         
         self.action_channel_editor.triggered.connect(self.openChannelEditor)
+        self.action_SaveConfig.triggered.connect(self.save_config)
+        
+    #########################################################
+    ## Fonctions appelées lors de la fermture du programme ##
+    #########################################################
         
     def closeEvent(self, event):
         # Show a dialog box asking the user to close the interface
@@ -227,7 +240,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             # permet d'ajouter du code pour fermer proprement
             if self.is_preview:
                 self.pb_stop_preview_clicked()
-            
+            # self.save_channels()
             event.accept()
         else:
             event.ignore()
@@ -794,15 +807,63 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         print("start multidimensional acquisition")      
         self.status_bar.showMessage("start multidimensional acquisition")
         
-        ###############################################
-        ## Fonctions appelées par les menus d'action ##
-        ###############################################
-        
+    ###############################################
+    ## Fonctions appelées par les menus d'action ##
+    ###############################################
+    
+    def save_config(self):
+        reply = QMessageBox.question(
+            self, 'Confirm changes',
+            "Are you sure you want to save changes?\nIf ou press Yes, orriginal settings will be erased",
+            QMessageBox.Yes | QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+            self.save_channels()
+        elif reply == QMessageBox.No:
+            pass
+    
     def openChannelEditor(self):
-        self.channel_editor = ChannelEditorWindow(self.channel, self.channel_names, self)
+        self.channel_editor = ChannelEditorWindow(self.default_channel, self.channel_names, self)
         self.channel_editor.show()
         pass
     
+    ################################################################
+    ## Fonctions appelées pour sauvegarder et changer l'interface ##
+    ################################################################
+    
+    ## ROI
+    
+    ## Channels
+    
+    def load_channels(self):
+        config_dir = 'configs'
+        file_path = os.path.join(config_dir, 'channels_data.pkl')
+        
+        loaded = False # est-ce que le channel sera chargé ?
+        
+        if os.path.exists(file_path):
+            with open(file_path, 'rb') as file:
+                data = pickle.load(file)
+                self.channel_names = data['channel_names']
+                self.default_channel = data['channel']
+                
+            loaded = True
+            
+        return loaded
+    
+    def save_channels(self):
+        config_dir = 'configs'
+        os.makedirs(config_dir, exist_ok=True)  # Crée le dossier s'il n'existe pas
+        file_path = os.path.join(config_dir, 'channels_data.pkl')
+        
+        channels_data = {'channel' : self.default_channel,
+                         'channel_names' : self.channel_names
+                         }
+        
+        with open(file_path, 'wb') as file:
+            pickle.dump(channels_data, file)
+        
+        
     
 if __name__ == '__main__':
     APP = QtWidgets.QApplication(sys.argv)

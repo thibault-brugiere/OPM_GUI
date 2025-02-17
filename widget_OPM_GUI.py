@@ -75,6 +75,8 @@ class ChannelEditorWindow(QWidget, Ui_Form):
                                        "exposure_time" :        self.spinBox_channel_exposure_time
                                        } # Dictionnary used to set all the interface elements for a given channel
         
+        
+        self.comboBox_channel_name_set_indexes()
         self.comboBox_channel_name_update()
         
         #########################################
@@ -85,7 +87,11 @@ class ChannelEditorWindow(QWidget, Ui_Form):
         self.pb_channel_save.clicked.connect(self.pb_channel_save_clicked_connect)
         self.pb_channel_add.clicked.connect(self.pb_channel_add_clicked_connect)
         self.pb_channel_remove.clicked.connect(self.pb_channel_remove_clicked_connect)
-        
+    
+    def comboBox_channel_name_set_indexes(self):
+        self.comboBox_channel_name.clear()
+        self.comboBox_channel_name.addItems(list(self.channel_names))
+        self.comboBox_channel_name_update()
         
     def comboBox_channel_name_update(self):
         "Configures the interface elements when changing the comboBox_channel from selected channel object."
@@ -135,13 +141,14 @@ class ChannelEditorWindow(QWidget, Ui_Form):
     def closeEvent(self, event):
         reply = QMessageBox.question(
             self, 'Confirmer changes',
-            "Are you sure you want to apply the changes?",
+            "Are you sure you want to apply the changes?\nIf ou press Yes, settings in the main window will be erased",
             QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
             QMessageBox.Cancel
         )
 
         if reply == QMessageBox.Yes:
             self.parent().channel_names = self.channel_names
+            self.parent().default_channel = self.channel
             self.parent().channel = self.channel
             self.parent().comboBox_channel_name_set_indexes()
             event.accept()
