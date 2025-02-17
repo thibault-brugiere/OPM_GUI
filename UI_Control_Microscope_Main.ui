@@ -1618,6 +1618,23 @@ This defines the maximum displacement during scanning.</string>
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="label_channels">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Channels</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_31">
         <item>
          <widget class="QSpinBox" name="spinBox_number_channels">
@@ -1789,11 +1806,49 @@ Estimated volume duration: 0.000 s</string>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <widget class="QCheckBox" name="checkBox_show_saturation">
-            <property name="text">
-             <string>Show saturation</string>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_27">
+            <item>
+             <widget class="QCheckBox" name="checkBox_show_saturation">
+              <property name="text">
+               <string>Show saturation</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="comboBox_preview_zoom">
+              <item>
+               <property name="text">
+                <string>Image zoom</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2x</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1x</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1/2x</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1/3x</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1/4x</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_21">
@@ -1957,73 +2012,6 @@ Pixels above this value will appear white.</string>
               <property name="text">
                <string>Stop</string>
               </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_27">
-            <item>
-             <widget class="QComboBox" name="comboBox_preview_channel">
-              <item>
-               <property name="text">
-                <string>Preview Channel</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>BFP</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>GFP</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>CY3.5</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>TexRed</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="comboBox_preview_zoom">
-              <item>
-               <property name="text">
-                <string>Image zoom</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>2x</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>1x</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>1/2x</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>1/3x</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>1/4x</string>
-               </property>
-              </item>
              </widget>
             </item>
            </layout>

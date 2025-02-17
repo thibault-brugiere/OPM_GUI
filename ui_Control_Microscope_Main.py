@@ -754,6 +754,13 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addWidget(self.line_4)
 
+        self.label_channels = QLabel(self.centralwidget)
+        self.label_channels.setObjectName(u"label_channels")
+        self.label_channels.setFont(font)
+        self.label_channels.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_5.addWidget(self.label_channels)
+
         self.horizontalLayout_31 = QHBoxLayout()
         self.horizontalLayout_31.setObjectName(u"horizontalLayout_31")
         self.spinBox_number_channels = QSpinBox(self.centralwidget)
@@ -829,10 +836,26 @@ class Ui_MainWindow(object):
         self.horizontalLayout_30.setObjectName(u"horizontalLayout_30")
         self.verticalLayout_3 = QVBoxLayout()
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.horizontalLayout_27 = QHBoxLayout()
+        self.horizontalLayout_27.setObjectName(u"horizontalLayout_27")
         self.checkBox_show_saturation = QCheckBox(self.centralwidget)
         self.checkBox_show_saturation.setObjectName(u"checkBox_show_saturation")
 
-        self.verticalLayout_3.addWidget(self.checkBox_show_saturation)
+        self.horizontalLayout_27.addWidget(self.checkBox_show_saturation)
+
+        self.comboBox_preview_zoom = QComboBox(self.centralwidget)
+        self.comboBox_preview_zoom.addItem("")
+        self.comboBox_preview_zoom.addItem("")
+        self.comboBox_preview_zoom.addItem("")
+        self.comboBox_preview_zoom.addItem("")
+        self.comboBox_preview_zoom.addItem("")
+        self.comboBox_preview_zoom.addItem("")
+        self.comboBox_preview_zoom.setObjectName(u"comboBox_preview_zoom")
+
+        self.horizontalLayout_27.addWidget(self.comboBox_preview_zoom)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_27)
 
         self.horizontalLayout_21 = QHBoxLayout()
         self.horizontalLayout_21.setObjectName(u"horizontalLayout_21")
@@ -922,32 +945,6 @@ class Ui_MainWindow(object):
 
 
         self.verticalLayout_3.addLayout(self.horizontalLayout_24)
-
-        self.horizontalLayout_27 = QHBoxLayout()
-        self.horizontalLayout_27.setObjectName(u"horizontalLayout_27")
-        self.comboBox_preview_channel = QComboBox(self.centralwidget)
-        self.comboBox_preview_channel.addItem("")
-        self.comboBox_preview_channel.addItem("")
-        self.comboBox_preview_channel.addItem("")
-        self.comboBox_preview_channel.addItem("")
-        self.comboBox_preview_channel.addItem("")
-        self.comboBox_preview_channel.setObjectName(u"comboBox_preview_channel")
-
-        self.horizontalLayout_27.addWidget(self.comboBox_preview_channel)
-
-        self.comboBox_preview_zoom = QComboBox(self.centralwidget)
-        self.comboBox_preview_zoom.addItem("")
-        self.comboBox_preview_zoom.addItem("")
-        self.comboBox_preview_zoom.addItem("")
-        self.comboBox_preview_zoom.addItem("")
-        self.comboBox_preview_zoom.addItem("")
-        self.comboBox_preview_zoom.addItem("")
-        self.comboBox_preview_zoom.setObjectName(u"comboBox_preview_zoom")
-
-        self.horizontalLayout_27.addWidget(self.comboBox_preview_zoom)
-
-
-        self.verticalLayout_3.addLayout(self.horizontalLayout_27)
 
         self.horizontalLayout_26 = QHBoxLayout()
         self.horizontalLayout_26.setObjectName(u"horizontalLayout_26")
@@ -1245,6 +1242,7 @@ class Ui_MainWindow(object):
         self.spinBox_scan_range.setToolTip(QCoreApplication.translate("MainWindow", u"Set the scan range around the center (0 \u00b5m).\n"
 "This defines the maximum displacement during scanning.", None))
 #endif // QT_CONFIG(tooltip)
+        self.label_channels.setText(QCoreApplication.translate("MainWindow", u"Channels", None))
         self.label_number_channels.setText(QCoreApplication.translate("MainWindow", u"Number of channels", None))
         self.groupBox_channel_order.setTitle(QCoreApplication.translate("MainWindow", u"Channels orders", None))
         self.label_volume_duration.setText(QCoreApplication.translate("MainWindow", u"Frame thickness \u00b5m\n"
@@ -1252,6 +1250,13 @@ class Ui_MainWindow(object):
 "Estimated volume duration: 0.000 s", None))
         self.label_image_preview.setText("")
         self.checkBox_show_saturation.setText(QCoreApplication.translate("MainWindow", u"Show saturation", None))
+        self.comboBox_preview_zoom.setItemText(0, QCoreApplication.translate("MainWindow", u"Image zoom", None))
+        self.comboBox_preview_zoom.setItemText(1, QCoreApplication.translate("MainWindow", u"2x", None))
+        self.comboBox_preview_zoom.setItemText(2, QCoreApplication.translate("MainWindow", u"1x", None))
+        self.comboBox_preview_zoom.setItemText(3, QCoreApplication.translate("MainWindow", u"1/2x", None))
+        self.comboBox_preview_zoom.setItemText(4, QCoreApplication.translate("MainWindow", u"1/3x", None))
+        self.comboBox_preview_zoom.setItemText(5, QCoreApplication.translate("MainWindow", u"1/4x", None))
+
 #if QT_CONFIG(tooltip)
         self.slider_min_grayscale.setToolTip(QCoreApplication.translate("MainWindow", u"Set the minimum grey value for image display.\n"
 "Pixels below this value will appear black.", None))
@@ -1290,19 +1295,6 @@ class Ui_MainWindow(object):
         self.pb_stop_preview.setToolTip(QCoreApplication.translate("MainWindow", u"Start the live preview of the acquisition.", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_stop_preview.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
-        self.comboBox_preview_channel.setItemText(0, QCoreApplication.translate("MainWindow", u"Preview Channel", None))
-        self.comboBox_preview_channel.setItemText(1, QCoreApplication.translate("MainWindow", u"BFP", None))
-        self.comboBox_preview_channel.setItemText(2, QCoreApplication.translate("MainWindow", u"GFP", None))
-        self.comboBox_preview_channel.setItemText(3, QCoreApplication.translate("MainWindow", u"CY3.5", None))
-        self.comboBox_preview_channel.setItemText(4, QCoreApplication.translate("MainWindow", u"TexRed", None))
-
-        self.comboBox_preview_zoom.setItemText(0, QCoreApplication.translate("MainWindow", u"Image zoom", None))
-        self.comboBox_preview_zoom.setItemText(1, QCoreApplication.translate("MainWindow", u"2x", None))
-        self.comboBox_preview_zoom.setItemText(2, QCoreApplication.translate("MainWindow", u"1x", None))
-        self.comboBox_preview_zoom.setItemText(3, QCoreApplication.translate("MainWindow", u"1/2x", None))
-        self.comboBox_preview_zoom.setItemText(4, QCoreApplication.translate("MainWindow", u"1/3x", None))
-        self.comboBox_preview_zoom.setItemText(5, QCoreApplication.translate("MainWindow", u"1/4x", None))
-
 #if QT_CONFIG(tooltip)
         self.pb_snap.setToolTip(QCoreApplication.translate("MainWindow", u"Start the live preview of the acquisition.", None))
 #endif // QT_CONFIG(tooltip)

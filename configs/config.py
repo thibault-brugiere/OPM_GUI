@@ -25,14 +25,18 @@ class channel_config(object):
         self.channel_id = channel_id
         self.is_active = False
         self.channel_order = None
+
+        # Channel set from the interface
+        self.laser_is_active = {}
+        self.laser_power = {}
+        self.filter = 'BFP' #Name of the filter in the weel
         self.camera = 0 #Camera ID
         self.exposure_time = 8.5 #Exposure time in ms
-        self.filter = None #Name of the filter in the weel
-        self.laser_power = {}
-        self.laser_is_active = {}
+        
         for laser in lasers:
-            self.laser_power[laser] = 0
             self.laser_is_active[laser] = False
+            self.laser_power[laser] = 0
+            
 
 class experiment(object):
     "Object discribing experiment settings"
@@ -62,6 +66,6 @@ class microscope_values(object):
     def __init__(self):
         self.sample_pixel_size = 160 #in µm
         self.volts_per_um = 0.05
-        self.volts_per_laser_percent = 0.05
+        self.volts_per_laser_percent = 5 / 100 # 5v max
         
 

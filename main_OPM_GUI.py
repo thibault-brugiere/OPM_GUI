@@ -95,6 +95,13 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                     "640" : self.spinBox_laser_640
                                     } # Dictionnary of the laser power spin boxes
         
+        self.list_channel_interface = { "checkBox_laser" :      self.checkBox_laser,
+                                       "spinBox_laser_power" :  self.spinBox_laser_power,
+                                       "filter" :               self.comboBox_channel_filter,
+                                       "camera" :               self.comboBox_channel_camera,
+                                       "exposure_time" :        self.spinBox_channel_exposure_time
+                                       } # Dictionnary used to set all the interface elements for a given channel
+        
         self.comboBoxes_channel_order = [] # Liste des combo boxes permettant de sélectionner les cannaux actifs
         self.active_channels = [] #contiendra la liste et l'ordre des cannaux activés
         
@@ -114,7 +121,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.is_preview_paused = False # Si le preview est en pause
         self.preview_frame = None # Image actuellement affichée
         self.preview_camera = None # Camera utilisée dans le preview
-        self.preview_channel = None # Canal affiché dans le préview (laser et filtre)
+        self.preview_channel = self.comboBox_channel_name.currentText() # Canal affiché dans le préview (laser et filtre)
         self.histogram_greyvalue_thread = None # Thread utilisé pour créer le graphique des niveaux de gris
         
         self.min_grayscale = 0 #Valeur de gris la plus basse du preview
@@ -164,10 +171,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.checkBox_laser_561.stateChanged.connect(self.checkBox_laser_changed)
         self.checkBox_laser_640.stateChanged.connect(self.checkBox_laser_changed)
         
-        self.spinBox_laser_405.valueChanged.connect(self.spinBox_laser_405_value_changed)
-        self.spinBox_laser_488.valueChanged.connect(self.spinBox_laser_488_value_changed)
-        self.spinBox_laser_561.valueChanged.connect(self.spinBox_laser_561_value_changed)
-        self.spinBox_laser_640.valueChanged.connect(self.spinBox_laser_640_value_changed)
+        self.spinBox_laser_405.valueChanged.connect(self.spinBox_laser_value_changed)
+        self.spinBox_laser_488.valueChanged.connect(self.spinBox_laser_value_changed)
+        self.spinBox_laser_561.valueChanged.connect(self.spinBox_laser_value_changed)
+        self.spinBox_laser_640.valueChanged.connect(self.spinBox_laser_value_changed)
                 
                 ### Other parameters
         self.spinBox_channel_exposure_time.editingFinished.connect(self.spinBox_channel_exposure_time_value_changed)
@@ -176,7 +183,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ## Channel selection and orders
             
         self.spinBox_number_channels.valueChanged.connect(self.spinBox_number_channels_value_changed)
-
 
             ## Preview
         self.checkBox_show_saturation.stateChanged.connect(self.checkBox_show_saturation_value_changed)
@@ -187,7 +193,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_preview.clicked.connect(self.pb_preview_clicked)
         self.pb_pause_preview.clicked.connect(self.pb_pause_preview_clicked)
         self.pb_stop_preview.clicked.connect(self.pb_stop_preview_clicked)
-        self.comboBox_preview_channel.currentIndexChanged.connect(self.comboBox_preview_channel_value_changed)
         self.comboBox_preview_zoom.currentIndexChanged.connect(self.comboBox_preview_zoom_value_changed)
         self.pb_snap.clicked.connect(self.pb_snap_clicked_connect)
         
@@ -235,30 +240,21 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.label_data_path.setText(self.DATA_PATH)
         
     def lineEdit_exp_name_modified(self):
-        """
-        Ensures the experiment name is correctly formatted (optional).
-        """
-        
-        """
-        Checks if the experiment name is valid:
-        - Must not be empty.
-        - Must not contain spaces.
-        - Must not contain forbidden characters.
-        """
+        """Ensures the experiment name is correctly formatted """
         exp_name = self.lineEdit_exp_name.text().strip()
-        
-        forbidden_chars = r'[\/:*?"<>| ]'  # Liste des caractères interdits, y compris l'espace
-    
+
         if not exp_name:
             self.status_bar.showMessage("Experiment name cannot be empty!", 5000)
+            self.lineEdit_exp_name.setText(self.EXP_NAME)
             return
-    
-        if re.search(forbidden_chars, exp_name):
-            self.status_bar.showMessage("Invalid experiment name! Avoid spaces and special characters.", 5000)
-            self.EXP_NAME.setText(re.sub(forbidden_chars, "_", exp_name))  # Remplace les caractères interdits par '_'
-        else:
+            
+        name_ok, self.EXP_NAME = functions_ui.legalize_name(exp_name)
+        
+        if name_ok :
             self.status_bar.showMessage(f"Experiment name set to: {exp_name}", 2000)
-            self.EXP_NAME = exp_name
+        else:
+            self.status_bar.showMessage("Invalid experiment name! Avoid spaces and special characters.", 5000)
+            self.lineEdit_exp_name.setText(self.EXP_NAME)
         
     def comboBox_setup_value_changed(self):
         """
@@ -454,51 +450,49 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ### channel creation and save
         
     def comboBox_channel_name_update(self):
-        pass
+        "Configures the interface elements when changing the comboBox_channel from selected channel object."
+        functions_ui.channel_set_interface(self.list_channel_interface,
+                                           self.channel[self.comboBox_channel_name.currentText()])
+        
+        self.preview_channel = self.comboBox_channel_name.currentText() # Change the current name of the channel used for preview
     
     def pb_channel_add_clicked_connect(self):
-        index = self.lineEdit_channel_name.text()
-        self.comboBox_channel_name.addItem(index)
-        self.comboBox_channel_name.setCurrentText(index)
+        "Saves the settings from the interface elements into a new channel object named from channel_name lineEdit object."
+        index = self.lineEdit_channel_name.text() # get name of the new channel
         
-        self.channel[index] = channel_config(index, self.lasers)
-
-    
+        if not index:
+             self.status_bar.showMessage("channel name cannot be empty!", 5000)
+             return
+        
+        name_ok, index = functions_ui.legalize_name(index)
+        
+        if name_ok == False : self.status_bar.showMessage("Invalid experiment name! Avoid spaces and special characters.", 5000)
+        
+        self.channel[index] = channel_config(index, self.lasers) #Create the new channel
+        functions_ui.save_channel_from_interface(self.list_channel_interface,
+                                                 self.channel[self.comboBox_channel_name.currentText()]) #save the channel parameters
+        
+        self.comboBox_channel_name.addItem(index) # Add the new channel to the comboBox
+        self.comboBox_channel_name.setCurrentText(index) # set the comboBox to this index
+ 
     def pb_channel_remove_clicked_connect(self):
+        "Removes the currently selected channel from the combo box and the channel dictionary."
         channel_id = self.comboBox_channel_name.currentText()
         index = self.comboBox_channel_name.currentIndex()
         
         if index >= 0:
             self.comboBox_channel_name.removeItem(index)
-            self.channel.pop(channel_id, None)
-            
-        print(list(self.channel))
+            self.channel.pop(channel_id, None) # channel.pop remove the channel from the channel dictionnaire
 
-    
-    
     def pb_channel_save_clicked_connect(self):
-        channel = self.comboBox_channel_name.currentText()
-        
-        self.channel[channel].camera = self.comboBox_channel_camera.currentIndex()
-        self.channel[channel].exposure_time = self.spinBox_channel_exposure_time.value()
-        self.channel[channel].filter = self.comboBox_channel_filter.currentText()
-        for laser in self.lasers :
-            self.channel[channel].laser_is_active[laser] = self.checkBox_laser[laser].isChecked()
-            self.channel[channel].laser_power[laser] = self.spinBox_laser_power[laser].value()
+        "Saves the settings from the interface elements into the specified channel object."
+        functions_ui.save_channel_from_interface(self.list_channel_interface,
+                                                 self.channel[self.comboBox_channel_name.currentText()])
     
     def checkBox_laser_changed(self):
         pass
 
-    def spinBox_laser_405_value_changed(self):
-        pass
-    
-    def spinBox_laser_488_value_changed(self):
-        pass
-    
-    def spinBox_laser_561_value_changed(self):
-        pass
-    
-    def spinBox_laser_640_value_changed(self):
+    def spinBox_laser_value_changed(self):
         pass
         
     def spinBox_channel_exposure_time_value_changed(self):
@@ -595,13 +589,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         "Resets the grayscale range to the full 16-bit scale (0 to 65535)."
         self.spinBox_max_grayscale.setValue(65535)
         self.spinBox_min_grayscale.setValue(0)
-    
-        
-    def comboBox_preview_channel_value_changed(self):
-        "Set the channel used in the preview windows"
-        self.preview_channel = self.comboBox_preview_channel.currentText()
-        if self.preview_channel == "Preview Channel":
-            self.preview_channel = None
             
     def comboBox_preview_zoom_value_changed(self):
         self.preview_zoom = [0.25 , 2 , 1 , 0.5 , 1/3 , 0.25][self.comboBox_preview_zoom.currentIndex()]
@@ -781,7 +768,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_exposure_time_640.setDisabled(active)
                     
             #Preview
-        self.comboBox_preview_channel.setDisabled(active)
 
         ## Acquisition
         

@@ -5,12 +5,12 @@ Created on Thu Jan 30 15:50:32 2025
 @author: tbrugiere
 """
 
-from io import BytesIO
+import cv2
 import math
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import numpy as np
-import cv2
+import re
 
 from PySide6.QtCore import QTime, QThread, Signal
 from PySide6.QtGui import QPixmap,QImage
@@ -18,7 +18,28 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphi
 
 class functions_ui():
     
-    # Field of view
+    # Saving
+    
+    def legalize_name(name):
+        """
+        Ensures the name is correctly formatted (optional).
+
+        Checks if the experiment name is valid:
+        - Must not be empty.
+        - Must not contain spaces.
+        - Must not contain forbidden characters.
+        """
+        
+        forbidden_chars = r'[\/:*?"<>| ù]'  # Liste des caractères interdits, y compris l'espace
+
+        if re.search(forbidden_chars, name):
+            name_ok = False
+            NAME = re.sub(forbidden_chars, "_", name)  # Remplace les caractères interdits par '_'
+        else:
+            name_ok = True
+            NAME = name
+        
+        return name_ok, NAME
     
     def set_pos(pos,size,chipsize):
         """
@@ -69,7 +90,48 @@ class functions_ui():
         
         return(size)
     
-    # Timelaps functions
+    # Channels functions
+    
+    def channel_set_interface(channel_list_interface,channel):
+        """
+        Configures the interface elements for a given channel based on the provided channel object.
+        
+        This function updates the state of various UI components defined in the channel_list_interface dictionary
+        to reflect the settings of the specified channel. It sets the checkbox states and spinbox values for lasers,
+        and updates the filter, camera, and exposure time settings.
+        
+        Parameters:
+        channel_list_interface: A dictionary containing UI elements (checkboxes, spinboxes, etc.) for each channel.
+        channel: An object representing the channel with attributes like laser activity, filter, camera, and exposure time.
+        """
+        for laser in channel_list_interface['checkBox_laser'].keys():
+            channel_list_interface['checkBox_laser'][laser].setChecked(channel.laser_is_active[laser])
+            channel_list_interface['spinBox_laser_power'][laser].setValue(channel.laser_power[laser])
+            
+        channel_list_interface['filter'].setCurrentText(channel.filter)
+        channel_list_interface['camera'].setCurrentIndex(channel.camera)
+        channel_list_interface['exposure_time'].setValue(channel.exposure_time)
+        
+    def save_channel_from_interface(channel_list_interface,channel):
+        """
+        Saves the settings from the interface elements into the specified channel object.
+        
+        This function updates the channel object's attributes based on the current state of the UI components
+        defined in the channel_list_interface dictionary. It retrieves the checkbox states and spinbox values for lasers,
+        and updates the filter, camera, and exposure time settings in the channel object.
+        
+        Parameters:
+        channel_list_interface: A dictionary containing UI elements (checkboxes, spinboxes, etc.) for each channel.
+        channel: An object representing the channel with attributes to be updated, such as laser activity, filter, camera, and exposure time.
+        """
+        for laser in channel_list_interface['checkBox_laser'].keys():
+            channel.laser_is_active[laser] = channel_list_interface['checkBox_laser'][laser].isChecked()
+            channel.laser_power[laser] = channel_list_interface['spinBox_laser_power'][laser].value()
+            
+        channel.filter = channel_list_interface['filter'].currentText()
+        channel.camera = channel_list_interface['camera'].currentIndex()
+        channel.exposure_time = channel_list_interface['exposure_time'].value()
+            
     
     def QTime_to_seconds(time):
         """ 
