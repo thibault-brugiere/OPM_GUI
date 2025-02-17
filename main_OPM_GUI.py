@@ -20,7 +20,6 @@ TODO :
 import os
 import sys
 
-import re
 import numpy as np
 import tifffile
 from PySide6 import QtWidgets
@@ -29,10 +28,12 @@ from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
 
 from Functions_UI import functions_ui, HistogramThread
-from Functions_Hardware import CameraThread, functions_camera, functions_daq, DAQ
-from configs.config import channel_config, camera
+from Functions_Hardware import CameraThread, functions_camera
+from configs.config import camera, channel_config
 from hardware.hamamatsu import HamamatsuCamera
+
 from ui_Control_Microscope_Main import Ui_MainWindow
+from widget_OPM_GUI import ChannelEditorWindow
 
 class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     """
@@ -105,23 +106,24 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.comboBoxes_channel_order = [] # Liste des combo boxes permettant de sélectionner les cannaux actifs
         self.active_channels = [] #contiendra la liste et l'ordre des cannaux activés
         
-        ## Scanner
-        
-        self.scanner_position = 0 #Position actuelle du scanner en µm
-        self.scan_range = 20 # taille de la zone scannée en µm
-        
+        self.comboBox_channel_name_set_indexes() #Ajoute tous les cannaux dans la comboBox_channel_name
+                
         ## Timelaps settings
-        
         self.timepoints = 10 # Nombre de points dans le timelaps
         self.time_intervals = 1 #temps entre deux volumes du timelaps en secondes
         self.total_duration = 10 #Durée totale du timelaps en secondes
+        
+        ## Scanner settings
+        self.scanner_position = 0 #Position actuelle du scanner en µm
+        self.scan_range = 20 # taille de la zone scannée en µm
         
         #Preview
         self.is_preview = False # Si une image est affichée dans le preview
         self.is_preview_paused = False # Si le preview est en pause
         self.preview_frame = None # Image actuellement affichée
-        self.preview_camera = None # Camera utilisée dans le preview
+        self.preview_camera = 0 # Camera utilisée dans le preview
         self.preview_channel = self.comboBox_channel_name.currentText() # Canal affiché dans le préview (laser et filtre)
+        
         self.histogram_greyvalue_thread = None # Thread utilisé pour créer le graphique des niveaux de gris
         
         self.min_grayscale = 0 #Valeur de gris la plus basse du preview
@@ -207,6 +209,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ## Acquisition
         self.pb_snoutscope_acquisition.clicked.connect(self.pb_snoutscope_acquisition_clicked_connect)
         self.pb_multidimensional_acquisition.clicked.connect(self.pb_multidimensional_acquisition_clicked_connect)
+        
+        ###############################################
+        ## Fonctions appelées par les menus d'action ##
+        ###############################################
+        
+        self.action_channel_editor.triggered.connect(self.openChannelEditor)
         
     def closeEvent(self, event):
         # Show a dialog box asking the user to close the interface
@@ -448,7 +456,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         ## Channels settings
         
             ### channel creation and save
-        
+    def comboBox_channel_name_set_indexes(self):
+        self.comboBox_channel_name.clear()
+        self.comboBox_channel_name.addItems(list(self.channel.keys()))
+        self.comboBox_channel_name_update()
+    
     def comboBox_channel_name_update(self):
         "Configures the interface elements when changing the comboBox_channel from selected channel object."
         functions_ui.channel_set_interface(self.list_channel_interface,
@@ -474,15 +486,20 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.comboBox_channel_name.addItem(index) # Add the new channel to the comboBox
         self.comboBox_channel_name.setCurrentText(index) # set the comboBox to this index
+        self.lineEdit_channel_name.setText(index)
  
     def pb_channel_remove_clicked_connect(self):
         "Removes the currently selected channel from the combo box and the channel dictionary."
         channel_id = self.comboBox_channel_name.currentText()
         index = self.comboBox_channel_name.currentIndex()
         
-        if index >= 0:
-            self.comboBox_channel_name.removeItem(index)
-            self.channel.pop(channel_id, None) # channel.pop remove the channel from the channel dictionnaire
+        if channel_id not in self.channel_names:
+            if index >= 0:
+                self.comboBox_channel_name.removeItem(index)
+                self.channel.pop(channel_id, None) # channel.pop remove the channel from the channel dictionnaire
+                
+        else:
+            self.status_bar.showMessage("Default channel can not be removed", 5000)
 
     def pb_channel_save_clicked_connect(self):
         "Saves the settings from the interface elements into the specified channel object."
@@ -519,7 +536,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         # Add the appropriate number of QComboBoxes
         for i in range(self.spinBox_number_channels.value()):
             comboBox = QComboBox()
-            comboBox.addItems(['None'] + self.channel_names) # Choix parmis les canneaux proposés
+            comboBox.addItems(['None'] + list(self.channel.keys())) # Choix parmis les canneaux proposés
             self.verticalLayout_2.addWidget(comboBox)
             self.comboBoxes_channel_order.append(comboBox)  # Ajouter à la liste
             
@@ -762,10 +779,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.comboBox_binning.setDisabled(active)
         
             # Channels
-        self.spinBox_exposure_time_405.setDisabled(active)
-        self.spinBox_exposure_time_488.setDisabled(active)
-        self.spinBox_exposure_time_561.setDisabled(active)
-        self.spinBox_exposure_time_640.setDisabled(active)
                     
             #Preview
 
@@ -781,6 +794,16 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         print("start multidimensional acquisition")      
         self.status_bar.showMessage("start multidimensional acquisition")
         
+        ###############################################
+        ## Fonctions appelées par les menus d'action ##
+        ###############################################
+        
+    def openChannelEditor(self):
+        self.channel_editor = ChannelEditorWindow(self.channel, self.channel_names, self)
+        self.channel_editor.show()
+        pass
+    
+    
 if __name__ == '__main__':
     APP = QtWidgets.QApplication(sys.argv)
     FEN = GUI_Microscope()

@@ -44,7 +44,9 @@ class experiment(object):
         self.timepoints = 0
         self.time_intervals = 0
         self.total_duration = 0
+        self.scan_position = 0
         self.scan_range = 0
+        self.channels = []
         
 class microscope(object):
     def __init__(self):

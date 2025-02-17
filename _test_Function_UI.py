@@ -10,6 +10,24 @@ from PySide6.QtCore import QTime
 
 from Functions_UI import functions_ui
 
+def test_legalize_name():
+    name_1 = "bonjour\/:*?<>| ù"
+    
+    name_ok_1, NAME_1 = functions_ui.legalize_name(name_1)
+    
+    name_2 = "bonjour_tout_le_monde"
+    
+    name_ok_2, NAME_2 = functions_ui.legalize_name(name_2)
+    
+    if name_ok_1 == False and NAME_1 == "bonjour__________" and name_ok_2 and NAME_2 == "bonjour_tout_le_monde" :
+        print("Test pass!")
+        
+    else:
+        print("Results are : -" + NAME_1 + "- and -" + NAME_2 +
+              "- and it should be -bonjour__________- and -bonjour_tout_le_monde-")
+    
+    pass
+
 def test_set_pos():
     hchipsize = 4432
     hsize = 1024
@@ -72,12 +90,6 @@ def test_seconds_to_QTime():
     print("Result is : "+str(time)+
           "\nand i should be :"+str(hours)+" , "+str(minutes)+" , "+str(seconds)+" , "+str(milliseconds))
     
-def test_comboBox_channel_indexes():
-    indexes = functions_ui.comboBox_channel_indexes(chanel_order_405 = "2",
-                                                    chanel_order_488 = "None",
-                                                    chanel_order_561 = "4",
-                                                    chanel_order_640 = "1")
-    print(indexes)
     
 def test_create_preview():
     frame = np.load("Images/DefaultExpName.npy")

@@ -2268,6 +2268,8 @@ Acquisition</string>
     <addaction name="action_Camera"/>
     <addaction name="action_DAQ"/>
     <addaction name="action_Lasers"/>
+    <addaction name="action_channel_editor"/>
+    <addaction name="actionPreset_ROI_size"/>
    </widget>
    <addaction name="menuFichier"/>
    <addaction name="menuConfig"/>
@@ -2306,6 +2308,16 @@ Acquisition</string>
   <action name="actionExperience_Name">
    <property name="text">
     <string>Experience Name</string>
+   </property>
+  </action>
+  <action name="action_channel_editor">
+   <property name="text">
+    <string>Channels editor</string>
+   </property>
+  </action>
+  <action name="actionPreset_ROI_size">
+   <property name="text">
+    <string>Preset ROI size</string>
    </property>
   </action>
  </widget>
