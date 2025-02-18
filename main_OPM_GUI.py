@@ -6,10 +6,6 @@ Created on Thu Jan 30 14:00:36 2025
 """
 
 """
-Les différentes parties sont :
-    -Création des variables (64)
-    -Fonctions appelées pour les boutons (150)
-
 Convert file.ui to file.py
 
 pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
@@ -94,7 +90,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.default_channel = {}
         self.channel_names = []
         
-        if self.load_channels() == False: #essaie de charger les cannaux, si cela n'est pas le cas
+        if self.load_channels() == False: #essaie de charger les cannaux, si cela n'est pas le cas, crée ceux par défault
         
             self.channel_names = ['BFP','GFP','CY3.5','TexReda']
             
@@ -143,7 +139,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.is_preview_paused = False # Si le preview est en pause
         self.preview_frame = None # Image actuellement affichée
         self.preview_camera = 0 # Camera utilisée dans le preview
-        self.preview_channel = self.comboBox_channel_name.currentText() # Canal affiché dans le préview (laser et filtre)
+        self.preview_channel = self.channel[self.comboBox_channel_name.currentText()] # Canal affiché dans le préview (laser et filtre)
         
         self.histogram_greyvalue_thread = None # Thread utilisé pour créer le graphique des niveaux de gris
         
@@ -159,19 +155,19 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ## Saving / Setup
         
         self.pb_data_path.clicked.connect(self.pb_data_path_value_changed)
-        self.comboBox_setup.currentIndexChanged.connect(self.comboBox_setup_value_changed)
+        self.comboBox_setup.currentIndexChanged.connect(self.comboBox_setup_index_changed)
         self.lineEdit_exp_name.editingFinished.connect(self.lineEdit_exp_name_modified)
         
             ## Camera
             
-        # TODO: ajouter modification combobox camera => modification camera id
+        self.comboBox_camera.currentIndexChanged.connect(self.comboBox_camera_index_changed)
         self.spinBox_hsize.editingFinished.connect(self.spinBox_hsize_value_changed)
         self.spinBox_hpos.editingFinished.connect(self.spinBox_hpos_value_changed)
         self.spinBox_vsize.editingFinished.connect(self.spinBox_vsize_value_changed)
         self.spinBox_vpos.editingFinished.connect(self.spinBox_vpos_value_changed)
-        self.comboBox_size_preset.currentIndexChanged.connect(self.comboBox_size_preset_value_changed)
+        self.comboBox_size_preset.currentIndexChanged.connect(self.comboBox_size_preset_index_changed)
         self.pb_center_FOV.clicked.connect(self.pb_center_FOV_clicked)
-        self.comboBox_binning.currentIndexChanged.connect(self.comboBox_binning_value_changed)
+        self.comboBox_binning.currentIndexChanged.connect(self.comboBox_binning_index_changed)
         
             ## Timelaps settings
         self.spinBox_timepoints.editingFinished.connect(self.spinBox_timepoints_value_changed)
@@ -185,7 +181,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
             ## Channels settings
                 ### Channel
-        self.comboBox_channel_name.currentIndexChanged.connect(self.comboBox_channel_name_update)
+        self.comboBox_channel_name.currentIndexChanged.connect(self.comboBox_channel_name_index_changed)
         self.pb_channel_save.clicked.connect(self.pb_channel_save_clicked_connect)
         self.pb_channel_add.clicked.connect(self.pb_channel_add_clicked_connect)
         self.pb_channel_remove.clicked.connect(self.pb_channel_remove_clicked_connect)
@@ -203,7 +199,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 
                 ### Other parameters
         self.spinBox_channel_exposure_time.editingFinished.connect(self.spinBox_channel_exposure_time_value_changed)
-        self.comboBox_channel_filter.currentIndexChanged.connect(self.comboBox_channel_filter_update)
+        self.comboBox_channel_filter.currentIndexChanged.connect(self.comboBox_channel_filter_index_changed)
         
             ## Channel selection and orders
             
@@ -218,7 +214,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_preview.clicked.connect(self.pb_preview_clicked)
         self.pb_pause_preview.clicked.connect(self.pb_pause_preview_clicked)
         self.pb_stop_preview.clicked.connect(self.pb_stop_preview_clicked)
-        self.comboBox_preview_zoom.currentIndexChanged.connect(self.comboBox_preview_zoom_value_changed)
+        self.comboBox_preview_zoom.currentIndexChanged.connect(self.comboBox_preview_zoom_index_changed)
         self.pb_snap.clicked.connect(self.pb_snap_clicked_connect)
         
             ## For the preview - Timer pour l'affichage des images
@@ -294,7 +290,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.status_bar.showMessage("Invalid experiment name! Avoid spaces and special characters.", 5000)
             self.lineEdit_exp_name.setText(self.EXP_NAME)
         
-    def comboBox_setup_value_changed(self):
+    def comboBox_setup_index_changed(self):
         """
         Handle changes in the setup selection and update the interface accordingly.
     
@@ -363,58 +359,55 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     The updated values are stored in the `camera` dictionary, indexed by the camera's 
     current selection in `comboBox_camera`.
     """
+    def comboBox_camera_index_changed(self):
+        self.camera_id = self.comboBox_camera.currentIndex()
     
     def spinBox_hsize_value_changed(self):
         'Horizontal size of the ROI'
-        camera_id = self.comboBox_camera.currentIndex()
-        
         # set hsize
         size = functions_ui.set_size(self.spinBox_hsize.value(),
-                                     self.camera[camera_id].hchipsize)
+                                     self.camera[self.camera_id].hchipsize)
         
         self.spinBox_hsize.setValue(size)
         
-        self.camera[camera_id].hsize = size
+        self.camera[self.camera_id].hsize = size
         
         #set hpos
         self.spinBox_hpos_value_changed()
         
     def spinBox_hpos_value_changed(self):
         'Horizontal position of the ROI'
-        camera_id = self.comboBox_camera.currentIndex()
         
         pos = self.spinBox_hpos.value()
-        pos = functions_ui.set_pos(pos, self.camera[camera_id].hsize, self.camera[camera_id].hchipsize)
+        pos = functions_ui.set_pos(pos, self.camera[self.camera_id].hsize, self.camera[self.camera_id].hchipsize)
 
         self.spinBox_hpos.setValue(pos)
         
-        self.camera[camera_id].hpos = pos
+        self.camera[self.camera_id].hpos = pos
         
     def spinBox_vsize_value_changed(self):
         'Vertical size of the ROI'
-        camera_id = self.comboBox_camera.currentIndex()
         
         # set vsize
         size = functions_ui.set_size(self.spinBox_vsize.value(),
-                                     self.camera[camera_id].vchipsize)
+                                     self.camera[self.camera_id].vchipsize)
         
         self.spinBox_vsize.setValue(size)
         
-        self.camera[camera_id].vsize = size
+        self.camera[self.camera_id].vsize = size
         
         #set vpos
         self.spinBox_vpos_value_changed()
         
     def spinBox_vpos_value_changed(self):
         'Vertical position of the ROI'
-        camera_id = self.comboBox_camera.currentIndex()
         
         pos = self.spinBox_vpos.value()
-        pos = functions_ui.set_pos(pos, self.camera[camera_id].vsize, self.camera[camera_id].vchipsize)
+        pos = functions_ui.set_pos(pos, self.camera[self.camera_id].vsize, self.camera[self.camera_id].vchipsize)
 
         self.spinBox_vpos.setValue(pos)
         
-        self.camera[camera_id].vpos = pos
+        self.camera[self.camera_id].vpos = pos
         
     def pb_center_FOV_clicked(self):
         'Center the position of the ROI on the camera chip'
@@ -425,7 +418,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_vpos.setValue(
             (self.camera[self.camera_id].vchipsize - self.spinBox_vsize.value())/2)
         
-    def comboBox_size_preset_value_changed(self):
+    def comboBox_size_preset_index_changed(self):
         'set hpos and vpos to preset values'
         try:
             size = self.comboBox_size_preset.currentText()
@@ -453,12 +446,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         except:
             pass 
         
-    def comboBox_binning_value_changed(self):
+    def comboBox_binning_index_changed(self):
         'Binning of the camera'
-        camera_id = self.comboBox_camera.currentIndex()
         binning = int(self.comboBox_binning.currentText())
 
-        self.camera[camera_id].binning = binning
+        self.camera[self.camera_id].binning = binning
         
         ## Scanner
         
@@ -503,14 +495,14 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     def comboBox_channel_name_set_indexes(self):
         self.comboBox_channel_name.clear()
         self.comboBox_channel_name.addItems(list(self.channel.keys()))
-        self.comboBox_channel_name_update()
+        self.comboBox_channel_name_index_changed()
     
-    def comboBox_channel_name_update(self):
+    def comboBox_channel_name_index_changed(self):
         "Configures the interface elements when changing the comboBox_channel from selected channel object."
         functions_ui.channel_set_interface(self.list_channel_interface,
                                            self.channel[self.comboBox_channel_name.currentText()])
         
-        self.preview_channel = self.comboBox_channel_name.currentText() # Change the current name of the channel used for preview
+        self.preview_channel = self.channel[self.comboBox_channel_name.currentText()] # Change the current name of the channel used for preview
     
     def pb_channel_add_clicked_connect(self):
         "Saves the settings from the interface elements into a new channel object named from channel_name lineEdit object."
@@ -559,7 +551,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     def spinBox_channel_exposure_time_value_changed(self):
         pass
     
-    def comboBox_channel_filter_update(self):
+    def comboBox_channel_filter_index_changed(self):
         pass
     
     def spinBox_number_channels_value_changed(self):
@@ -651,7 +643,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_max_grayscale.setValue(65535)
         self.spinBox_min_grayscale.setValue(0)
             
-    def comboBox_preview_zoom_value_changed(self):
+    def comboBox_preview_zoom_index_changed(self):
         self.preview_zoom = [0.25 , 2 , 1 , 0.5 , 1/3 , 0.25][self.comboBox_preview_zoom.currentIndex()]
             
     def pb_snap_clicked_connect(self):
@@ -698,25 +690,22 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             # Disable different parameters modifications while preview is running
             self.preview_tools_desactivation()
             
-            # Get the currently selected camera index
-            self.camera_id = self.comboBox_camera.currentIndex()
-            
             # Retrieve the exposure time from the corresponding spinBox, default to 10ms if not availables
             # TODO: récupérer le exposure time du channel
-            self.camera[self.camera_id].exposure_time = 0.01
+            self.camera[self.preview_channel.camera].exposure_time = self.preview_channel.exposure_time/1000
             
             # Initialize the camera object
             self.hcam = HamamatsuCamera()
             
             # Create and configure the acquisition thread
-            self.camera_thread = CameraThread(self.hcam, self.camera_id)
+            self.camera_thread = CameraThread(self.hcam, self.preview_channel.camera)
             self.camera_thread.new_frame.connect(self.store_frame) # Get the frame from camera thread process
             
             # Set camera acquisition mode and parameters
-            functions_camera.configure_camera_for_preview(self.hcam, self.camera[self.camera_id])
+            functions_camera.configure_camera_for_preview(self.hcam, self.camera[self.preview_channel.camera])
             
             # Start the camera acquisition
-            self.hcam.startAcquisition(self.camera_id)
+            self.hcam.startAcquisition(self.preview_channel.camera)
             
             # Start the acquisition thread to handle continuous frame capture
             self.camera_thread.start()
@@ -752,8 +741,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.preview_timer.stop()
         self.camera_thread.stop()
         self.camera_thread.wait()
-        self.hcam.stopAcquisition(self.camera_id)
-        self.hcam.closeCamera(self.camera_id)
+        self.hcam.stopAcquisition(self.preview_channel.camera)
+        self.hcam.closeCamera(self.preview_channel.camera)
         
         # Stop displaying hystograms
         self.timer_gray_hystogram.stop()
@@ -822,7 +811,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.comboBox_binning.setDisabled(active)
         
             # Channels
-                    
+        self.comboBox_channel_name.setDisabled(active)
+        self.pb_channel_add.setDisabled(active)
+        self.pb_channel_remove.setDisabled(active)
             #Preview
 
         ## Acquisition
