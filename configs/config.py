@@ -58,9 +58,10 @@ class microscope(object):
         
         self.daq_channels = {"galvo": "Dev1/ao0",
                              "camera_0": "Dev1/port0/line0",
-                             "laser_405" : "Dev1/ao1",
-                             "laser_561" : "Dev1/ao2",
-                             "laser_640" : "Dev1/ao3",
+                             "405" : "Dev1/ao1",
+                             "488" : None,
+                             "561" : "Dev1/ao2",
+                             "640" : "Dev1/ao3",
                              "laser_blanking" : "Dev1/port0/line3"
                              }
         
@@ -69,5 +70,3 @@ class microscope_values(object):
         self.sample_pixel_size = 160 #in µm
         self.volts_per_um = 0.05
         self.volts_per_laser_percent = 5 / 100 # 5v max
-        
-

@@ -31,8 +31,8 @@ from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
 
 from Functions_UI import functions_ui, HistogramThread
-from Functions_Hardware import CameraThread, functions_camera
-from configs.config import camera, channel_config
+from Functions_Hardware import CameraThread, functions_camera, functions_daq
+from configs.config import camera, channel_config, microscope
 from hardware.hamamatsu import HamamatsuCamera
 
 from ui_Control_Microscope_Main import Ui_MainWindow
@@ -62,6 +62,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     ############################
         
         self.load_variables() #Si des variables ont étées enregistrées, elles seront changées ici
+        
+        self.microscope = microscope() # Variable contenant les paramétres du microscope
+        
         ## Saving ##
         
         self.DATA_PATH = "D:/EqSibarita/Python/Control_Microscope_GUI/Images"
@@ -124,6 +127,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.active_channels = [] #contiendra la liste et l'ordre des cannaux activés
         
         self.comboBox_channel_name_set_indexes() #Ajoute tous les cannaux dans la comboBox_channel_name
+        
+        self.laser_emission = False # si le laser est actuellement emmis
                 
         ## Timelaps settings
         self.timepoints = 10 # Nombre de points dans le timelaps
@@ -147,6 +152,13 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.max_grayscale = 65535 #valeur de gris la plus haute du preview
         self.preview_zoom = 0.25 #rescale factor of the preview ()
         self.look_up_table = 'grayscale'
+        
+        # Petites choses de l'interface
+                
+        self.Red_Light_Icon_On = QPixmap('Icons/Red_Light_Icon_On.png')
+        self.Red_Light_Icon_Off = QPixmap('Icons/Red_Light_Icon_Off.png')
+        
+        self.pb_laser_emission_clicked()
         
         #########################################
         ## Fonctions appelées pour les boutons ##
@@ -187,19 +199,22 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_channel_remove.clicked.connect(self.pb_channel_remove_clicked_connect)
 
                 ### laser check boxes ans spin boxes
-        self.checkBox_laser_405.stateChanged.connect(self.checkBox_laser_changed)
-        self.checkBox_laser_488.stateChanged.connect(self.checkBox_laser_changed)
-        self.checkBox_laser_561.stateChanged.connect(self.checkBox_laser_changed)
-        self.checkBox_laser_640.stateChanged.connect(self.checkBox_laser_changed)
-        
-        self.spinBox_laser_405.valueChanged.connect(self.spinBox_laser_value_changed)
-        self.spinBox_laser_488.valueChanged.connect(self.spinBox_laser_value_changed)
-        self.spinBox_laser_561.valueChanged.connect(self.spinBox_laser_value_changed)
-        self.spinBox_laser_640.valueChanged.connect(self.spinBox_laser_value_changed)
+        self.checkBox_laser_405.stateChanged.connect(self.state_laser_405_changed)
+        self.checkBox_laser_488.stateChanged.connect(self.state_laser_488_changed)
+        self.checkBox_laser_561.stateChanged.connect(self.state_laser_561_changed)
+        self.checkBox_laser_640.stateChanged.connect(self.state_laser_640_changed)
+
+        self.spinBox_laser_405.valueChanged.connect(self.state_laser_405_changed)
+        self.spinBox_laser_488.valueChanged.connect(self.state_laser_488_changed)
+        self.spinBox_laser_561.valueChanged.connect(self.state_laser_561_changed)
+        self.spinBox_laser_640.valueChanged.connect(self.state_laser_640_changed)
                 
                 ### Other parameters
         self.spinBox_channel_exposure_time.editingFinished.connect(self.spinBox_channel_exposure_time_value_changed)
         self.comboBox_channel_filter.currentIndexChanged.connect(self.comboBox_channel_filter_index_changed)
+        
+                ### Turn laser on
+        self.pb_laser_emission.clicked.connect(self.pb_laser_emission_clicked)
         
             ## Channel selection and orders
             
@@ -541,12 +556,43 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         "Saves the settings from the interface elements into the specified channel object."
         functions_ui.save_channel_from_interface(self.list_channel_interface,
                                                  self.channel[self.comboBox_channel_name.currentText()])
-    
-    def checkBox_laser_changed(self):
-        pass
+ 
+    def state_laser_405_changed(self):
+        self.state_laser_changed('405')
+            
+    def state_laser_488_changed(self):
+        self.state_laser_changed('488')
+        
+    def state_laser_561_changed(self):
+        self.state_laser_changed('561')
+        
+    def state_laser_640_changed(self):
+        self.state_laser_changed('640')
 
-    def spinBox_laser_value_changed(self):
-        pass
+    def state_laser_changed(self, laser):
+        if self.laser_emission:
+            if self.checkBox_laser[laser].isChecked():
+                if self.microscope.daq_channels[laser] is not None:
+                    functions_daq.analog_out(self.spinBox_laser_power[laser].value()*5/100,self.microscope.daq_channels[laser])
+            else:
+                functions_daq.analog_out(0,self.microscope.daq_channels[laser])
+        
+    def pb_laser_emission_clicked(self):
+        if self.pb_laser_emission.isChecked():
+            self.label_laser_icon.setPixmap(self.Red_Light_Icon_On)
+            self.label_laser.setText("ON ")
+            self.laser_emission = True
+            functions_daq.digital_out(True, self.microscope.daq_channels['laser_blanking'])
+            for laser in self.lasers:
+                self.state_laser_changed(laser)
+        else:
+            self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
+            self.label_laser.setText("OFF")
+            self.laser_emission = False
+            functions_daq.digital_out(False, self.microscope.daq_channels['laser_blanking'])
+            for laser in self.checkBox_laser.keys():
+                if self.microscope.daq_channels[laser] is not None:
+                    functions_daq.analog_out(0,self.microscope.daq_channels[laser])
         
     def spinBox_channel_exposure_time_value_changed(self):
         pass
@@ -586,7 +632,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                     comboBox.setCurrentIndex(index)
                     
         self.updateActiveChannels()
-        
+
     def updateActiveChannels(self):
         self.active_channels = [comboBox.currentText() for comboBox in self.comboBoxes_channel_order]
 
@@ -595,7 +641,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ### Changement min / max grayscales
     
     def checkBox_show_saturation_value_changed(self):
-      
+        """see Function_ui => show_saturation"""
         if self.checkBox_show_saturation.isChecked():
             self.look_up_table = 'show_saturation'
         else:
@@ -679,7 +725,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         - Starts the camera acquisition and updates the preview every 30 ms.
         - If the preview was paused, resumes it.
         """
-        # TODO: Add laser activation
         
         if not self.is_preview: # If preview is not already running
             
@@ -691,11 +736,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.preview_tools_desactivation()
             
             # Retrieve the exposure time from the corresponding spinBox, default to 10ms if not availables
-            # TODO: récupérer le exposure time du channel
             self.camera[self.preview_channel.camera].exposure_time = self.preview_channel.exposure_time/1000
             
             # Initialize the camera object
             self.hcam = HamamatsuCamera()
+            
+            
             
             # Create and configure the acquisition thread
             self.camera_thread = CameraThread(self.hcam, self.preview_channel.camera)
@@ -704,8 +750,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             # Set camera acquisition mode and parameters
             functions_camera.configure_camera_for_preview(self.hcam, self.camera[self.preview_channel.camera])
             
-            # Start the camera acquisition
+            # Start the camera acquisition and turn on laser
             self.hcam.startAcquisition(self.preview_channel.camera)
+            self.pb_laser_emission.setChecked(True)
+            self.pb_laser_emission_clicked()
             
             # Start the acquisition thread to handle continuous frame capture
             self.camera_thread.start()
@@ -724,16 +772,17 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.is_preview_paused:
             self.is_preview_paused = False
             self.status_bar.showMessage("Displaying Preview")
-            # TODO: Rallumera le laser ici
             
         else:
             self.is_preview_paused = True
             self.status_bar.showMessage("Displaying Preview Paused")
-            # TODO: Eteindra le laser ici
+        
+        # Eteint ou allume les lasers
+        self.pb_laser_emission.setChecked(not self.is_preview_paused)
+        self.pb_laser_emission_clicked()
             
     def pb_stop_preview_clicked(self):
         """Arrête l'acquisition et l'affichage et ferme proprement les processus."""
-        # TODO: éteindre les lasers
         self.is_preview = False
         self.preview_tools_desactivation()
         
@@ -743,6 +792,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.camera_thread.wait()
         self.hcam.stopAcquisition(self.preview_channel.camera)
         self.hcam.closeCamera(self.preview_channel.camera)
+        
+        # Turn off lasers
+        self.pb_laser_emission.setChecked(False)
+        self.pb_laser_emission_clicked()
         
         # Stop displaying hystograms
         self.timer_gray_hystogram.stop()

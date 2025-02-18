@@ -13,8 +13,8 @@ import numpy as np
 import re
 
 from PySide6.QtCore import QTime, QThread, Signal
-from PySide6.QtGui import QPixmap,QImage
-from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QVBoxLayout, QWidget, QGraphicsPixmapItem
+from PySide6.QtGui import QImage
+# from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QVBoxLayout, QWidget, QGraphicsPixmapItem
 
 class functions_ui():
     

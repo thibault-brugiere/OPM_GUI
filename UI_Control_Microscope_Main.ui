@@ -23,7 +23,7 @@
    <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_32">
+   <layout class="QHBoxLayout" name="horizontalLayout_34">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -1210,38 +1210,42 @@ This choice affects hardware settings and acquisition parameters.</string>
        </layout>
       </item>
       <item>
-       <widget class="QLabel" name="label_channel_filter">
-        <property name="text">
-         <string>Filter</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="comboBox_channel_filter">
+       <layout class="QHBoxLayout" name="horizontalLayout_33">
         <item>
-         <property name="text">
-          <string>BFP</string>
-         </property>
+         <widget class="QLabel" name="label_channel_filter">
+          <property name="text">
+           <string>Filter</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
         </item>
         <item>
-         <property name="text">
-          <string>GFP</string>
-         </property>
+         <widget class="QComboBox" name="comboBox_channel_filter">
+          <item>
+           <property name="text">
+            <string>BFP</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>GFP</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>CY3.5</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>TexRed</string>
+           </property>
+          </item>
+         </widget>
         </item>
-        <item>
-         <property name="text">
-          <string>CY3.5</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>TexRed</string>
-         </property>
-        </item>
-       </widget>
+       </layout>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_15">
@@ -1294,6 +1298,75 @@ This choice affects hardware settings and acquisition parameters.</string>
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_32">
+        <item>
+         <spacer name="horizontalSpacer_17">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pb_laser_emission">
+          <property name="text">
+           <string>Emission</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_laser_icon">
+          <property name="minimumSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_laser">
+          <property name="text">
+           <string>OFF</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_16">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </item>
@@ -2258,7 +2331,6 @@ Acquisition</string>
      <addaction name="actionExperience_Name"/>
     </widget>
     <addaction name="action_SaveConfig"/>
-    <addaction name="action_LoadConfig"/>
     <addaction name="menuSaving"/>
    </widget>
    <widget class="QMenu" name="menuConfig">

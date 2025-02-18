@@ -31,20 +31,7 @@ class functions_camera():
         hcam.setPropertyValue("binning", camera.binning, camera_id)
         
         hcam.setPropertyValue("exposure_time", camera.exposure_time, camera_id)
-    
-class camera(object)   :
-    "Object discribing camera settings"
-    def __init__(self, camera_id):
-        self.camera_id = 0
-        self.hchipsize = 4432
-        self.vchipsize = 2368
-        self.hsize = 4432
-        self.hpos = 0
-        self.vsize = 2308
-        self.vpos = 0
-        self.binning = 1
-        self.exposure_time = 0.0087
-        
+       
 class CameraThread(QThread):
     """Thread qui acquiert en continu la dernière image de la caméra."""
     new_frame = Signal(np.ndarray)  # Signal émis à chaque nouvelle image
@@ -73,7 +60,7 @@ class CameraThread(QThread):
         
 class functions_daq():
     
-    def analog_out(tension=0, output_channel="Dev1/ao0"):
+    def analog_out(tension=0, output_channel='Dev1/ao0'):
         """
         Generates an analog voltage output to the specified channel.
         
@@ -102,8 +89,10 @@ class functions_daq():
             task.ao_channels.add_ao_voltage_chan(output_channel, min_val=-5.0, max_val=5.0)
             task.write(tension)
             
-            
-    
+    def digital_out (signal = True, line_name = 'Dev1/port0/line3'):
+        with nidaqmx.Task() as task:
+            task.do_channels.add_do_chan(line_name)
+            task.write(signal)
     
     def voltages(
             voltage_start = -5,
@@ -188,7 +177,7 @@ class functions_daq():
                 wait_function(wait_instruction)
             
             task.stop()
-    pass
+
 
 class DAQ(object):
     "Object discribing DAQ settings"
