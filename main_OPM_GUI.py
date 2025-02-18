@@ -6,6 +6,10 @@ Created on Thu Jan 30 14:00:36 2025
 """
 
 """
+Les différentes parties sont :
+    -Création des variables (64)
+    -Fonctions appelées pour les boutons (150)
+
 Convert file.ui to file.py
 
 pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
@@ -18,7 +22,7 @@ TODO :
     => Faire afficher le streaming de la camera
 """
 
-import copy
+import json
 import numpy as np
 import os
 import pickle
@@ -36,7 +40,8 @@ from configs.config import camera, channel_config
 from hardware.hamamatsu import HamamatsuCamera
 
 from ui_Control_Microscope_Main import Ui_MainWindow
-from widget_OPM_GUI import ChannelEditorWindow
+from ChannelEditorWindow import ChannelEditorWindow
+from PresetROIWindow import PresetROIWindow
 
 class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     """
@@ -60,6 +65,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     ## Création des Variables ##
     ############################
         
+        self.load_variables() #Si des variables ont étées enregistrées, elles seront changées ici
         ## Saving ##
         
         self.DATA_PATH = "D:/EqSibarita/Python/Control_Microscope_GUI/Images"
@@ -67,12 +73,19 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.setup = "Thibault" #Permet de choisir entre le Setup de Thibault et celui d'Armin
         
-        ## Creation of the cameras
+        ## Creation of the cameras, set interface
         
         self.camera = [camera(camera_id = 0 ),
                        camera(camera_id = 1)]
         
         self.camera_id = 0 # index de la caméra actuellement sélectionnée
+        
+        if self.loaded_variables:
+            self.preset_size = self.saved_variables['preset_size']
+        else:
+            self.preset_size = ['44032 - 0 x 2368 - 0','2048 - 1192 x 2048 - 160']
+        
+        self.comboBox_size_preset_set_indexes()
         
         ## creation of the channels
         
@@ -81,7 +94,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.default_channel = {}
         self.channel_names = []
         
-        if self.load_channels() == False: #essaie de charger les cannaus, si cela n'est pas le cas
+        if self.load_channels() == False: #essaie de charger les cannaux, si cela n'est pas le cas
         
             self.channel_names = ['BFP','GFP','CY3.5','TexReda']
             
@@ -150,6 +163,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.lineEdit_exp_name.editingFinished.connect(self.lineEdit_exp_name_modified)
         
             ## Camera
+            
+        # TODO: ajouter modification combobox camera => modification camera id
         self.spinBox_hsize.editingFinished.connect(self.spinBox_hsize_value_changed)
         self.spinBox_hpos.editingFinished.connect(self.spinBox_hpos_value_changed)
         self.spinBox_vsize.editingFinished.connect(self.spinBox_vsize_value_changed)
@@ -221,9 +236,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     ###############################################
     ## Fonctions appelées par les menus d'action ##
     ###############################################
+    
+        self.action_SaveConfig.triggered.connect(self.save_config)
         
         self.action_channel_editor.triggered.connect(self.openChannelEditor)
-        self.action_SaveConfig.triggered.connect(self.save_config)
+        self.action_Preset_ROI_size.triggered.connect(self.openPreserROIEditor)
+        
         
     #########################################################
     ## Fonctions appelées lors de la fermture du programme ##
@@ -240,7 +258,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             # permet d'ajouter du code pour fermer proprement
             if self.is_preview:
                 self.pb_stop_preview_clicked()
-            # self.save_channels()
             event.accept()
         else:
             event.ignore()
@@ -412,15 +429,29 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         'set hpos and vpos to preset values'
         try:
             size = self.comboBox_size_preset.currentText()
-            hsize, _ , vsize = size.split()
+            hsize, _ ,hpos, _ , vsize, _ ,vpos = size.split()
             
             self.spinBox_hsize.setValue(int(hsize))
+            self.spinBox_hpos.setValue(int(hpos))
             self.spinBox_vsize.setValue(int(vsize))
+            self.spinBox_vpos.setValue(int(vpos))
             
             self.spinBox_hsize_value_changed()
+            self.spinBox_hpos_value_changed()
             self.spinBox_vsize_value_changed()
+            self.spinBox_vpos_value_changed()
         except:
             pass
+        
+    def comboBox_size_preset_set_indexes(self):
+        text = self.comboBox_size_preset.currentText()
+        self.comboBox_size_preset.clear()
+        self.comboBox_size_preset.addItems(self.preset_size)
+        
+        try:
+            self.comboBox_size_preset.setCurrentText(text)
+        except:
+            pass 
         
     def comboBox_binning_value_changed(self):
         'Binning of the camera'
@@ -656,7 +687,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         - Starts the camera acquisition and updates the preview every 30 ms.
         - If the preview was paused, resumes it.
         """
-        # TODO: Passer cette partie la du code dans un fichier "Communication Hardware"
         # TODO: Add laser activation
         
         if not self.is_preview: # If preview is not already running
@@ -819,8 +849,15 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
 
         if reply == QMessageBox.Yes:
             self.save_channels()
+            self.save_variables()
         elif reply == QMessageBox.No:
             pass
+        
+    def openPreserROIEditor(self):
+        self.presetROI_editor = PresetROIWindow(self.preset_size ,
+                                                [self.camera[self.camera_id].hchipsize , self.camera[self.camera_id].vchipsize],
+                                                self)
+        self.presetROI_editor.show()
     
     def openChannelEditor(self):
         self.channel_editor = ChannelEditorWindow(self.default_channel, self.channel_names, self)
@@ -831,7 +868,27 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     ## Fonctions appelées pour sauvegarder et changer l'interface ##
     ################################################################
     
-    ## ROI
+    ## different simples varibles .json
+    
+    def load_variables(self):
+        self.loaded_variables = False
+        config_dir = 'configs'
+        file_path = os.path.join(config_dir, 'saved_variables.json')
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as file:
+                self.saved_variables = json.load(file)
+                self.loaded_variables = True
+    
+    def save_variables(self):
+        config_dir = 'configs'
+        os.makedirs(config_dir, exist_ok=True)  # Crée le dossier s'il n'existe pas
+        file_path = os.path.join(config_dir, 'saved_variables.json')
+        
+        saved_variables = {'preset_size' : self.preset_size}
+        
+        with open(file_path, 'w') as file:
+            json.dump(saved_variables, file)
+        
     
     ## Channels
     

@@ -6,13 +6,170 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>333</width>
+    <height>246</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QComboBox" name="comboBox_size_preset">
+       <property name="toolTip">
+        <string>Set size of the FOV to preset values</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>Preset size</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>44032 - 0 x 2368 - 0</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2048 - 1192 x 2048 - 160</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pb_remove_ROI">
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QSpinBox" name="spinBox_hsize">
+       <property name="toolTip">
+        <string>Set the number of pixels along the horizontal axis of the camera sensor.</string>
+       </property>
+       <property name="maximum">
+        <number>4432</number>
+       </property>
+       <property name="singleStep">
+        <number>4</number>
+       </property>
+       <property name="value">
+        <number>4432</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_hsize">
+       <property name="text">
+        <string>Pixels horizontal   </string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QSpinBox" name="spinBox_hpos">
+       <property name="toolTip">
+        <string>Adjust the horizontal position of the field of view on the camera sensor.</string>
+       </property>
+       <property name="maximum">
+        <number>4432</number>
+       </property>
+       <property name="singleStep">
+        <number>4</number>
+       </property>
+       <property name="value">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_hpos">
+       <property name="text">
+        <string>Position horizontal</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QSpinBox" name="spinBox_vsize">
+       <property name="toolTip">
+        <string>Set the number of pixels along the vertical axis of the camera sensor.</string>
+       </property>
+       <property name="maximum">
+        <number>2368</number>
+       </property>
+       <property name="singleStep">
+        <number>4</number>
+       </property>
+       <property name="value">
+        <number>2368</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_vsize">
+       <property name="text">
+        <string>Pixels vertical       </string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QSpinBox" name="spinBox_vpos">
+       <property name="toolTip">
+        <string>Adjust the vertical position of the field of view on the camera sensor.</string>
+       </property>
+       <property name="maximum">
+        <number>2368</number>
+       </property>
+       <property name="singleStep">
+        <number>4</number>
+       </property>
+       <property name="value">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_vpos">
+       <property name="text">
+        <string>Position vertical    </string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pb_center_FOV">
+     <property name="text">
+      <string>Center FOV</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pb_add_ROI">
+     <property name="text">
+      <string>Add</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

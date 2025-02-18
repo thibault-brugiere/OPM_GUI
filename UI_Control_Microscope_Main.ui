@@ -334,12 +334,12 @@ This choice affects hardware settings and acquisition parameters.</string>
           </item>
           <item>
            <property name="text">
-            <string>44032 x 2368</string>
+            <string>44032 - 0 x 2368 - 0</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>2048 x 2048</string>
+            <string>2048 - 1192 x 2048 - 160</string>
            </property>
           </item>
          </widget>
@@ -2269,7 +2269,7 @@ Acquisition</string>
     <addaction name="action_DAQ"/>
     <addaction name="action_Lasers"/>
     <addaction name="action_channel_editor"/>
-    <addaction name="actionPreset_ROI_size"/>
+    <addaction name="action_Preset_ROI_size"/>
    </widget>
    <addaction name="menuFichier"/>
    <addaction name="menuConfig"/>
@@ -2315,9 +2315,9 @@ Acquisition</string>
     <string>Channels editor</string>
    </property>
   </action>
-  <action name="actionPreset_ROI_size">
+  <action name="action_Preset_ROI_size">
    <property name="text">
-    <string>Preset ROI size</string>
+    <string>Preset ROI</string>
    </property>
   </action>
  </widget>

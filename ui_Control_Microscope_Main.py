@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'UI_Control_Microscope_Main.ui'
+## Form generated from reading UI file 'ui_Control_Microscope_Main.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.1
 ##
@@ -48,8 +48,8 @@ class Ui_MainWindow(object):
         self.actionExperience_Name.setObjectName(u"actionExperience_Name")
         self.action_channel_editor = QAction(MainWindow)
         self.action_channel_editor.setObjectName(u"action_channel_editor")
-        self.actionPreset_ROI_size = QAction(MainWindow)
-        self.actionPreset_ROI_size.setObjectName(u"actionPreset_ROI_size")
+        self.action_Preset_ROI_size = QAction(MainWindow)
+        self.action_Preset_ROI_size.setObjectName(u"action_Preset_ROI_size")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout_32 = QHBoxLayout(self.centralwidget)
@@ -1055,7 +1055,7 @@ class Ui_MainWindow(object):
         self.menuConfig.addAction(self.action_DAQ)
         self.menuConfig.addAction(self.action_Lasers)
         self.menuConfig.addAction(self.action_channel_editor)
-        self.menuConfig.addAction(self.actionPreset_ROI_size)
+        self.menuConfig.addAction(self.action_Preset_ROI_size)
 
         self.retranslateUi(MainWindow)
         self.slider_laser_405.valueChanged.connect(self.spinBox_laser_405.setValue)
@@ -1093,7 +1093,7 @@ class Ui_MainWindow(object):
         self.actionData_path.setText(QCoreApplication.translate("MainWindow", u"Data path", None))
         self.actionExperience_Name.setText(QCoreApplication.translate("MainWindow", u"Experience Name", None))
         self.action_channel_editor.setText(QCoreApplication.translate("MainWindow", u"Channels editor", None))
-        self.actionPreset_ROI_size.setText(QCoreApplication.translate("MainWindow", u"Preset ROI size", None))
+        self.action_Preset_ROI_size.setText(QCoreApplication.translate("MainWindow", u"Preset ROI", None))
         self.label_saving.setText(QCoreApplication.translate("MainWindow", u"Saving", None))
         self.label_data_path.setText(QCoreApplication.translate("MainWindow", u"D:/Projets_Python/OPM_GUI/Images", None))
         self.pb_data_path.setText(QCoreApplication.translate("MainWindow", u"...", None))
@@ -1130,8 +1130,8 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.label_vpos.setText(QCoreApplication.translate("MainWindow", u"Position vertical    ", None))
         self.comboBox_size_preset.setItemText(0, QCoreApplication.translate("MainWindow", u"Preset size", None))
-        self.comboBox_size_preset.setItemText(1, QCoreApplication.translate("MainWindow", u"44032 x 2368", None))
-        self.comboBox_size_preset.setItemText(2, QCoreApplication.translate("MainWindow", u"2048 x 2048", None))
+        self.comboBox_size_preset.setItemText(1, QCoreApplication.translate("MainWindow", u"44032 - 0 x 2368 - 0", None))
+        self.comboBox_size_preset.setItemText(2, QCoreApplication.translate("MainWindow", u"2048 - 1192 x 2048 - 160", None))
 
 #if QT_CONFIG(tooltip)
         self.comboBox_size_preset.setToolTip(QCoreApplication.translate("MainWindow", u"Set size of the FOV to preset values", None))

@@ -16,7 +16,7 @@ TODO :
 import sys
 import copy
 
-from PySide6.QtCore import Qt #    def parent(self) -> PySide6.QtCore.QObject: ...
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QMessageBox, QWidget
 
 from Functions_UI import functions_ui
@@ -26,11 +26,11 @@ from ui_default_channel_settings import Ui_Form
 
 class ChannelEditorWindow(QWidget, Ui_Form):
     """
-    Show the window to set default channels
+    Show the window to set default camera size
     """
     def __init__(self, channel, channel_names, parent=None):
         """
-        channels : librarry of channel objects 
+        channels : dictionnary of channel objects 
         """
         
         super().__init__(parent)
