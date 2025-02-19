@@ -8,19 +8,27 @@ Created on Mon Feb 17 16:16:34 2025
 """
 Convert file.ui to file.py
 
-pyside6-uic ui_preset_ROI.ui -o ui_preset_ROI.py
+pyside6-uic widget.ui_preset_ROI.ui -o widget.ui_preset_ROI.py
 
 TODO :
 
 """
+import os
 import sys
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QMessageBox, QWidget
 
+# Ajoutez le dossier parent au sys.path si le fichier est exécuté directement
+if __name__ == "__main__":
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    sys.path.append(parent_dir)
+
+
 from Functions_UI import functions_ui
 
-from ui_preset_ROI import Ui_Form
+from widget.ui_preset_ROI import Ui_Form
 
 class PresetROIWindow(QWidget, Ui_Form):
     """

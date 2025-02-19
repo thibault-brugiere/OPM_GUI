@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'ui_default_channel_settings.ui'
+## Form generated from reading UI file 'ui_channel_editor.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.1
 ##

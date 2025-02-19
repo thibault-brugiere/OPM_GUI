@@ -41,11 +41,11 @@ class channel_config(object):
 class experiment(object):
     "Object discribing experiment settings"
     def __init__(self):
-        self.timepoints = 0
-        self.time_intervals = 0
-        self.total_duration = 0
-        self.scan_position = 0
+        self.timepoints = 10.0
+        self.time_intervals = 1.0
+        self.total_duration = 10.0
         self.scan_range = 0
+        self.aspect_ratio = 3
         self.channels = []
         
 class microscope(object):
@@ -69,4 +69,7 @@ class microscope_values(object):
     def __init__(self):
         self.sample_pixel_size = 160 #in µm
         self.volts_per_um = 0.05
-        self.volts_per_laser_percent = 5 / 100 # 5v max
+        self.volts_per_laser_percent_405 = 5 / 100 # 5v max
+        self.volts_per_laser_percent_488 = 5 / 100 # 5v max
+        self.volts_per_laser_percent_561 = 5 / 100 # 5v max
+        self.volts_per_laser_percent_640 = 5 / 100 # 5v max

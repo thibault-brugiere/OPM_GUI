@@ -124,6 +124,9 @@
         </item>
         <item>
          <widget class="QPushButton" name="pb_data_path">
+          <property name="toolTip">
+           <string>Select folder where the experiment will be saved</string>
+          </property>
           <property name="text">
            <string>...</string>
           </property>
@@ -133,6 +136,9 @@
       </item>
       <item>
        <widget class="QLineEdit" name="lineEdit_exp_name">
+        <property name="toolTip">
+         <string>Set the name of the expetiment</string>
+        </property>
         <property name="text">
          <string>Image</string>
         </property>
@@ -346,6 +352,9 @@ This choice affects hardware settings and acquisition parameters.</string>
         </item>
         <item>
          <widget class="QPushButton" name="pb_center_FOV">
+          <property name="toolTip">
+           <string>Put the fiels of view (horizontal and vertical pixel size) at the center of the camera chip (by adjusting horizontal and vertical position)</string>
+          </property>
           <property name="text">
            <string>Center FOV</string>
           </property>
@@ -430,6 +439,9 @@ This choice affects hardware settings and acquisition parameters.</string>
             <height>0</height>
            </size>
           </property>
+          <property name="toolTip">
+           <string>Name of the new channel if press add</string>
+          </property>
           <property name="text">
            <string/>
           </property>
@@ -437,6 +449,9 @@ This choice affects hardware settings and acquisition parameters.</string>
         </item>
         <item>
          <widget class="QComboBox" name="comboBox_channel_name">
+          <property name="toolTip">
+           <string>Select a channel to set parameters</string>
+          </property>
           <item>
            <property name="text">
             <string>BFP</string>
@@ -464,6 +479,9 @@ This choice affects hardware settings and acquisition parameters.</string>
           <property name="enabled">
            <bool>true</bool>
           </property>
+          <property name="toolTip">
+           <string>save current parameters to selected channel</string>
+          </property>
           <property name="text">
            <string>Save</string>
           </property>
@@ -471,6 +489,9 @@ This choice affects hardware settings and acquisition parameters.</string>
         </item>
         <item>
          <widget class="QPushButton" name="pb_channel_add">
+          <property name="toolTip">
+           <string>Add a new channel with specified name</string>
+          </property>
           <property name="text">
            <string>Add</string>
           </property>
@@ -480,6 +501,9 @@ This choice affects hardware settings and acquisition parameters.</string>
          <widget class="QPushButton" name="pb_channel_remove">
           <property name="enabled">
            <bool>true</bool>
+          </property>
+          <property name="toolTip">
+           <string>Remove current channel (except if it is a default channel)</string>
           </property>
           <property name="text">
            <string>Remove</string>
@@ -1223,6 +1247,9 @@ This choice affects hardware settings and acquisition parameters.</string>
         </item>
         <item>
          <widget class="QComboBox" name="comboBox_channel_filter">
+          <property name="toolTip">
+           <string>Select the filter of the current channel</string>
+          </property>
           <item>
            <property name="text">
             <string>BFP</string>
@@ -1350,6 +1377,12 @@ This choice affects hardware settings and acquisition parameters.</string>
         </item>
         <item>
          <widget class="QLabel" name="label_laser">
+          <property name="minimumSize">
+           <size>
+            <width>30</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="text">
            <string>OFF</string>
           </property>
@@ -1808,18 +1841,18 @@ Estimated volume duration: 0.000 s</string>
            <colorrole role="Base">
             <brush brushstyle="SolidPattern">
              <color alpha="255">
-              <red>255</red>
-              <green>255</green>
-              <blue>255</blue>
+              <red>150</red>
+              <green>150</green>
+              <blue>150</blue>
              </color>
             </brush>
            </colorrole>
            <colorrole role="Window">
             <brush brushstyle="SolidPattern">
              <color alpha="255">
-              <red>255</red>
-              <green>255</green>
-              <blue>255</blue>
+              <red>150</red>
+              <green>150</green>
+              <blue>150</blue>
              </color>
             </brush>
            </colorrole>
@@ -1828,18 +1861,18 @@ Estimated volume duration: 0.000 s</string>
            <colorrole role="Base">
             <brush brushstyle="SolidPattern">
              <color alpha="255">
-              <red>255</red>
-              <green>255</green>
-              <blue>255</blue>
+              <red>150</red>
+              <green>150</green>
+              <blue>150</blue>
              </color>
             </brush>
            </colorrole>
            <colorrole role="Window">
             <brush brushstyle="SolidPattern">
              <color alpha="255">
-              <red>255</red>
-              <green>255</green>
-              <blue>255</blue>
+              <red>150</red>
+              <green>150</green>
+              <blue>150</blue>
              </color>
             </brush>
            </colorrole>
@@ -1848,18 +1881,18 @@ Estimated volume duration: 0.000 s</string>
            <colorrole role="Base">
             <brush brushstyle="SolidPattern">
              <color alpha="255">
-              <red>255</red>
-              <green>255</green>
-              <blue>255</blue>
+              <red>150</red>
+              <green>150</green>
+              <blue>150</blue>
              </color>
             </brush>
            </colorrole>
            <colorrole role="Window">
             <brush brushstyle="SolidPattern">
              <color alpha="255">
-              <red>255</red>
-              <green>255</green>
-              <blue>255</blue>
+              <red>150</red>
+              <green>150</green>
+              <blue>150</blue>
              </color>
             </brush>
            </colorrole>
@@ -2161,9 +2194,9 @@ Pixels above this value will appear white.</string>
              <colorrole role="Window">
               <brush brushstyle="SolidPattern">
                <color alpha="255">
-                <red>255</red>
-                <green>255</green>
-                <blue>255</blue>
+                <red>150</red>
+                <green>150</green>
+                <blue>150</blue>
                </color>
               </brush>
              </colorrole>
@@ -2181,9 +2214,9 @@ Pixels above this value will appear white.</string>
              <colorrole role="Window">
               <brush brushstyle="SolidPattern">
                <color alpha="255">
-                <red>255</red>
-                <green>255</green>
-                <blue>255</blue>
+                <red>150</red>
+                <green>150</green>
+                <blue>150</blue>
                </color>
               </brush>
              </colorrole>
@@ -2192,18 +2225,18 @@ Pixels above this value will appear white.</string>
              <colorrole role="Base">
               <brush brushstyle="SolidPattern">
                <color alpha="255">
-                <red>255</red>
-                <green>255</green>
-                <blue>255</blue>
+                <red>150</red>
+                <green>150</green>
+                <blue>150</blue>
                </color>
               </brush>
              </colorrole>
              <colorrole role="Window">
               <brush brushstyle="SolidPattern">
                <color alpha="255">
-                <red>255</red>
-                <green>255</green>
-                <blue>255</blue>
+                <red>150</red>
+                <green>150</green>
+                <blue>150</blue>
                </color>
               </brush>
              </colorrole>
@@ -2253,6 +2286,9 @@ Pixels above this value will appear white.</string>
           </property>
           <property name="toolTip">
            <string>Start image acquisition using the Snoutscope program.</string>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
           </property>
           <property name="text">
            <string>Snoutscope
@@ -2340,11 +2376,25 @@ Acquisition</string>
     <addaction name="action_Camera"/>
     <addaction name="action_DAQ"/>
     <addaction name="action_Lasers"/>
+    <addaction name="action_Filters"/>
+   </widget>
+   <widget class="QMenu" name="menuAlign">
+    <property name="title">
+     <string>Align</string>
+    </property>
+    <addaction name="action_Align_O2_O3"/>
+   </widget>
+   <widget class="QMenu" name="menuParameters">
+    <property name="title">
+     <string>Parameters</string>
+    </property>
     <addaction name="action_channel_editor"/>
     <addaction name="action_Preset_ROI_size"/>
    </widget>
    <addaction name="menuFichier"/>
    <addaction name="menuConfig"/>
+   <addaction name="menuAlign"/>
+   <addaction name="menuParameters"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_SaveConfig">
@@ -2390,6 +2440,16 @@ Acquisition</string>
   <action name="action_Preset_ROI_size">
    <property name="text">
     <string>Preset ROI</string>
+   </property>
+  </action>
+  <action name="action_Align_O2_O3">
+   <property name="text">
+    <string>Align O2 - O3</string>
+   </property>
+  </action>
+  <action name="action_Filters">
+   <property name="text">
+    <string>Filters</string>
    </property>
   </action>
  </widget>

@@ -36,8 +36,10 @@ from configs.config import camera, channel_config, microscope
 from hardware.hamamatsu import HamamatsuCamera
 
 from ui_Control_Microscope_Main import Ui_MainWindow
-from ChannelEditorWindow import ChannelEditorWindow
-from PresetROIWindow import PresetROIWindow
+
+from widget.Channel_Editor_Window import ChannelEditorWindow
+from widget.Preset_ROI_Window import PresetROIWindow
+from widget.Set_Filters_Window import filtersEditionWindow
 
 class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     """
@@ -95,7 +97,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         if self.load_channels() == False: #essaie de charger les cannaux, si cela n'est pas le cas, crée ceux par défault
         
-            self.channel_names = ['BFP','GFP','CY3.5','TexReda']
+            self.channel_names = ['BFP','GFP','CY3.5','TexRed']
             
             for channel in self.channel_names:
                 self.default_channel[channel] = channel_config(channel, self.lasers)
@@ -158,7 +160,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Red_Light_Icon_On = QPixmap('Icons/Red_Light_Icon_On.png')
         self.Red_Light_Icon_Off = QPixmap('Icons/Red_Light_Icon_Off.png')
         
-        self.pb_laser_emission_clicked()
+        self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
         
         #########################################
         ## Fonctions appelées pour les boutons ##
@@ -249,6 +251,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     ###############################################
     
         self.action_SaveConfig.triggered.connect(self.save_config)
+        
+        self.action_Filters.triggered.connect(self.openFiltersEditor)
         
         self.action_channel_editor.triggered.connect(self.openChannelEditor)
         self.action_Preset_ROI_size.triggered.connect(self.openPreserROIEditor)
@@ -896,6 +900,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.save_variables()
         elif reply == QMessageBox.No:
             pass
+        
+    def openFiltersEditor(self):
+        self.filters_editor = filtersEditionWindow(self.microscope.filters,self)
+        self.filters_editor.show()
         
     def openPreserROIEditor(self):
         self.presetROI_editor = PresetROIWindow(self.preset_size ,

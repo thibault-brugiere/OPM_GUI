@@ -8,21 +8,28 @@ Created on Mon Feb 17 11:40:06 2025
 """
 Convert file.ui to file.py
 
-pyside6-uic ui_default_channel_settings.ui -o ui_default_channel_settings.py
+pyside6-uic widget/ui_channel_editor.ui -o widget/ui_channel_editor.py
 
 TODO :
 
 """
+import os
 import sys
 import copy
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QMessageBox, QWidget
 
+# Ajoutez le dossier parent au sys.path si le fichier est exécuté directement
+if __name__ == "__main__":
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    sys.path.append(parent_dir)
+
 from Functions_UI import functions_ui
 from configs.config import channel_config
 
-from ui_default_channel_settings import Ui_Form
+from widget.ui_channel_editor import Ui_Form
 
 class ChannelEditorWindow(QWidget, Ui_Form):
     """
