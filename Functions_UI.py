@@ -313,22 +313,6 @@ class functions_ui():
                     
         combo.blockSignals(False)
         
-    def set_spinBox(spin,value):
-        #Not used
-        """
-        Updates the given spin box with a new value.
-    
-        This function temporarily block signals to prevent triggering
-        connected functions during the update.
-    
-        Parameters:
-        - spin (QSpinBox): The spin box to update.
-        - value (int of float): value to set to the spin box
-        """
-        spin.blockSignals(True)
-        spin.setValue(value)
-        spin.blockSignals(False)
-
 class HistogramThread(QThread):
     """Generate a histogram of the grayscale image and display it in a QGraphicsView.
     

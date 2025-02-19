@@ -37,9 +37,11 @@ from hardware.hamamatsu import HamamatsuCamera
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
+from widget.set_DAQ_Window import setDAQWindow
+from widget.Set_Filters_Window import filtersEditionWindow
+
 from widget.Channel_Editor_Window import ChannelEditorWindow
 from widget.Preset_ROI_Window import PresetROIWindow
-from widget.Set_Filters_Window import filtersEditionWindow
 
 class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     """
@@ -63,18 +65,23 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     ## Création des Variables ##
     ############################
         
-        self.load_variables() #Si des variables ont étées enregistrées, elles seront changées ici
+        self.load_variables() #Si des variables de l'interface ont étées enregistrées, elles seront changées ici
+        self.load_channels()
         
         self.microscope = microscope() # Variable contenant les paramétres du microscope
         
-        ## Saving ##
+        #
+        # Saved datas
+        #
         
         self.DATA_PATH = "D:/EqSibarita/Python/Control_Microscope_GUI/Images"
         self.EXP_NAME = "Image"
         
         self.setup = "Thibault" #Permet de choisir entre le Setup de Thibault et celui d'Armin
         
-        ## Creation of the cameras, set interface
+        #
+        # Creation of the cameras, set interface
+        #
         
         self.camera = [camera(camera_id = 0 ),
                        camera(camera_id = 1)]
@@ -88,15 +95,16 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.comboBox_size_preset_set_indexes()
         
-        ## creation of the channels
+        #
+        # creation of the channels / lasers
+        #
         
-        self.lasers = ["405","488","561","640"]
+        self.lasers = ["405","488","561","640"] # = self.microscope.lasers
         
-        self.default_channel = {}
-        self.channel_names = []
+        if self.loaded_channels == False: #essaie de charger les cannaux, si cela n'est pas le cas, crée ceux par défault
         
-        if self.load_channels() == False: #essaie de charger les cannaux, si cela n'est pas le cas, crée ceux par défault
-        
+            self.default_channel = {}
+
             self.channel_names = ['BFP','GFP','CY3.5','TexRed']
             
             for channel in self.channel_names:
@@ -131,17 +139,30 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.comboBox_channel_name_set_indexes() #Ajoute tous les cannaux dans la comboBox_channel_name
         
         self.laser_emission = False # si le laser est actuellement emmis
-                
-        ## Timelaps settings
+         
+        #
+        # Acquisition settings
+        #
+        
+            ##Timelaps
         self.timepoints = 10 # Nombre de points dans le timelaps
         self.time_intervals = 1 #temps entre deux volumes du timelaps en secondes
         self.total_duration = 10 #Durée totale du timelaps en secondes
         
-        ## Scanner settings
+            ## Scanner
         self.scanner_position = 0 #Position actuelle du scanner en µm
         self.scan_range = 20 # taille de la zone scannée en µm
+        self.aspect_ratio = 3
+        self.slit_aperture = 800 # in µm
         
-        #Preview
+        #
+        # Preview
+        #
+        self.min_grayscale = 0 #Valeur de gris la plus basse du preview
+        self.max_grayscale = 65535 #valeur de gris la plus haute du preview
+        self.preview_zoom = 0.25 #rescale factor of the preview ()
+        self.look_up_table = 'grayscale'
+        
         self.is_preview = False # Si une image est affichée dans le preview
         self.is_preview_paused = False # Si le preview est en pause
         self.preview_frame = None # Image actuellement affichée
@@ -150,13 +171,20 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.histogram_greyvalue_thread = None # Thread utilisé pour créer le graphique des niveaux de gris
         
-        self.min_grayscale = 0 #Valeur de gris la plus basse du preview
-        self.max_grayscale = 65535 #valeur de gris la plus haute du preview
-        self.preview_zoom = 0.25 #rescale factor of the preview ()
-        self.look_up_table = 'grayscale'
+
+            ## For the preview - Timer pour l'affichage des images
+        self.preview_timer = QTimer()
+        self.preview_timer.timeout.connect(self.update_preview)
         
+        self.timer_gray_hystogram = QTimer()
+        self.timer_gray_hystogram.timeout.connect(self.update_gray_histogram)
+        
+        #
         # Petites choses de l'interface
-                
+        #
+        
+        self.label_fov_size_set_text()
+        
         self.Red_Light_Icon_On = QPixmap('Icons/Red_Light_Icon_On.png')
         self.Red_Light_Icon_Off = QPixmap('Icons/Red_Light_Icon_Off.png')
         
@@ -169,8 +197,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ## Saving / Setup
         
         self.pb_data_path.clicked.connect(self.pb_data_path_value_changed)
-        self.comboBox_setup.currentIndexChanged.connect(self.comboBox_setup_index_changed)
         self.lineEdit_exp_name.editingFinished.connect(self.lineEdit_exp_name_modified)
+        self.comboBox_setup.currentIndexChanged.connect(self.comboBox_setup_index_changed)
         
             ## Camera
             
@@ -192,6 +220,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_scanner_position.valueChanged.connect(self.spinBox_scanner_position_value_changed)
         self.pb_scanner_center.clicked.connect(self.pb_scanner_center_clicked_connect)
         self.spinBox_scan_range.valueChanged.connect(self.spinBox_scan_range_value_changed)
+        self.spinBox_aspect_ratio.valueChanged.connect(self.spinBox_aspect_ratio_value_changed)
+        self.spinBox_slit_aperture.valueChanged.connect(self.spinBox_slit_aperture_value_changed)
         
             ## Channels settings
                 ### Channel
@@ -211,15 +241,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_laser_561.valueChanged.connect(self.state_laser_561_changed)
         self.spinBox_laser_640.valueChanged.connect(self.state_laser_640_changed)
                 
-                ### Other parameters
+                ### Exposure time / filter / turn on laser
         self.spinBox_channel_exposure_time.editingFinished.connect(self.spinBox_channel_exposure_time_value_changed)
         self.comboBox_channel_filter.currentIndexChanged.connect(self.comboBox_channel_filter_index_changed)
-        
-                ### Turn laser on
         self.pb_laser_emission.clicked.connect(self.pb_laser_emission_clicked)
         
-            ## Channel selection and orders
-            
+                ### Channel selection and orders
         self.spinBox_number_channels.valueChanged.connect(self.spinBox_number_channels_value_changed)
 
             ## Preview
@@ -234,14 +261,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.comboBox_preview_zoom.currentIndexChanged.connect(self.comboBox_preview_zoom_index_changed)
         self.pb_snap.clicked.connect(self.pb_snap_clicked_connect)
         
-            ## For the preview - Timer pour l'affichage des images
-            
-        self.preview_timer = QTimer()
-        self.preview_timer.timeout.connect(self.update_preview)
-        
-        self.timer_gray_hystogram = QTimer()
-        self.timer_gray_hystogram.timeout.connect(self.update_gray_histogram)
-        
             ## Acquisition
         self.pb_snoutscope_acquisition.clicked.connect(self.pb_snoutscope_acquisition_clicked_connect)
         self.pb_multidimensional_acquisition.clicked.connect(self.pb_multidimensional_acquisition_clicked_connect)
@@ -250,10 +269,17 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     ## Fonctions appelées par les menus d'action ##
     ###############################################
     
+            ## Fichier
         self.action_SaveConfig.triggered.connect(self.save_config)
         
+            ## Config
+        self.action_DAQ.triggered.connect(self.openDAQEditor)
         self.action_Filters.triggered.connect(self.openFiltersEditor)
         
+            # Align
+        self.action_Align_O2_O3.triggered.connect(self.openAlign_O2_O3) #Action pas encore définie
+        
+            # Parameters
         self.action_channel_editor.triggered.connect(self.openChannelEditor)
         self.action_Preset_ROI_size.triggered.connect(self.openPreserROIEditor)
         
@@ -281,7 +307,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     ## Functions called by the buttons ##
     #####################################
     
-        ## Saving
+        #
+        # Saving
+        #
         
     def pb_data_path_value_changed(self):
         """
@@ -310,74 +338,28 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.lineEdit_exp_name.setText(self.EXP_NAME)
         
     def comboBox_setup_index_changed(self):
-        """
-        Handle changes in the setup selection and update the interface accordingly.
-    
-        This function is triggered when the value of `comboBox_setup` changes.
-        It updates the `setup` variable, adjusts the available camera options in 
-        `comboBox_camera`, and enables or disables channels in `comboBox_channel` 
-        based on the selected setup.
-    
-        The available setups are:
-        - "Thibault": Enables all channel selections, disables disable laser chackBoxes and provides "Camera 1".
-        - "Armin": Disables all channel selections and provides "Camera 1" and "Camera 2".
-    
-        The function also temporarily blocks signals from `comboBox_camera` while updating its items 
-        to prevent unwanted signal emissions.
-        """
-        curent_value = self.comboBox_setup.currentText()
-        if curent_value == "Thibault":
-            self.setup = "Thibault"
-            camera_list = ["Camera 1"]
-            cam_list = ["Cam 1"]
-            
-            'active / desactive les fonctions inutiles'
-            for combo in self.comboBox_channel.values():
-                combo.setDisabled(False)  
-                
-            for combo in self.comboBox_camera_list.values():
-                combo.setDisabled(True)
-                
-            self.comboBox_camera.setDisabled(True)
-            
-        if curent_value == "Armin":
-            self.setup = "Armin"
-            camera_list = ["Camera 1","Camera 2"]
-            cam_list = ["Cam 1", "Cam2"]
-            
-            'active / desacive les fonctions inutiles' #J'ai mis deux boucles pour plus de lisibilité
-            for combo in self.comboBox_channel.values():
-                combo.setDisabled(True)
-                
-            for combo in self.comboBox_camera_list.values():
-                combo.setDisabled(False)
-                
-            self.comboBox_camera.setDisabled(False)
-                
-        'Gére les options des différentes comboBox'    
-               
-        functions_ui.set_comboBox(self.comboBox_camera,camera_list)
-        
-        for combo in self.comboBox_camera_list.values():
-            functions_ui.set_comboBox(combo, cam_list)
+        """ this function was supppose to Handle changes in the setup selection and update the interface accordingly"""
+        pass
 
-        ## Camera
+        #
+        # Camera
+        #
         
         """
-    These functions update the selected camera's region of interest (ROI) parameters 
-    based on user input from spin boxes.
-    
-    Each function retrieves the currently selected camera from `comboBox_camera` and updates 
-    one of its four parameters accordingly:
-    - `hsize`: Horizontal size of the ROI (`spinBox_hsize`).
-    - `hpos`: Horizontal position of the ROI (`spinBox_hpos`).
-    - `vsize`: Vertical size of the ROI (`spinBox_vsize`).
-    - `vpos`: Vertical position of the ROI (`spinBox_vpos`).
-    - 'binning' : Binning of the camera ('spinBox_binning')
-    
-    The updated values are stored in the `camera` dictionary, indexed by the camera's 
-    current selection in `comboBox_camera`.
-    """
+        These functions update the selected camera's region of interest (ROI) parameters 
+        based on user input from spin boxes.
+        
+        Each function retrieves the currently selected camera from `comboBox_camera` and updates 
+        one of its four parameters accordingly:
+        - `hsize`: Horizontal size of the ROI (`spinBox_hsize`).
+        - `hpos`: Horizontal position of the ROI (`spinBox_hpos`).
+        - `vsize`: Vertical size of the ROI (`spinBox_vsize`).
+        - `vpos`: Vertical position of the ROI (`spinBox_vpos`).
+        - 'binning' : Binning of the camera ('spinBox_binning')
+        
+        The updated values are stored in the `camera` dictionary, indexed by the camera's 
+        current selection in `comboBox_camera`.
+        """
     def comboBox_camera_index_changed(self):
         self.camera_id = self.comboBox_camera.currentIndex()
     
@@ -404,6 +386,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.camera[self.camera_id].hpos = pos
         
+        self.label_fov_size_set_text()
+        
     def spinBox_vsize_value_changed(self):
         'Vertical size of the ROI'
         
@@ -427,6 +411,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_vpos.setValue(pos)
         
         self.camera[self.camera_id].vpos = pos
+        
+        self.label_fov_size_set_text()
         
     def pb_center_FOV_clicked(self):
         'Center the position of the ROI on the camera chip'
@@ -456,6 +442,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             pass
         
     def comboBox_size_preset_set_indexes(self):
+        'update comboBox_size_preset indexes after modification of preset sizes via specific window'
         text = self.comboBox_size_preset.currentText()
         self.comboBox_size_preset.clear()
         self.comboBox_size_preset.addItems(self.preset_size)
@@ -471,27 +458,27 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.camera[self.camera_id].binning = binning
         
-        ## Scanner
+    def label_fov_size_set_text(self):
+        'show the size of the fild of view in µm depending on camera settings'
+        sample_pixel_size = self.microscope.sample_pixel_size
+        hum = self.camera[self.camera_id].hsize*sample_pixel_size # horizontal size in µm
+        vum = self.camera[self.camera_id].vsize*sample_pixel_size # vertical size in µm
         
-    def spinBox_scanner_position_value_changed(self):
-        self.scanner_position = self.spinBox_scanner_position.value()
+        message = 'Field of view : ' + str(round(hum, 2)) + ' x ' + str(round(vum, 2)) + ' µm'
         
-    def pb_scanner_center_clicked_connect(self):
-        self.scanner_position = 0
-        self.spinBox_scanner_position.setValue(0)
+        self.label_fov_size.setText(message)
         
-    def spinBox_scan_range_value_changed(self):
-        self.scan_range = self.spinBox_scan_range.value()
-    
-        ## Timelaps settings
-    """
-    These functions handle user input changes in the spin boxes and time editor related to time-lapse acquisition settings. 
-    
-    They ensure that the variables `timepoints` and `time_intervals` are updated accordingly when modifying:
-    - `spinBox_timepoints`: The number of time points in the acquisition.
-    - `spinBox_time_intervals`: The time interval between consecutive time points.
-    - `timeEdit_total_duration`: The total duration of the acquisition.
-    """
+        #
+        # Timelaps settings
+        #
+        """
+        These functions handle user input changes in the spin boxes and time editor related to time-lapse acquisition settings. 
+        
+        They ensure that the variables `timepoints` and `time_intervals` are updated accordingly when modifying:
+        - `spinBox_timepoints`: The number of time points in the acquisition.
+        - `spinBox_time_intervals`: The time interval between consecutive time points.
+        - `timeEdit_total_duration`: The total duration of the acquisition.
+        """
     
     def spinBox_timepoints_value_changed(self):
         self.timepoints = self.spinBox_timepoints.value()
@@ -507,11 +494,39 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.total_duration = functions_ui.QTime_to_seconds(self.timeEdit_total_duration.time())
         self.time_intervals = self.total_duration / self.timepoints
         self.spinBox_time_interval.setValue(self.time_intervals)
+        
+        #
+        # Scanner
+        #
+        
+        """
+        These functions update the scanning parameters based on user input from spin boxes.
+        """
+        
+        
+    def spinBox_scanner_position_value_changed(self):
+        self.scanner_position = self.spinBox_scanner_position.value()
+        
+    def pb_scanner_center_clicked_connect(self):
+        self.scanner_position = 0
+        self.spinBox_scanner_position.setValue(0)
+        
+    def spinBox_scan_range_value_changed(self):
+        self.scan_range = self.spinBox_scan_range.value()
+        
+    def spinBox_aspect_ratio_value_changed(self):
+        self.aspect_ratio = self.spinBox_aspect_ratio.value()
     
-        ## Channels settings
+    def spinBox_slit_aperture_value_changed(self):
+        self.slit_aperture = self.spinBox_slit_aperture.value
+    
+        #
+        # Channels settings
+        #
         
             ### channel creation and save
     def comboBox_channel_name_set_indexes(self):
+        "set the options of the comboBox_channel_names depending on self.channel dictionnary options"
         self.comboBox_channel_name.clear()
         self.comboBox_channel_name.addItems(list(self.channel.keys()))
         self.comboBox_channel_name_index_changed()
@@ -522,6 +537,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                            self.channel[self.comboBox_channel_name.currentText()])
         
         self.preview_channel = self.channel[self.comboBox_channel_name.currentText()] # Change the current name of the channel used for preview
+        
+    def pb_channel_save_clicked_connect(self):
+        "Saves the settings from the interface elements into the specified channel object."
+        functions_ui.save_channel_from_interface(self.list_channel_interface,
+                                                 self.channel[self.comboBox_channel_name.currentText()])
     
     def pb_channel_add_clicked_connect(self):
         "Saves the settings from the interface elements into a new channel object named from channel_name lineEdit object."
@@ -555,12 +575,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 
         else:
             self.status_bar.showMessage("Default channel can not be removed", 5000)
-
-    def pb_channel_save_clicked_connect(self):
-        "Saves the settings from the interface elements into the specified channel object."
-        functions_ui.save_channel_from_interface(self.list_channel_interface,
-                                                 self.channel[self.comboBox_channel_name.currentText()])
- 
+            
+            ### Functions called when changing the parameters of lasers
+            "These functions are triggered when the corresponding laser spin-box or check-box is changed."
     def state_laser_405_changed(self):
         self.state_laser_changed('405')
             
@@ -574,12 +591,15 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.state_laser_changed('640')
 
     def state_laser_changed(self, laser):
+        "Updates the laser output signal via the DAQ if laser emission is active."
         if self.laser_emission:
-            if self.checkBox_laser[laser].isChecked():
-                if self.microscope.daq_channels[laser] is not None:
-                    functions_daq.analog_out(self.spinBox_laser_power[laser].value()*5/100,self.microscope.daq_channels[laser])
-            else:
-                functions_daq.analog_out(0,self.microscope.daq_channels[laser])
+            if self.microscope.daq_channels[laser] is not None:
+                if self.checkBox_laser[laser].isChecked():
+                        # Sets the analog output voltage based on the laser power percentage (scaled to 5V max).
+                        functions_daq.analog_out(self.spinBox_laser_power[laser].value()*5/100,self.microscope.daq_channels[laser])
+                else:
+                    # Turns off the laser by setting the output to 0V.
+                    functions_daq.analog_out(0,self.microscope.daq_channels[laser])
         
     def pb_laser_emission_clicked(self):
         if self.pb_laser_emission.isChecked():
@@ -640,7 +660,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     def updateActiveChannels(self):
         self.active_channels = [comboBox.currentText() for comboBox in self.comboBoxes_channel_order]
 
-        ## Preview
+        #
+        #Preview
+        #
         
             ### Changement min / max grayscales
     
@@ -825,6 +847,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.label_image_preview.setText("No image!")
 
     def update_gray_histogram(self):
+        "start the generation of a new histogram"
         if not self.histogram_greyvalue_thread or not self.histogram_greyvalue_thread.isRunning() :
             self.generate_histogram()
         
@@ -843,7 +866,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         qimage = QImage(image_data, w, h, w * 4, QImage.Format_RGBA8888)
         self.label_histogram_greyvalue.setPixmap(QPixmap.fromImage(qimage))
             
-        
     def store_frame(self, frame):
         """Function used to get the frame from camera thread process"""
         new_frame = frame
@@ -873,7 +895,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_channel_remove.setDisabled(active)
             #Preview
 
-        ## Acquisition
+        #
+        # Acquisition
+        #
         
     def pb_snoutscope_acquisition_clicked_connect(self):
         """Start acquisition with the Snoutscope protocole from Armin"""
@@ -890,6 +914,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     ###############################################
     
     def save_config(self):
+        "save cnfigurations of the microscope"
         reply = QMessageBox.question(
             self, 'Confirm changes',
             "Are you sure you want to save changes?\nIf ou press Yes, orriginal settings will be erased",
@@ -901,17 +926,28 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         elif reply == QMessageBox.No:
             pass
         
+    def openDAQEditor(self):
+        "display window to eddit DAC channels"
+        self.DAQ_editor = setDAQWindow(self.microscope.daq_channels,self)
+        self.DAQ_editor.show()
+    
     def openFiltersEditor(self):
         self.filters_editor = filtersEditionWindow(self.microscope.filters,self)
         self.filters_editor.show()
         
+    def openAlign_O2_O3(self):
+        "display window to aligne O2 and O3 using the piezzo stage"
+        pass
+        
     def openPreserROIEditor(self):
+        "display window to eddit preset ROI that can be used"
         self.presetROI_editor = PresetROIWindow(self.preset_size ,
                                                 [self.camera[self.camera_id].hchipsize , self.camera[self.camera_id].vchipsize],
                                                 self)
         self.presetROI_editor.show()
     
     def openChannelEditor(self):
+        "display window to eddit default channels of the microscope"
         self.channel_editor = ChannelEditorWindow(self.default_channel, self.channel_names, self)
         self.channel_editor.show()
         pass
@@ -920,7 +956,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     ## Fonctions appelées pour sauvegarder et changer l'interface ##
     ################################################################
     
-    ## different simples varibles .json
+    #
+    # different simples varibles .json
+    #
     
     def load_variables(self):
         self.loaded_variables = False
@@ -942,13 +980,15 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             json.dump(saved_variables, file)
         
     
-    ## Channels
+    #
+    # Channels
+    #
     
     def load_channels(self):
         config_dir = 'configs'
         file_path = os.path.join(config_dir, 'channels_data.pkl')
         
-        loaded = False # est-ce que le channel sera chargé ?
+        self.loaded_channels = False # est-ce que le channel sera chargé ?
         
         if os.path.exists(file_path):
             with open(file_path, 'rb') as file:
@@ -956,9 +996,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.channel_names = data['channel_names']
                 self.default_channel = data['channel']
                 
-            loaded = True
+            self.loaded_channels = True
             
-        return loaded
+        return self.loaded_channels
     
     def save_channels(self):
         config_dir = 'configs'
@@ -972,8 +1012,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         with open(file_path, 'wb') as file:
             pickle.dump(channels_data, file)
         
-        
-    
+
 if __name__ == '__main__':
     APP = QtWidgets.QApplication(sys.argv)
     FEN = GUI_Microscope()

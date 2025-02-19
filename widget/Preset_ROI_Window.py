@@ -8,7 +8,7 @@ Created on Mon Feb 17 16:16:34 2025
 """
 Convert file.ui to file.py
 
-pyside6-uic widget.ui_preset_ROI.ui -o widget.ui_preset_ROI.py
+pyside6-uic widget/ui_preset_ROI.ui -o widget/ui_preset_ROI.py
 
 TODO :
 
@@ -24,7 +24,6 @@ if __name__ == "__main__":
     current_dir = os.path.dirname(os.path.abspath(__file__))
     parent_dir = os.path.dirname(current_dir)
     sys.path.append(parent_dir)
-
 
 from Functions_UI import functions_ui
 

@@ -8,15 +8,22 @@ Created on Tue Feb 18 16:30:13 2025
 """
 Convert file.ui to file.py
 
-pyside6-uic widget.ui_set_filters.ui -o widget.i_set_filters.py
+pyside6-uic widget/ui_set_filters.ui -o widget/ui_set_filters.py
 
 TODO :
 
 """
+import os
 import sys
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QMessageBox, QWidget
+
+# Ajoutez le dossier parent au sys.path si le fichier est exécuté directement
+if __name__ == "__main__":
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    sys.path.append(parent_dir)
 
 from widget.ui_set_filters import Ui_Form
 
@@ -38,7 +45,7 @@ class filtersEditionWindow(QWidget, Ui_Form):
         
     def on_init(self):
         
-        self.setWindowTitle('Filters eddition')
+        self.setWindowTitle('set filters')
         self.setWindowFlag(Qt.Window)  # Assure que la fenêtre est indépendante
         
         self.lineEdit = {'Filter1' : self.lineEdit_Filter1,
@@ -73,6 +80,7 @@ class filtersEditionWindow(QWidget, Ui_Form):
             event.accept()
         
 if __name__ == '__main__':
+    "To test the window"
     app = QApplication(sys.argv)
     filters = ['BFP','GFP','CY3.5','TexRed','empty5', 'empty6']
     

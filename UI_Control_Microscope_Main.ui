@@ -23,7 +23,7 @@
    <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_34">
+   <layout class="QHBoxLayout" name="horizontalLayout_38">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -1654,36 +1654,40 @@ Just for preview.</string>
        </layout>
       </item>
       <item>
-       <widget class="QLabel" name="label_scanner_position">
-        <property name="font">
-         <font>
-          <pointsize>8</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>Scanner
-Position (µm)</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSpinBox" name="spinBox_scanner_position">
-        <property name="toolTip">
-         <string>Adjust the scanner position.
+       <layout class="QHBoxLayout" name="horizontalLayout_35">
+        <item>
+         <widget class="QSpinBox" name="spinBox_scanner_position">
+          <property name="toolTip">
+           <string>Adjust the scanner position.
 Just for preview.</string>
-        </property>
-        <property name="minimum">
-         <number>-200</number>
-        </property>
-        <property name="maximum">
-         <number>200</number>
-        </property>
-       </widget>
+          </property>
+          <property name="minimum">
+           <number>-200</number>
+          </property>
+          <property name="maximum">
+           <number>200</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_scanner_position">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Scanner
+Position (µm)</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QPushButton" name="pb_scanner_center">
@@ -1696,25 +1700,71 @@ Just for preview.</string>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_scan_range">
-        <property name="text">
-         <string>Scan Range (µm)</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_34">
+        <item>
+         <widget class="QDoubleSpinBox" name="spinBox_scan_range">
+          <property name="toolTip">
+           <string>Set the scan range around the center (0 µm).
+This defines the maximum displacement during scanning.</string>
+          </property>
+          <property name="maximum">
+           <double>300.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>20.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_scan_range">
+          <property name="text">
+           <string>Scan Range (µm)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
-       <widget class="QDoubleSpinBox" name="spinBox_scan_range">
-        <property name="toolTip">
-         <string>Set the scan range around the center (0 µm).
-This defines the maximum displacement during scanning.</string>
-        </property>
-        <property name="maximum">
-         <double>300.000000000000000</double>
-        </property>
-        <property name="value">
-         <double>20.000000000000000</double>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_36">
+        <item>
+         <widget class="QSpinBox" name="spinBox_aspect_ratio">
+          <property name="toolTip">
+           <string>Set the aspect ratio of the scanning</string>
+          </property>
+          <property name="maximum">
+           <number>49</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_scan_range_2">
+          <property name="text">
+           <string>Aspect Ratio</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_37">
+        <item>
+         <widget class="QSpinBox" name="spinBox_slit_aperture">
+          <property name="maximum">
+           <number>2000</number>
+          </property>
+          <property name="value">
+           <number>800</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_slit_aperture">
+          <property name="text">
+           <string>Slit aperture</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="Line" name="line_4">

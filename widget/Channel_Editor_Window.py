@@ -166,6 +166,7 @@ class ChannelEditorWindow(QWidget, Ui_Form):
 
     # Ce bloc permet de tester la fenêtre ChannelEditorWindow indépendamment
 if __name__ == '__main__':
+    "To test the window"
     app = QApplication(sys.argv)
     test_lasers = ["405","488","561","640"]
     test_channel_names = ['BFP', 'GFP', 'CY3.5', 'TexRed']

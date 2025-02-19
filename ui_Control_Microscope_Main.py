@@ -56,8 +56,8 @@ class Ui_MainWindow(object):
         self.action_Filters.setObjectName(u"action_Filters")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.horizontalLayout_34 = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_34.setObjectName(u"horizontalLayout_34")
+        self.horizontalLayout_38 = QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_38.setObjectName(u"horizontalLayout_38")
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.label_saving = QLabel(self.centralwidget)
@@ -631,14 +631,14 @@ class Ui_MainWindow(object):
         self.verticalLayout.addItem(self.verticalSpacer)
 
 
-        self.horizontalLayout_34.addLayout(self.verticalLayout)
+        self.horizontalLayout_38.addLayout(self.verticalLayout)
 
         self.line = QFrame(self.centralwidget)
         self.line.setObjectName(u"line")
         self.line.setFrameShape(QFrame.Shape.VLine)
         self.line.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_34.addWidget(self.line)
+        self.horizontalLayout_38.addWidget(self.line)
 
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
@@ -759,6 +759,15 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_20)
 
+        self.horizontalLayout_35 = QHBoxLayout()
+        self.horizontalLayout_35.setObjectName(u"horizontalLayout_35")
+        self.spinBox_scanner_position = QSpinBox(self.centralwidget)
+        self.spinBox_scanner_position.setObjectName(u"spinBox_scanner_position")
+        self.spinBox_scanner_position.setMinimum(-200)
+        self.spinBox_scanner_position.setMaximum(200)
+
+        self.horizontalLayout_35.addWidget(self.spinBox_scanner_position)
+
         self.label_scanner_position = QLabel(self.centralwidget)
         self.label_scanner_position.setObjectName(u"label_scanner_position")
         font1 = QFont()
@@ -767,31 +776,65 @@ class Ui_MainWindow(object):
         self.label_scanner_position.setFont(font1)
         self.label_scanner_position.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayout_5.addWidget(self.label_scanner_position)
+        self.horizontalLayout_35.addWidget(self.label_scanner_position)
 
-        self.spinBox_scanner_position = QSpinBox(self.centralwidget)
-        self.spinBox_scanner_position.setObjectName(u"spinBox_scanner_position")
-        self.spinBox_scanner_position.setMinimum(-200)
-        self.spinBox_scanner_position.setMaximum(200)
 
-        self.verticalLayout_5.addWidget(self.spinBox_scanner_position)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_35)
 
         self.pb_scanner_center = QPushButton(self.centralwidget)
         self.pb_scanner_center.setObjectName(u"pb_scanner_center")
 
         self.verticalLayout_5.addWidget(self.pb_scanner_center)
 
-        self.label_scan_range = QLabel(self.centralwidget)
-        self.label_scan_range.setObjectName(u"label_scan_range")
-
-        self.verticalLayout_5.addWidget(self.label_scan_range)
-
+        self.horizontalLayout_34 = QHBoxLayout()
+        self.horizontalLayout_34.setObjectName(u"horizontalLayout_34")
         self.spinBox_scan_range = QDoubleSpinBox(self.centralwidget)
         self.spinBox_scan_range.setObjectName(u"spinBox_scan_range")
         self.spinBox_scan_range.setMaximum(300.000000000000000)
         self.spinBox_scan_range.setValue(20.000000000000000)
 
-        self.verticalLayout_5.addWidget(self.spinBox_scan_range)
+        self.horizontalLayout_34.addWidget(self.spinBox_scan_range)
+
+        self.label_scan_range = QLabel(self.centralwidget)
+        self.label_scan_range.setObjectName(u"label_scan_range")
+
+        self.horizontalLayout_34.addWidget(self.label_scan_range)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_34)
+
+        self.horizontalLayout_36 = QHBoxLayout()
+        self.horizontalLayout_36.setObjectName(u"horizontalLayout_36")
+        self.spinBox_aspect_ratio = QSpinBox(self.centralwidget)
+        self.spinBox_aspect_ratio.setObjectName(u"spinBox_aspect_ratio")
+        self.spinBox_aspect_ratio.setMaximum(49)
+
+        self.horizontalLayout_36.addWidget(self.spinBox_aspect_ratio)
+
+        self.label_scan_range_2 = QLabel(self.centralwidget)
+        self.label_scan_range_2.setObjectName(u"label_scan_range_2")
+
+        self.horizontalLayout_36.addWidget(self.label_scan_range_2)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_36)
+
+        self.horizontalLayout_37 = QHBoxLayout()
+        self.horizontalLayout_37.setObjectName(u"horizontalLayout_37")
+        self.spinBox_slit_aperture = QSpinBox(self.centralwidget)
+        self.spinBox_slit_aperture.setObjectName(u"spinBox_slit_aperture")
+        self.spinBox_slit_aperture.setMaximum(2000)
+        self.spinBox_slit_aperture.setValue(800)
+
+        self.horizontalLayout_37.addWidget(self.spinBox_slit_aperture)
+
+        self.label_slit_aperture = QLabel(self.centralwidget)
+        self.label_slit_aperture.setObjectName(u"label_slit_aperture")
+
+        self.horizontalLayout_37.addWidget(self.label_slit_aperture)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_37)
 
         self.line_4 = QFrame(self.centralwidget)
         self.line_4.setObjectName(u"line_4")
@@ -851,14 +894,14 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.addWidget(self.label_volume_duration)
 
 
-        self.horizontalLayout_34.addLayout(self.verticalLayout_5)
+        self.horizontalLayout_38.addLayout(self.verticalLayout_5)
 
         self.line_2 = QFrame(self.centralwidget)
         self.line_2.setObjectName(u"line_2")
         self.line_2.setFrameShape(QFrame.Shape.VLine)
         self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_34.addWidget(self.line_2)
+        self.horizontalLayout_38.addWidget(self.line_2)
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
@@ -1072,7 +1115,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.addLayout(self.horizontalLayout_25)
 
 
-        self.horizontalLayout_34.addLayout(self.verticalLayout_4)
+        self.horizontalLayout_38.addLayout(self.verticalLayout_4)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -1319,21 +1362,26 @@ class Ui_MainWindow(object):
         self.slider_scanner_position.setToolTip(QCoreApplication.translate("MainWindow", u"Adjust the scanner position.\n"
 "Just for preview.", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_scanner_position.setText(QCoreApplication.translate("MainWindow", u"Scanner\n"
-"Position (\u00b5m)", None))
 #if QT_CONFIG(tooltip)
         self.spinBox_scanner_position.setToolTip(QCoreApplication.translate("MainWindow", u"Adjust the scanner position.\n"
 "Just for preview.", None))
 #endif // QT_CONFIG(tooltip)
+        self.label_scanner_position.setText(QCoreApplication.translate("MainWindow", u"Scanner\n"
+"Position (\u00b5m)", None))
 #if QT_CONFIG(tooltip)
         self.pb_scanner_center.setToolTip(QCoreApplication.translate("MainWindow", u"Center the scanner position (set to 0).", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_scanner_center.setText(QCoreApplication.translate("MainWindow", u"Center", None))
-        self.label_scan_range.setText(QCoreApplication.translate("MainWindow", u"Scan Range (\u00b5m)", None))
 #if QT_CONFIG(tooltip)
         self.spinBox_scan_range.setToolTip(QCoreApplication.translate("MainWindow", u"Set the scan range around the center (0 \u00b5m).\n"
 "This defines the maximum displacement during scanning.", None))
 #endif // QT_CONFIG(tooltip)
+        self.label_scan_range.setText(QCoreApplication.translate("MainWindow", u"Scan Range (\u00b5m)", None))
+#if QT_CONFIG(tooltip)
+        self.spinBox_aspect_ratio.setToolTip(QCoreApplication.translate("MainWindow", u"Set the aspect ratio of the scanning", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_scan_range_2.setText(QCoreApplication.translate("MainWindow", u"Aspect Ratio", None))
+        self.label_slit_aperture.setText(QCoreApplication.translate("MainWindow", u"Slit aperture", None))
         self.label_channels.setText(QCoreApplication.translate("MainWindow", u"Channels", None))
         self.label_number_channels.setText(QCoreApplication.translate("MainWindow", u"Number of channels", None))
         self.groupBox_channel_order.setTitle(QCoreApplication.translate("MainWindow", u"Channels orders", None))
