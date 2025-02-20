@@ -1734,6 +1734,9 @@ This defines the maximum displacement during scanning.</string>
           <property name="maximum">
            <number>49</number>
           </property>
+          <property name="value">
+           <number>3</number>
+          </property>
          </widget>
         </item>
         <item>

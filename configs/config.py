@@ -45,15 +45,14 @@ class experiment(object):
     "Object discribing experiment settings"
     def __init__(self):
         self.exp_name = 'Image'
-        self.date_today = str(date.today())
-        self.time_now = datetime.now().strftime("%H-%M-%S")
         
         self.timepoints = 10.0
         self.time_intervals = 1.0
         self.total_duration = 10.0
         
-        self.aspect_ratio = 3
+        self.scanner_position = 0
         self.scan_range = 0
+        self.aspect_ratio = 3
         self.slit_aperture = 800 #in µm
         
         self.cameras = []

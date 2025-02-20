@@ -29,7 +29,7 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
 
 from Functions_UI import functions_ui, HistogramThread
 from Functions_Hardware import CameraThread, functions_camera #, functions_daq
-from configs.config import camera, channel_config, microscope
+from configs.config import camera, channel_config, microscope, experiment
 # from hardware.hamamatsu import HamamatsuCamera
 from mock.hamamatsu_DAQ import HamamatsuCamera
 from mock.hamamatsu_DAQ import functions_daq
@@ -68,13 +68,14 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.load_channels()
         
         self.microscope = microscope() # Variable contenant les paramétres du microscope
+        self.experiment = experiment() # Variable contenant l'expérience
         
         #
         # Saved datas
         #
         
-        self.DATA_PATH = "D:/EqSibarita/Python/Control_Microscope_GUI/Images"
-        self.EXP_NAME = "Image"
+        self.data_path = "D:/EqSibarita/Python/Control_Microscope_GUI/Images"
+        self.experiment.exp_name = "Image"
         
         self.setup = "Thibault" #Permet de choisir entre le Setup de Thibault et celui d'Armin
         
@@ -153,20 +154,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sync_filter_interface() # Modifie les channels et l'interface selon les filtres disponibles
         
         #
-        # Acquisition settings
+        # Acquisition settings, dans self.experiment
         #
         
-            ##Timelaps
-        self.timepoints = 10 # Nombre de points dans le timelaps
-        self.time_intervals = 1 #temps entre deux volumes du timelaps en secondes
-        self.total_duration = 10 #Durée totale du timelaps en secondes
-        
-            ## Scanner
-        self.scanner_position = 0 #Position actuelle du scanner en µm
-        self.scan_range = 20 # taille de la zone scannée en µm
-        self.aspect_ratio = 3
-        self.slit_aperture = 800 # in µm
-        
+
         #
         # Preview
         #
@@ -331,10 +322,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         Opens a dialog to select a directory and updates the pb_data_path field.
         """
-        self.DATA_PATH = QFileDialog.getExistingDirectory(self, "Select Data Directory")
+        self.data_path = QFileDialog.getExistingDirectory(self, "Select Data Directory")
         
-        if self.DATA_PATH:  # Si un dossier a été sélectionné
-            self.label_data_path.setText(self.DATA_PATH)
+        if self.data_path:  # Si un dossier a été sélectionné
+            self.label_data_path.setText(self.data_path)
         
     def lineEdit_exp_name_modified(self):
         """Ensures the experiment name is correctly formatted """
@@ -342,16 +333,16 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
 
         if not exp_name:
             self.status_bar.showMessage("Experiment name cannot be empty!", 5000)
-            self.lineEdit_exp_name.setText(self.EXP_NAME)
+            self.lineEdit_exp_name.setText(self.exp_name)
             return
             
-        name_ok, self.EXP_NAME = functions_ui.legalize_name(exp_name)
+        name_ok, self.exp_name = functions_ui.legalize_name(exp_name)
         
         if name_ok :
             self.status_bar.showMessage(f"Experiment name set to: {exp_name}", 2000)
         else:
             self.status_bar.showMessage("Invalid experiment name! Avoid spaces and special characters.", 5000)
-            self.lineEdit_exp_name.setText(self.EXP_NAME)
+            self.lineEdit_exp_name.setText(self.exp_name)
         
     def comboBox_setup_index_changed(self):
         """ this function was supppose to Handle changes in the setup selection and update the interface accordingly"""
@@ -497,19 +488,19 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         """
     
     def spinBox_timepoints_value_changed(self):
-        self.timepoints = self.spinBox_timepoints.value()
-        self.total_duration = self.timepoints * self.time_intervals
-        self.timeEdit_total_duration.setTime(functions_ui.seconds_to_QTime(self.total_duration))
+        self.experiment.timepoints = self.spinBox_timepoints.value()
+        self.experiment.total_duration = self.experiment.timepoints * self.experiment.time_intervals
+        self.timeEdit_total_duration.setTime(functions_ui.seconds_to_QTime(self.experiment.total_duration))
         
     def spinBox_time_interval_value_changed(self):
-        self.time_intervals = self.spinBox_time_interval.value()
-        self.total_duration = self.timepoints * self.time_intervals
-        self.timeEdit_total_duration.setTime(functions_ui.seconds_to_QTime(self.total_duration))
+        self.experiment.time_intervals = self.spinBox_time_interval.value()
+        self.experiment.total_duration = self.experiment.timepoints * self.experiment.time_intervals
+        self.timeEdit_total_duration.setTime(functions_ui.seconds_to_QTime(self.experiment.total_duration))
         
     def timeEdit_total_duration_value_changed(self):
-        self.total_duration = functions_ui.QTime_to_seconds(self.timeEdit_total_duration.time())
-        self.time_intervals = self.total_duration / self.timepoints
-        self.spinBox_time_interval.setValue(self.time_intervals)
+        self.experiment.total_duration = functions_ui.QTime_to_seconds(self.timeEdit_total_duration.time())
+        self.experiment.time_intervals = self.experiment.total_duration / self.experiment.timepoints
+        self.spinBox_time_interval.setValue(self.experiment.time_intervals)
         
         #
         # Scanner
@@ -521,20 +512,20 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         
     def spinBox_scanner_position_value_changed(self):
-        self.scanner_position = self.spinBox_scanner_position.value()
+        self.experiment.scanner_position = self.spinBox_scanner_position.value()
         
     def pb_scanner_center_clicked_connect(self):
-        self.scanner_position = 0
+        self.experiment.scanner_position = 0
         self.spinBox_scanner_position.setValue(0)
         
     def spinBox_scan_range_value_changed(self):
-        self.scan_range = self.spinBox_scan_range.value()
+        self.experiment.scan_range = self.spinBox_scan_range.value()
         
     def spinBox_aspect_ratio_value_changed(self):
-        self.aspect_ratio = self.spinBox_aspect_ratio.value()
+        self.experiment.aspect_ratio = self.spinBox_aspect_ratio.value()
     
     def spinBox_slit_aperture_value_changed(self):
-        self.slit_aperture = self.spinBox_slit_aperture.value
+        self.experiment.slit_aperture = self.spinBox_slit_aperture.value
     
         #
         # Channels settings
@@ -804,7 +795,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     
         # Création du chemin complet
         
-        file_path = os.path.join(self.DATA_PATH, f"{self.EXP_NAME}.tiff")
+        file_path = os.path.join(self.data_path, f"{self.exp_name}.tiff")
                 
         try:
             tifffile.imwrite(file_path, self.preview_frame)
