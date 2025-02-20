@@ -107,8 +107,12 @@ class functions_ui():
         for laser in channel_list_interface['checkBox_laser'].keys():
             channel_list_interface['checkBox_laser'][laser].setChecked(channel.laser_is_active[laser])
             channel_list_interface['spinBox_laser_power'][laser].setValue(channel.laser_power[laser])
-            
-        channel_list_interface['filter'].setCurrentText(channel.filter)
+        
+        if channel.filter is not None:
+            channel_list_interface['filter'].setCurrentText(channel.filter)
+        else:
+            channel_list_interface['filter'].setCurrentText('-None-')
+        
         channel_list_interface['camera'].setCurrentIndex(channel.camera)
         channel_list_interface['exposure_time'].setValue(channel.exposure_time)
         

@@ -73,6 +73,7 @@ class filtersEditionWindow(QWidget, Ui_Form):
 
         if reply == QMessageBox.Yes:
             self.set_filter_list()
+            self.parent().sync_filter_interface()
             event.accept()
         elif reply == QMessageBox.No:
             event.ignore()

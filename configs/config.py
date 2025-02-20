@@ -67,7 +67,7 @@ class microscope(object):
         self.volts_per_um = 0.05
         
         # Filters
-        self.filters = ['BFP','GFP','CY3.5','TexRed','empty5', 'empty6']
+        self.filters = ['BFP','GFP','CY3.5','TexRed','empty5', 'empty6'] #should be 6 options
         
         # Lasers
         self.lasers = LASERS # ["405","488","561","640"]

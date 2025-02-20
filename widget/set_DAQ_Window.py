@@ -80,7 +80,8 @@ class setDAQWindow(QWidget, Ui_Form):
     def closeEvent(self, event):
         reply = QMessageBox.question(
             self, 'Confirmer changes',
-            "Are you sure you want to apply the changes?\nIf ou press Yes, settings in the main window will be erased",
+            """Are you sure you want to apply the changes?
+            If ou press Yes, settings in the main window will be erased""",
             QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
             QMessageBox.Cancel
         )

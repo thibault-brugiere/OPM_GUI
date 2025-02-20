@@ -150,6 +150,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.comboBox_channel_name_set_indexes() #Ajoute tous les cannaux dans la comboBox_channel_name
         
+        self.sync_filter_interface() # Modifie les channels et l'interface selon les filtres disponibles
+        
         #
         # Acquisition settings
         #
@@ -541,7 +543,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ### Enable / disable laser tool depending on DAC connection
     def sync_laser_interface(self):
         """
-        Updates the laser interface based on the connection status to the DAQ.
+        Updates the laser interface and channels based on the connection status to the DAQ.
         
         This function iterates over each laser and checks its connection status
         to the DAQ (Data Acquisition) system. If a laser is not connected, the
@@ -572,9 +574,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ### channel creation and save
     def comboBox_channel_name_set_indexes(self):
         "set the options of the comboBox_channel_names depending on self.channel dictionnary options"
+        self.comboBox_channel_name.blockSignals(True)
         self.comboBox_channel_name.clear()
         self.comboBox_channel_name.addItems(list(self.channel.keys()))
-        self.comboBox_channel_name_index_changed()
+        self.comboBox_channel_name.blockSignals(False)
     
     def comboBox_channel_name_index_changed(self):
         "Configures the interface elements when changing the comboBox_channel from selected channel object."
@@ -663,6 +666,29 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             for laser in self.checkBox_laser.keys():
                 if self.microscope.daq_channels[laser] is not None:
                     functions_daq.analog_out(0,self.microscope.daq_channels[laser])
+                    
+    def sync_filter_interface(self):
+        """
+        Updates the interfaceand channels based on the avaliable filters
+        """
+        
+        options = copy.deepcopy(self.microscope.filters)
+        
+        options.insert(0, '-None-')
+        
+        self.channel = copy.deepcopy(self.default_channel)
+        
+        self.comboBox_channel_filter.blockSignals(True) # Pas utile, peut-être plus tard ?
+        self.comboBox_channel_filter.clear()
+        self.comboBox_channel_filter.addItems(options)
+
+        for channel in self.channel.keys():
+            if self.channel[channel].filter not in options:
+                self.channel[channel].filter = None
+        
+        self.comboBox_channel_filter.blockSignals(False)
+        
+        self.comboBox_channel_name_index_changed()
         
     def spinBox_channel_exposure_time_value_changed(self):
         pass

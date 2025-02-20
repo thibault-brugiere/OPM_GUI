@@ -61,7 +61,7 @@ class ChannelEditorWindow(QWidget, Ui_Form):
         
         ### Library to set the channels
         
-        self.lasers = ["405","488","561","640"]
+        self.lasers = ["405","488","561","640"] # = self.microscope.lasers
         
         self.checkBox_laser = {"405" : self.checkBox_laser_405,
                                "488" : self.checkBox_laser_488,
@@ -85,6 +85,7 @@ class ChannelEditorWindow(QWidget, Ui_Form):
         
         self.comboBox_channel_name_set_indexes()
         self.comboBox_channel_name_update()
+        self.sync_filter_interface()
         
         #########################################
         ## Fonctions appelées pour les boutons ##
@@ -145,10 +146,35 @@ class ChannelEditorWindow(QWidget, Ui_Form):
         functions_ui.save_channel_from_interface(self.list_channel_interface,
 
                                                  self.channel[self.comboBox_channel_name.currentText()])
+        
+    def sync_filter_interface(self):
+        """
+        Updates the interfaceand channels based on the avaliable filters
+        """
+        
+        options = copy.deepcopy(self.parent().microscope.filters)
+        
+        options.insert(0, '-None-')
+        
+        self.comboBox_channel_filter.blockSignals(True) # Pas utile, peut-être plus tard ?
+        self.comboBox_channel_filter.clear()
+        self.comboBox_channel_filter.addItems(options)
+
+        for channel in self.channel.keys():
+            if self.channel[channel].filter not in options:
+                self.channel[channel].filter = None
+        
+        self.comboBox_channel_filter.blockSignals(False)
+        
+        self.comboBox_channel_name_update()
+            
     def closeEvent(self, event):
         reply = QMessageBox.question(
             self, 'Confirmer changes',
-            "Are you sure you want to apply the changes?\nIf ou press Yes, settings in the main window will be erased",
+            """"Are you sure you want to apply the changes?
+            If ou press Yes, settings in the main window will be erased
+            
+            Warning: if filters list have been changed previously, channels may have been modified""",
             QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
             QMessageBox.Cancel
         )
@@ -156,7 +182,9 @@ class ChannelEditorWindow(QWidget, Ui_Form):
         if reply == QMessageBox.Yes:
             self.parent().channel_names = self.channel_names
             self.parent().default_channel = self.channel
+            self.parent().channel = self.channel
             self.parent().comboBox_channel_name_set_indexes()
+            self.parent().comboBox_channel_name_index_changed()
             self.parent().sync_laser_interface()
             event.accept()
         elif reply == QMessageBox.No:
