@@ -11,13 +11,10 @@ Convert file.ui to file.py
 pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
 
 TODO :
-    Finir de programmer les boutons
-    Vérifier pour les quels je veux qu'un message s'affiche
-    Commener tout le texte / les fonctions
-    
-    => Faire afficher le streaming de la camera
+    => Appeler le programme Snoutscope
 """
 
+import copy
 import json
 import numpy as np
 import os
@@ -31,9 +28,11 @@ from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
 
 from Functions_UI import functions_ui, HistogramThread
-from Functions_Hardware import CameraThread, functions_camera, functions_daq
+from Functions_Hardware import CameraThread, functions_camera #, functions_daq
 from configs.config import camera, channel_config, microscope
-from hardware.hamamatsu import HamamatsuCamera
+# from hardware.hamamatsu import HamamatsuCamera
+from mock.hamamatsu_DAQ import HamamatsuCamera
+from mock.hamamatsu_DAQ import functions_daq
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
@@ -110,7 +109,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             for channel in self.channel_names:
                 self.default_channel[channel] = channel_config(channel, self.lasers)
                 
-        self.channel = self.default_channel
+        self.channel = copy.deepcopy(self.default_channel)
         
             ### Library to set the channels
         
@@ -120,14 +119,21 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                "640" : self.checkBox_laser_640
                                } #Dictionnary of the laser checkboxes
         
-        self.spinBox_laser_power = {"405": self.spinBox_laser_405,
+        self.spinBox_laser_power = {"405" : self.spinBox_laser_405,
                                     "488" : self.spinBox_laser_488,
                                     "561" : self.spinBox_laser_561,
                                     "640" : self.spinBox_laser_640
                                     } # Dictionnary of the laser power spin boxes
         
-        self.list_channel_interface = { "checkBox_laser" :      self.checkBox_laser,
+        self.slider_laser_power = {"405" : self.slider_laser_405 ,
+                                   "488" : self.slider_laser_488 ,
+                                   "561" : self.slider_laser_561 ,
+                                   "640" : self.slider_laser_640
+                                   } # Dictionnary of the laser power spin boxes
+        
+        self.list_channel_interface = {"checkBox_laser" :      self.checkBox_laser,
                                        "spinBox_laser_power" :  self.spinBox_laser_power,
+                                       "slider_laser_power" : self.slider_laser_power,
                                        "filter" :               self.comboBox_channel_filter,
                                        "camera" :               self.comboBox_channel_camera,
                                        "exposure_time" :        self.spinBox_channel_exposure_time
@@ -136,10 +142,14 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.comboBoxes_channel_order = [] # Liste des combo boxes permettant de sélectionner les cannaux actifs
         self.active_channels = [] #contiendra la liste et l'ordre des cannaux activés
         
+        self.laser_emission = False # si le laser est actuellement emmis
+        
+            ### desable laser settings if not connected to DAQ
+            
+        self.sync_laser_interface() # Empèche la modification et l'allumage des lasers inutilisables
+        
         self.comboBox_channel_name_set_indexes() #Ajoute tous les cannaux dans la comboBox_channel_name
         
-        self.laser_emission = False # si le laser est actuellement emmis
-         
         #
         # Acquisition settings
         #
@@ -298,7 +308,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         if result == QtWidgets.QMessageBox.Yes:
             # permet d'ajouter du code pour fermer proprement
             if self.is_preview:
+                # Eteint l'acquisition si nécessaire
                 self.pb_stop_preview_clicked()
+                # Eteint les lasers si nécessaire
+                self.pb_laser_emission.setChecked(False)
+                self.pb_laser_emission_clicked()
             event.accept()
         else:
             event.ignore()
@@ -524,6 +538,37 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         # Channels settings
         #
         
+            ### Enable / disable laser tool depending on DAC connection
+    def sync_laser_interface(self):
+        """
+        Updates the laser interface based on the connection status to the DAQ.
+        
+        This function iterates over each laser and checks its connection status
+        to the DAQ (Data Acquisition) system. If a laser is not connected, the
+        corresponding UI elements (checkbox and power spinbox) are disabled and
+        reset. If a laser is connected, the UI elements are enabled, allowing
+        the user to interact with them.
+        
+        This ensures that the user interface accurately reflects the current
+        state of the laser connections, providing a seamless user experience.
+        """
+        
+        for laser in self.checkBox_laser.keys():
+            self.channel = copy.deepcopy(self.default_channel)
+            if self.microscope.daq_channels[laser] is None :
+                self.checkBox_laser[laser].setDisabled(True)
+                self.checkBox_laser[laser].setChecked(False)
+                self.spinBox_laser_power[laser].setDisabled(True)
+                self.spinBox_laser_power[laser].setValue(0)
+                self.slider_laser_power[laser].setDisabled(True)
+                for channel in self.channel.keys():
+                    self.channel[channel].laser_is_active[laser] = False
+                    self.channel[channel].laser_power[laser] = 0 
+            else:
+                self.checkBox_laser[laser].setDisabled(False)
+                self.spinBox_laser_power[laser].setDisabled(False)
+                self.slider_laser_power[laser].setDisabled(False)
+
             ### channel creation and save
     def comboBox_channel_name_set_indexes(self):
         "set the options of the comboBox_channel_names depending on self.channel dictionnary options"
@@ -596,7 +641,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             if self.microscope.daq_channels[laser] is not None:
                 if self.checkBox_laser[laser].isChecked():
                         # Sets the analog output voltage based on the laser power percentage (scaled to 5V max).
-                        functions_daq.analog_out(self.spinBox_laser_power[laser].value()*5/100,self.microscope.daq_channels[laser])
+                        functions_daq.analog_out(self.spinBox_laser_power[laser].value()*self.microscope.volts_per_laser_percent[laser],
+                                                 self.microscope.daq_channels[laser])
                 else:
                     # Turns off the laser by setting the output to 0V.
                     functions_daq.analog_out(0,self.microscope.daq_channels[laser])
@@ -979,7 +1025,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         with open(file_path, 'w') as file:
             json.dump(saved_variables, file)
         
-    
     #
     # Channels
     #

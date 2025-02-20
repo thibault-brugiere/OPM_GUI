@@ -2409,23 +2409,13 @@ Acquisition</string>
     <property name="title">
      <string>Fichier</string>
     </property>
-    <widget class="QMenu" name="menuSaving">
-     <property name="title">
-      <string>Saving</string>
-     </property>
-     <addaction name="actionData_path"/>
-     <addaction name="actionExperience_Name"/>
-    </widget>
     <addaction name="action_SaveConfig"/>
-    <addaction name="menuSaving"/>
    </widget>
    <widget class="QMenu" name="menuConfig">
     <property name="title">
      <string>Config</string>
     </property>
-    <addaction name="action_Camera"/>
     <addaction name="action_DAQ"/>
-    <addaction name="action_Lasers"/>
     <addaction name="action_Filters"/>
    </widget>
    <widget class="QMenu" name="menuAlign">

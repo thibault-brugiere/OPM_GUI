@@ -6,6 +6,8 @@ Created on Fri Feb 14 09:26:31 2025
 """
 from datetime import date, datetime
 
+LASERS = ["405","488","561","640"]
+
 class camera(object)   :
     "Object discribing camera settings"
     def __init__(self, camera_id):
@@ -22,7 +24,7 @@ class camera(object)   :
         
 class channel_config(object):
     "Object discribing channels settings"
-    def __init__(self, channel_id, lasers = ["405","488","561","640"]):
+    def __init__(self, channel_id, lasers = LASERS): #lasers = ["405","488","561","640"]
         self.channel_id = channel_id
         self.is_active = False
         self.channel_order = None
@@ -68,11 +70,12 @@ class microscope(object):
         self.filters = ['BFP','GFP','CY3.5','TexRed','empty5', 'empty6']
         
         # Lasers
-        self.lasers = ["405","488","561","640"]
-        self.volts_per_laser_percent_405 = 5 / 100 # 5v max
-        self.volts_per_laser_percent_488 = 5 / 100 # 5v max
-        self.volts_per_laser_percent_561 = 5 / 100 # 5v max
-        self.volts_per_laser_percent_640 = 5 / 100 # 5v max
+        self.lasers = LASERS # ["405","488","561","640"]
+        self.volts_per_laser_percent = {'405' : 5.0 / 100.0, # 5v max
+                                        '488' : 5.0 / 100.0, # 5v max
+                                        '561' : 5.0 / 100.0, # 5v max
+                                        '640' : 5.0 / 100.0  # 5v max
+                                        }
         
         # Microscope magnification
         self.sample_pixel_size = 0.160 #in µm

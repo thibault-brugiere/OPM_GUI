@@ -88,6 +88,7 @@ class setDAQWindow(QWidget, Ui_Form):
         if reply == QMessageBox.Yes:
             self.set_daq_channels()
             self.parent().microscope.daq_channels = self.daq_channels
+            self.parent().sync_laser_interface()
             event.accept()
         elif reply == QMessageBox.No:
             event.ignore()

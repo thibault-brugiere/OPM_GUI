@@ -156,8 +156,8 @@ class ChannelEditorWindow(QWidget, Ui_Form):
         if reply == QMessageBox.Yes:
             self.parent().channel_names = self.channel_names
             self.parent().default_channel = self.channel
-            self.parent().channel = self.channel
             self.parent().comboBox_channel_name_set_indexes()
+            self.parent().sync_laser_interface()
             event.accept()
         elif reply == QMessageBox.No:
             event.ignore()
