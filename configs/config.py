@@ -4,11 +4,10 @@ Created on Fri Feb 14 09:26:31 2025
 
 @author: tbrugiere
 """
-from datetime import date, datetime
 
 LASERS = ["405","488","561","640"]
 
-class camera(object)   :
+class camera(object):
     "Object discribing camera settings"
     def __init__(self, camera_id):
         self.camera_id = 0
@@ -80,14 +79,14 @@ class microscope(object):
         self.sample_pixel_size = 0.160 #in µm
         
         # DAQ
-        self.daq_channels = {"galvo": "Dev1/ao0",
-                             "camera_1": "Dev1/port0/line0",
+        self.daq_channels = {"galvo": "Dev1/ao0", # Fait bouger le galvo pour le scanning
+                             "camera_1": "Dev1/port0/line0", # Trigger l'exposition de la camera
                              "camera_2": None,
-                             "405" : "Dev1/ao1",
-                             "488" : None,
-                             "561" : "Dev1/ao2",
-                             "640" : "Dev1/ao3",
-                             "laser_blanking" : "Dev1/port0/line3"
+                             "405" : "Dev1/ao1", # Régle la puissance du laser 405
+                             "488" : None,      # Régle la puissance du laser 488
+                             "561" : "Dev1/ao2", # Régle la puissance du laser 561
+                             "640" : "Dev1/ao3", # Régle la puissance du laser 640
+                             "laser_blanking" : "Dev1/port0/line3" # Trigger le blanking de l'AOTF du banc laser
                              }
         
         ##############################

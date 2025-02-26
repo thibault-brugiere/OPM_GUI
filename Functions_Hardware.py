@@ -177,35 +177,4 @@ class functions_daq():
                 wait_function(wait_instruction)
             
             task.stop()
-
-
-class DAQ(object):
-    "Object discribing DAQ settings"
-    def __init__(self):
-        self.DAQ_MANUFACTURER = "National Instruments"
-        self.DAQ_MODEL = "USB-6363"
-        self.DAQ_SERIAL_NUM = "serial"
-        #Define channels
-        self.DAQ_CHANNELS_GALVO = "Dev1/ao0"
-        
-        self.DAQ_CHANNELS_CAMERA_0 = "Dev1/port0/line0"
-        self.DAQ_CHANNELS_CAMERA_1 = "Dev1/port0/line1"
-        
-        self.DAQ_CHANNELS_405 = "Dev1/ao1"
-        self.DAQ_CHANNELS_488 = "Dev1/ao2"
-        self.DAQ_CHANNELS_561 = "Dev1/ao3"
-        self.DAQ_CHANNELS_640 = "none"
-        
-        self.DAQ_CHANNELS_BLANKING = "Dev1/port0/line0"
-        
-        # self.DAQ_CHANNELS = {"co_terminal": "/Dev1/PFI0",
-        #                      "co_channel": "Dev1/ctr0",
-        #                      "galvo": "Dev1/ao0",
-        #                      "camera_0": "Dev1/port0/line0",
-        #                      "camera_1": "Dev1/port0/line1",
-        #                      "laser_line_1": "Dev1/port0/line8",
-        #                      "laser_line_2": "Dev1/port0/line9",
-        #                      "laser_line_3": "Dev1/port0/line18",
-        #                      "laser_line_4": "Dev1/port0/line19",
-        #                      "resonant_mirror": "Dev1/ao1"}
     

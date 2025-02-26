@@ -1731,6 +1731,9 @@ This defines the maximum displacement during scanning.</string>
           <property name="toolTip">
            <string>Set the aspect ratio of the scanning</string>
           </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
           <property name="maximum">
            <number>49</number>
           </property>
@@ -1857,8 +1860,7 @@ This defines the maximum displacement during scanning.</string>
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>Frame thickness µm
-Number of frames/volumes
+         <string>Number of frames/volumes
 Estimated volume duration: 0.000 s</string>
         </property>
        </widget>

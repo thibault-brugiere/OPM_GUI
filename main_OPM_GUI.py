@@ -11,7 +11,9 @@ Convert file.ui to file.py
 pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
 
 TODO :
+    => Fonctions function_ui.label_volume_duration pour l'estimation du nombre de frames et durée de chaque volumes
     => Appeler le programme Snoutscope
+    => Enregistrer camera / experiment / microscope
 """
 
 import copy
@@ -23,16 +25,16 @@ import sys
 import tifffile
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import QCoreApplication, QEventLoop, QTimer
+from PySide6.QtCore import QTimer #, QCoreApplication, QEventLoop
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
 
 from Functions_UI import functions_ui, HistogramThread
-from Functions_Hardware import CameraThread, functions_camera #, functions_daq
+from Functions_Hardware import CameraThread, functions_camera , functions_daq
 from configs.config import camera, channel_config, microscope, experiment
 # from hardware.hamamatsu import HamamatsuCamera
 from mock.hamamatsu_DAQ import HamamatsuCamera
-from mock.hamamatsu_DAQ import functions_daq
+# from mock.hamamatsu_DAQ import functions_daq
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
@@ -83,8 +85,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         # Creation of the cameras, set interface
         #
         
-        self.camera = [camera(camera_id = 0 ),
-                       camera(camera_id = 1)]
+        self.camera = [camera(camera_id = 0 )] #, camera(camera_id = 1)] # Avant il y avait deux camera dans le soft
         
         self.camera_id = 0 # index de la caméra actuellement sélectionnée
         
@@ -152,11 +153,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.comboBox_channel_name_set_indexes() #Ajoute tous les cannaux dans la comboBox_channel_name
         
         self.sync_filter_interface() # Modifie les channels et l'interface selon les filtres disponibles
-        
-        #
-        # Acquisition settings, dans self.experiment
-        #
-        
 
         #
         # Preview
@@ -193,18 +189,18 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
         
+        self.spinBox_aspect_ratio.setValue(self.experiment.aspect_ratio)
+        
         #########################################
         ## Fonctions appelées pour les boutons ##
         #########################################
         
             ## Saving / Setup
-        
         self.pb_data_path.clicked.connect(self.pb_data_path_value_changed)
         self.lineEdit_exp_name.editingFinished.connect(self.lineEdit_exp_name_modified)
         self.comboBox_setup.currentIndexChanged.connect(self.comboBox_setup_index_changed)
         
-            ## Camera
-            
+            ## Camera 
         self.comboBox_camera.currentIndexChanged.connect(self.comboBox_camera_index_changed)
         self.spinBox_hsize.editingFinished.connect(self.spinBox_hsize_value_changed)
         self.spinBox_hpos.editingFinished.connect(self.spinBox_hpos_value_changed)
@@ -478,6 +474,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         # Timelaps settings
         #
+        
         """
         These functions handle user input changes in the spin boxes and time editor related to time-lapse acquisition settings. 
         
@@ -520,6 +517,16 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def spinBox_scan_range_value_changed(self):
         self.experiment.scan_range = self.spinBox_scan_range.value()
+        print(self.spinBox_scan_range.value())
+        print(self.microscope.sample_pixel_size)
+        print(self.spinBox_aspect_ratio.value())
+        print(self.microscope.tilt_angle)
+        print(self.preview_channel.exposure_time)
+        self.label_volume_duration.setText(functions_ui.label_volume_duration(self.spinBox_scan_range.value(),
+                                                                              self.microscope.sample_pixel_size,
+                                                                              self.spinBox_aspect_ratio.value(),
+                                                                              self.microscope.tilt_angle,
+                                                                              self.preview_channel.exposure_time))
         
     def spinBox_aspect_ratio_value_changed(self):
         self.experiment.aspect_ratio = self.spinBox_aspect_ratio.value()
@@ -660,7 +667,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                     
     def sync_filter_interface(self):
         """
-        Updates the interfaceand channels based on the avaliable filters
+        Updates the interface and channels based on the avaliable filters
         """
         
         options = copy.deepcopy(self.microscope.filters)
@@ -724,7 +731,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.active_channels = [comboBox.currentText() for comboBox in self.comboBoxes_channel_order]
 
         #
-        #Preview
+        # Preview
         #
         
             ### Changement min / max grayscales
@@ -980,7 +987,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         "save cnfigurations of the microscope"
         reply = QMessageBox.question(
             self, 'Confirm changes',
-            "Are you sure you want to save changes?\nIf ou press Yes, orriginal settings will be erased",
+            """"Are you sure you want to save changes?
+            If ou press Yes, orriginal settings will be erased""",
             QMessageBox.Yes | QMessageBox.No)
 
         if reply == QMessageBox.Yes:
@@ -1005,7 +1013,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     def openPreserROIEditor(self):
         "display window to eddit preset ROI that can be used"
         self.presetROI_editor = PresetROIWindow(self.preset_size ,
-                                                [self.camera[self.camera_id].hchipsize , self.camera[self.camera_id].vchipsize],
+                                                [self.camera[self.camera_id].hchipsize ,
+                                                 self.camera[self.camera_id].vchipsize],
                                                 self)
         self.presetROI_editor.show()
     
@@ -1074,6 +1083,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         with open(file_path, 'wb') as file:
             pickle.dump(channels_data, file)
         
+###############################################################################
 
 if __name__ == '__main__':
     APP = QtWidgets.QApplication(sys.argv)

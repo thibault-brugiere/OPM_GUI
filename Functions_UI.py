@@ -14,11 +14,12 @@ import re
 
 from PySide6.QtCore import QTime, QThread, Signal
 from PySide6.QtGui import QImage
-# from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QVBoxLayout, QWidget, QGraphicsPixmapItem
 
 class functions_ui():
     
+    #
     # Saving
+    #
     
     def legalize_name(name):
         """
@@ -40,6 +41,10 @@ class functions_ui():
             NAME = name
         
         return name_ok, NAME
+    
+    #
+    # Camera
+    #
     
     def set_pos(pos,size,chipsize):
         """
@@ -90,7 +95,9 @@ class functions_ui():
         
         return(size)
     
-    # Channels functions
+    #
+    # Channels settings
+    #
     
     def channel_set_interface(channel_list_interface,channel):
         """
@@ -135,7 +142,10 @@ class functions_ui():
         channel.filter = channel_list_interface['filter'].currentText()
         channel.camera = channel_list_interface['camera'].currentIndex()
         channel.exposure_time = channel_list_interface['exposure_time'].value()
-            
+    
+    #
+    # Timelaps settings
+    #
     
     def QTime_to_seconds(time):
         """ 
@@ -173,7 +183,22 @@ class functions_ui():
         
         return time
     
-    # Preview functions
+    #
+    # Scanner
+    #
+    
+    def label_volume_duration(scan_range, sample_pixel_size, aspect_ratio, tilt_angle, exposure_time):
+        scan_step_size = aspect_ratio * sample_pixel_size / np.sin(tilt_angle)
+        slices_per_vol = 1 + int(round(scan_range / scan_step_size))
+        estimated_time = slices_per_vol * exposure_time + 2 # 2 ms : estimated time for all steps between two slices
+        
+        message = ("Number of frames/volumes: " + str(slices_per_vol) + "\nEstimated volume duration: " + str(round(estimated_time/1000,3)) + " s")
+        
+        return message
+    
+    #
+    # Preview
+    #
     
     def show_saturation(frame):
         """
@@ -285,8 +310,14 @@ class functions_ui():
         qimage = QImage(image_data, w, h, w * 4, QImage.Format_RGBA8888)
         
         return qimage
-        
+    
+    #
+    # Acquisition
+    #
+    
+    #
     # General functions
+    #
     
     def set_comboBox (combo,options_list,index=0):
         """
