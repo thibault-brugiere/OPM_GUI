@@ -12,8 +12,8 @@ pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
 
 TODO :
     => Fonctions function_ui.label_volume_duration pour l'estimation du nombre de frames et durée de chaque volumes
-    => Appeler le programme Snoutscope
     => Enregistrer camera / experiment / microscope
+    => Que le channel.is_active soit marqué comme True s'il est dans la liste des channels
 """
 
 import copy
@@ -23,7 +23,6 @@ import os
 import pickle
 import sys
 import tifffile
-import time
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import QTimer #, QCoreApplication, QEventLoop
@@ -36,7 +35,7 @@ from configs.config import camera, channel_config, microscope, experiment
 # from hardware.hamamatsu import HamamatsuCamera
 from mock.hamamatsu_DAQ import HamamatsuCamera
 # from mock.hamamatsu_DAQ import functions_daq
-from acquisition.send_to_acquisition import start_snoutscope_acquisition
+from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
@@ -198,7 +197,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ## Saving / Setup
         self.pb_data_path.clicked.connect(self.pb_data_path_value_changed)
         self.lineEdit_exp_name.editingFinished.connect(self.lineEdit_exp_name_modified)
-        self.comboBox_setup.currentIndexChanged.connect(self.comboBox_setup_index_changed)
         
             ## Camera 
         self.comboBox_camera.currentIndexChanged.connect(self.comboBox_camera_index_changed)
@@ -340,10 +338,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.status_bar.showMessage("Invalid experiment name! Avoid spaces and special characters.", 5000)
             self.lineEdit_exp_name.setText(self.exp_name)
-        
-    def comboBox_setup_index_changed(self):
-        """ this function was supppose to Handle changes in the setup selection and update the interface accordingly"""
-        pass
 
         #
         # Camera
@@ -973,13 +967,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     def pb_snoutscope_acquisition_clicked_connect(self):
         """Start acquisition with the Snoutscope protocole from Armin"""
         self.status_bar.showMessage("start Snoutscope acquisition", 10000)
-        time.sleep(10)
-        # print("start Snoutscope acquisition")
+        print("start Snoutscope acquisition")
         if self.active_channels and self.active_channels[0] != 'None' :
             try:
-                start_snoutscope_acquisition(self.camera[0], self.channel[self.active_channels[0]], self.experiment, self.microscope)
+                send_to_snoutscope_acquisition(self.camera[0], self.channel[self.active_channels[0]], self.experiment, self.microscope)
                 # Enregistre les données, ne prendra en compre que le premier channel choisi
-                functions_ui.start_snoutscope_acquisition('D:/EqSibarita/Python/snoutscopev3-main/Snoutscope.py')
+                # functions_ui.start_snoutscope_acquisition('D:/EqSibarita/Python/snoutscopev3-main/Snoutscope.py')
             except:
                 self.status_bar.showMessage("parameters saving didn't worked!", 5000)
         else:

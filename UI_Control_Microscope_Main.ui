@@ -145,41 +145,6 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_5">
-        <item>
-         <widget class="QComboBox" name="comboBox_setup">
-          <property name="toolTip">
-           <string>Select the experimental setup to use: Armin's or Thibault's configuration.
-This choice affects hardware settings and acquisition parameters.</string>
-          </property>
-          <property name="currentText">
-           <string>Thibault</string>
-          </property>
-          <property name="currentIndex">
-           <number>1</number>
-          </property>
-          <item>
-           <property name="text">
-            <string>Armin</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Thibault</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_setup">
-          <property name="text">
-           <string>Setup</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
        <widget class="Line" name="line_7">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>

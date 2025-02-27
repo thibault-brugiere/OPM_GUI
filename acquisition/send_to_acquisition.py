@@ -19,6 +19,12 @@ def send_to_snoutscope_acquisition(camera, channel, experiment, microscope, file
     - filename (str): Nom du fichier JSON.
     """
     
+    # Permet d'ajuster le pourcentage de laser à la tension nécessaire au DAC
+    for laser in channel.laser_power.keys():
+        channel.laser_power[laser] = channel.laser_power[laser] * microscope.volts_per_laser_percent[laser]
+    
+    # print(channel.laser_power)
+    
     camera_parameters = {'camera_id' : camera.camera_id,
               'subarray_hpos' : camera.hpos,
               'subarray_hsize' : camera.hsize,
@@ -27,11 +33,11 @@ def send_to_snoutscope_acquisition(camera, channel, experiment, microscope, file
               }
     
     channel_parameters = {'channel_id' : channel.channel_id,
-               'is_active' : channel.is_active,
+               'is_active' : True,
                'camera' : channel.camera,
                'exposure_time' : channel.exposure_time,
                'laser_is_active' : channel.laser_is_active,
-               'laser_power' : channel.laser_power # Il faudra le récupérer dans la bibliothéque self.volts_per_laser_percent de la classe microscope
+               'laser_power' : channel.laser_power,
                 }
     
     experiment_parameters = {'ASPECT_RATIO' : experiment.aspect_ratio,

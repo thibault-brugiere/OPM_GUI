@@ -45,12 +45,12 @@ class experiment(object):
     def __init__(self):
         self.exp_name = 'Image'
         self.data_path = "D:/EqSibarita/Python/Control_Microscope_GUI/Images"
-        self.timepoints = 10.0
+        self.timepoints = 10
         self.time_intervals = 1.0
         self.total_duration = 10.0
         
         self.scanner_position = 0
-        self.scan_range = 0
+        self.scan_range = 20
         self.aspect_ratio = 3
         self.slit_aperture = 800 #in µm
         

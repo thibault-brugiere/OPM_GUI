@@ -102,23 +102,6 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.lineEdit_exp_name)
 
-        self.horizontalLayout_5 = QHBoxLayout()
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.comboBox_setup = QComboBox(self.centralwidget)
-        self.comboBox_setup.addItem("")
-        self.comboBox_setup.addItem("")
-        self.comboBox_setup.setObjectName(u"comboBox_setup")
-
-        self.horizontalLayout_5.addWidget(self.comboBox_setup)
-
-        self.label_setup = QLabel(self.centralwidget)
-        self.label_setup.setObjectName(u"label_setup")
-
-        self.horizontalLayout_5.addWidget(self.label_setup)
-
-
-        self.verticalLayout.addLayout(self.horizontalLayout_5)
-
         self.line_7 = QFrame(self.centralwidget)
         self.line_7.setObjectName(u"line_7")
         self.line_7.setFrameShape(QFrame.Shape.HLine)
@@ -807,7 +790,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_36.setObjectName(u"horizontalLayout_36")
         self.spinBox_aspect_ratio = QSpinBox(self.centralwidget)
         self.spinBox_aspect_ratio.setObjectName(u"spinBox_aspect_ratio")
+        self.spinBox_aspect_ratio.setMinimum(1)
         self.spinBox_aspect_ratio.setMaximum(49)
+        self.spinBox_aspect_ratio.setValue(3)
 
         self.horizontalLayout_36.addWidget(self.spinBox_aspect_ratio)
 
@@ -1123,8 +1108,6 @@ class Ui_MainWindow(object):
         self.menubar.setGeometry(QRect(0, 0, 1880, 26))
         self.menuFichier = QMenu(self.menubar)
         self.menuFichier.setObjectName(u"menuFichier")
-        self.menuSaving = QMenu(self.menuFichier)
-        self.menuSaving.setObjectName(u"menuSaving")
         self.menuConfig = QMenu(self.menubar)
         self.menuConfig.setObjectName(u"menuConfig")
         self.menuAlign = QMenu(self.menubar)
@@ -1141,12 +1124,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuAlign.menuAction())
         self.menubar.addAction(self.menuParameters.menuAction())
         self.menuFichier.addAction(self.action_SaveConfig)
-        self.menuFichier.addAction(self.menuSaving.menuAction())
-        self.menuSaving.addAction(self.actionData_path)
-        self.menuSaving.addAction(self.actionExperience_Name)
-        self.menuConfig.addAction(self.action_Camera)
         self.menuConfig.addAction(self.action_DAQ)
-        self.menuConfig.addAction(self.action_Lasers)
         self.menuConfig.addAction(self.action_Filters)
         self.menuAlign.addAction(self.action_Align_O2_O3)
         self.menuParameters.addAction(self.action_channel_editor)
@@ -1171,9 +1149,6 @@ class Ui_MainWindow(object):
         self.spinBox_max_grayscale.valueChanged.connect(self.slider_max_grayscale.setValue)
         self.slider_min_grayscale.valueChanged.connect(self.spinBox_min_grayscale.setValue)
         self.slider_max_grayscale.sliderMoved.connect(self.spinBox_max_grayscale.setValue)
-
-        self.comboBox_setup.setCurrentIndex(1)
-
 
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
@@ -1201,15 +1176,6 @@ class Ui_MainWindow(object):
         self.lineEdit_exp_name.setToolTip(QCoreApplication.translate("MainWindow", u"Set the name of the expetiment", None))
 #endif // QT_CONFIG(tooltip)
         self.lineEdit_exp_name.setText(QCoreApplication.translate("MainWindow", u"Image", None))
-        self.comboBox_setup.setItemText(0, QCoreApplication.translate("MainWindow", u"Armin", None))
-        self.comboBox_setup.setItemText(1, QCoreApplication.translate("MainWindow", u"Thibault", None))
-
-#if QT_CONFIG(tooltip)
-        self.comboBox_setup.setToolTip(QCoreApplication.translate("MainWindow", u"Select the experimental setup to use: Armin's or Thibault's configuration.\n"
-"This choice affects hardware settings and acquisition parameters.", None))
-#endif // QT_CONFIG(tooltip)
-        self.comboBox_setup.setCurrentText(QCoreApplication.translate("MainWindow", u"Thibault", None))
-        self.label_setup.setText(QCoreApplication.translate("MainWindow", u"Setup", None))
         self.label_camera_settings.setText(QCoreApplication.translate("MainWindow", u"Camera Settings", None))
         self.comboBox_camera.setItemText(0, QCoreApplication.translate("MainWindow", u"Camera 1", None))
 
@@ -1385,8 +1351,7 @@ class Ui_MainWindow(object):
         self.label_channels.setText(QCoreApplication.translate("MainWindow", u"Channels", None))
         self.label_number_channels.setText(QCoreApplication.translate("MainWindow", u"Number of channels", None))
         self.groupBox_channel_order.setTitle(QCoreApplication.translate("MainWindow", u"Channels orders", None))
-        self.label_volume_duration.setText(QCoreApplication.translate("MainWindow", u"Frame thickness \u00b5m\n"
-"Number of frames/volumes\n"
+        self.label_volume_duration.setText(QCoreApplication.translate("MainWindow", u"Number of frames/volumes\n"
 "Estimated volume duration: 0.000 s", None))
         self.label_image_preview.setText("")
         self.checkBox_show_saturation.setText(QCoreApplication.translate("MainWindow", u"Show saturation", None))
@@ -1451,7 +1416,6 @@ class Ui_MainWindow(object):
         self.pb_multidimensional_acquisition.setText(QCoreApplication.translate("MainWindow", u"Multidimensional\n"
 "Acquisition", None))
         self.menuFichier.setTitle(QCoreApplication.translate("MainWindow", u"Fichier", None))
-        self.menuSaving.setTitle(QCoreApplication.translate("MainWindow", u"Saving", None))
         self.menuConfig.setTitle(QCoreApplication.translate("MainWindow", u"Config", None))
         self.menuAlign.setTitle(QCoreApplication.translate("MainWindow", u"Align", None))
         self.menuParameters.setTitle(QCoreApplication.translate("MainWindow", u"Parameters", None))
