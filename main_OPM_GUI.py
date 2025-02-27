@@ -76,10 +76,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         # Saved datas
         #
         
-        self.data_path = "D:/EqSibarita/Python/Control_Microscope_GUI/Images"
+        self.experiment.data_path = "D:/EqSibarita/Python/Control_Microscope_GUI/Images"
         self.experiment.exp_name = "Image"
-        
-        self.setup = "Thibault" #Permet de choisir entre le Setup de Thibault et celui d'Armin
         
         #
         # Creation of the cameras, set interface
@@ -318,10 +316,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         Opens a dialog to select a directory and updates the pb_data_path field.
         """
-        self.data_path = QFileDialog.getExistingDirectory(self, "Select Data Directory")
+        self.experiment.data_path = QFileDialog.getExistingDirectory(self, "Select Data Directory")
         
-        if self.data_path:  # Si un dossier a été sélectionné
-            self.label_data_path.setText(self.data_path)
+        if self.experiment.data_path:  # Si un dossier a été sélectionné
+            self.label_data_path.setText(self.experiment.data_path)
         
     def lineEdit_exp_name_modified(self):
         """Ensures the experiment name is correctly formatted """
@@ -329,10 +327,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
 
         if not exp_name:
             self.status_bar.showMessage("Experiment name cannot be empty!", 5000)
-            self.lineEdit_exp_name.setText(self.exp_name)
+            self.lineEdit_exp_name.setText(self.experiment.exp_name)
+            
             return
             
-        name_ok, self.exp_name = functions_ui.legalize_name(exp_name)
+        name_ok, self.experiment.exp_name = functions_ui.legalize_name(exp_name)
         
         if name_ok :
             self.status_bar.showMessage(f"Experiment name set to: {exp_name}", 2000)
@@ -802,7 +801,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     
         # Création du chemin complet
         
-        file_path = os.path.join(self.data_path, f"{self.exp_name}.tiff")
+        file_path = os.path.join(self.experiment.data_path , f"{self.experiment.exp_name}.tiff")
                 
         try:
             tifffile.imwrite(file_path, self.preview_frame)

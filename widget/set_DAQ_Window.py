@@ -49,8 +49,8 @@ class setDAQWindow(QWidget, Ui_Form):
         self.setWindowFlag(Qt.Window)  # Assure que la fenêtre est indépendante
         
         self.lineEdit = {"galvo": self.lineEdit_galvo,
-                        "camera_1": self.lineEdit_camera1,
-                        "camera_2": self.lineEdit_camera2,
+                        "camera_0": self.lineEdit_camera1,
+                        "camera_1": self.lineEdit_camera2,
                         "405" : self.lineEdit_laser_405,
                         "488" : self.lineEdit_laser_488,
                         "561" : self.lineEdit_laser_561,

@@ -44,7 +44,7 @@ class experiment(object):
     "Object discribing experiment settings"
     def __init__(self):
         self.exp_name = 'Image'
-        
+        self.data_path = "D:/EqSibarita/Python/Control_Microscope_GUI/Images"
         self.timepoints = 10.0
         self.time_intervals = 1.0
         self.total_duration = 10.0
@@ -76,12 +76,15 @@ class microscope(object):
                                         }
         
         # Microscope magnification
+        self.mag_total = 29.61
         self.sample_pixel_size = 0.160 #in µm
         
         # DAQ
-        self.daq_channels = {"galvo": "Dev1/ao0", # Fait bouger le galvo pour le scanning
-                             "camera_1": "Dev1/port0/line0", # Trigger l'exposition de la camera
-                             "camera_2": None,
+        self.daq_channels = {"co_terminal": "/Dev1/PFI0", # ADD: trigger start of each volume
+                             "co_channel": "Dev1/ctr0", # ADD: trigger start of each volume
+                             "galvo": "Dev1/ao0", # Fait bouger le galvo pour le scanning
+                             "camera_0": "Dev1/port0/line0", # Trigger l'exposition de la camera
+                             "camera_1": "Dev1/port0/line1", # None
                              "405" : "Dev1/ao1", # Régle la puissance du laser 405
                              "488" : None,      # Régle la puissance du laser 488
                              "561" : "Dev1/ao2", # Régle la puissance du laser 561
@@ -152,4 +155,3 @@ class microscope(object):
         self.SCAN_LENS_2_MANUFACTURER = "Thorlabs"
         self.SCAN_LENS_2_MODEL = "CLS-SL"
         self.SCAN_LENS_2_EFL = 70
-        
