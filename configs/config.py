@@ -24,7 +24,7 @@ class camera(object):
 class channel_config(object):
     "Object discribing channels settings"
     def __init__(self, channel_id, lasers = LASERS): #lasers = ["405","488","561","640"]
-        self.channel_id = channel_id
+        self.channel_id = channel_id # channel_id : nom du canal de type chr
         self.is_active = False
         self.channel_order = None
 
@@ -37,7 +37,7 @@ class channel_config(object):
         
         for laser in lasers:
             self.laser_is_active[laser] = False
-            self.laser_power[laser] = 0
+            self.laser_power[laser] = 0 # laser_power en %
             
 
 class experiment(object):

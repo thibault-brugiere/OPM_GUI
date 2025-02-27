@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import numpy as np
 import re
+import subprocess
 
 from PySide6.QtCore import QTime, QThread, Signal
 from PySide6.QtGui import QImage
@@ -314,6 +315,19 @@ class functions_ui():
     #
     # Acquisition
     #
+    
+    def start_snoutscope_acquisition(file_path) :
+        """
+        Lance un fichier Python en utilisant subprocess.
+        
+        Parameters:
+        - file_path (str): Le chemin vers le fichier Python à exécuter.
+        """
+        try:
+            # Exécuter le fichier Python
+            subprocess.run(["python", file_path], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Erreur lors de l'exécution du fichier : {e}")
     
     #
     # General functions

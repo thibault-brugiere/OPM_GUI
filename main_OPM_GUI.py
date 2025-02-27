@@ -23,6 +23,7 @@ import os
 import pickle
 import sys
 import tifffile
+import time
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import QTimer #, QCoreApplication, QEventLoop
@@ -35,6 +36,7 @@ from configs.config import camera, channel_config, microscope, experiment
 # from hardware.hamamatsu import HamamatsuCamera
 from mock.hamamatsu_DAQ import HamamatsuCamera
 # from mock.hamamatsu_DAQ import functions_daq
+from acquisition.send_to_acquisition import start_snoutscope_acquisition
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
@@ -970,8 +972,18 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def pb_snoutscope_acquisition_clicked_connect(self):
         """Start acquisition with the Snoutscope protocole from Armin"""
-        print("start Snoutscope acquisition")
-        self.status_bar.showMessage("start Snoutscope acquisition")
+        self.status_bar.showMessage("start Snoutscope acquisition", 10000)
+        time.sleep(10)
+        # print("start Snoutscope acquisition")
+        if self.active_channels and self.active_channels[0] != 'None' :
+            try:
+                start_snoutscope_acquisition(self.camera[0], self.channel[self.active_channels[0]], self.experiment, self.microscope)
+                # Enregistre les données, ne prendra en compre que le premier channel choisi
+                functions_ui.start_snoutscope_acquisition('D:/EqSibarita/Python/snoutscopev3-main/Snoutscope.py')
+            except:
+                self.status_bar.showMessage("parameters saving didn't worked!", 5000)
+        else:
+            self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
         
     def pb_multidimensional_acquisition_clicked_connect(self):
         """Start acquisition with the Multi Dimentionnal Acquisition protocole from Thibault"""
