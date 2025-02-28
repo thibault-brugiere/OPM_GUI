@@ -80,8 +80,8 @@ class microscope(object):
         self.sample_pixel_size = 0.160 #in µm
         
         # DAQ
-        self.daq_channels = {"co_terminal": "/Dev1/PFI0", # ADD: trigger start of each volume
-                             "co_channel": "Dev1/ctr0", # ADD: trigger start of each volume
+        self.daq_channels = {"co_channel": "Dev1/ctr0", # ADD: trigger start of each volume
+                             "co_terminal": "/Dev1/PFI0", # ADD: trigger start of each volume
                              "galvo": "Dev1/ao0", # Fait bouger le galvo pour le scanning
                              "camera_0": "Dev1/port0/line0", # Trigger l'exposition de la camera
                              "camera_1": "Dev1/port0/line1", # None

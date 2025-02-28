@@ -22,9 +22,55 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(642, 356)
+        Form.resize(642, 731)
         self.verticalLayout = QVBoxLayout(Form)
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.horizontalLayout_9 = QHBoxLayout()
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.label_vol_trig = QLabel(Form)
+        self.label_vol_trig.setObjectName(u"label_vol_trig")
+        self.label_vol_trig.setMinimumSize(QSize(100, 0))
+        self.label_vol_trig.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_9.addWidget(self.label_vol_trig)
+
+        self.lineEdit_vol_trig = QLineEdit(Form)
+        self.lineEdit_vol_trig.setObjectName(u"lineEdit_vol_trig")
+
+        self.horizontalLayout_9.addWidget(self.lineEdit_vol_trig)
+
+        self.label_vol_trig_out = QLabel(Form)
+        self.label_vol_trig_out.setObjectName(u"label_vol_trig_out")
+        self.label_vol_trig_out.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_9.addWidget(self.label_vol_trig_out)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_9)
+
+        self.horizontalLayout_10 = QHBoxLayout()
+        self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
+        self.label_vol_trig_outputt = QLabel(Form)
+        self.label_vol_trig_outputt.setObjectName(u"label_vol_trig_outputt")
+        self.label_vol_trig_outputt.setMinimumSize(QSize(100, 0))
+        self.label_vol_trig_outputt.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_10.addWidget(self.label_vol_trig_outputt)
+
+        self.lineEdit_vol_trig_outputt = QLineEdit(Form)
+        self.lineEdit_vol_trig_outputt.setObjectName(u"lineEdit_vol_trig_outputt")
+
+        self.horizontalLayout_10.addWidget(self.lineEdit_vol_trig_outputt)
+
+        self.label_vol_trig_outputt_out = QLabel(Form)
+        self.label_vol_trig_outputt_out.setObjectName(u"label_vol_trig_outputt_out")
+        self.label_vol_trig_outputt_out.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_10.addWidget(self.label_vol_trig_outputt_out)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_10)
+
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.label_galvo = QLabel(Form)
@@ -217,6 +263,11 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
+        self.label_vol_trig.setText(QCoreApplication.translate("Form", u"Volume trigger", None))
+        self.lineEdit_vol_trig.setText("")
+        self.label_vol_trig_out.setText(QCoreApplication.translate("Form", u"ctr", None))
+        self.label_vol_trig_outputt.setText(QCoreApplication.translate("Form", u"Vol. trig. outputt", None))
+        self.label_vol_trig_outputt_out.setText(QCoreApplication.translate("Form", u"PFI", None))
         self.label_galvo.setText(QCoreApplication.translate("Form", u"Galvo", None))
         self.label_galvo_out.setText(QCoreApplication.translate("Form", u"ao", None))
         self.label_camera1.setText(QCoreApplication.translate("Form", u"Camera 1", None))

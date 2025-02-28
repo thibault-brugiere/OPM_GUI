@@ -48,7 +48,9 @@ class setDAQWindow(QWidget, Ui_Form):
         self.setWindowTitle('set DAQ channels')
         self.setWindowFlag(Qt.Window)  # Assure que la fenêtre est indépendante
         
-        self.lineEdit = {"galvo": self.lineEdit_galvo,
+        self.lineEdit = {"co_channel" : self.lineEdit_vol_trig,
+                        "co_terminal" : self.lineEdit_vol_trig_outputt,
+                        "galvo": self.lineEdit_galvo,
                         "camera_0": self.lineEdit_camera1,
                         "camera_1": self.lineEdit_camera2,
                         "405" : self.lineEdit_laser_405,
@@ -63,19 +65,12 @@ class setDAQWindow(QWidget, Ui_Form):
             if self.daq_channels[key] is None:
                 self.lineEdit[key].setText('None')
         
-    
     def set_daq_channels(self):
         for key in self.lineEdit.keys():
             if self.lineEdit[key].text() == 'None':
                 self.daq_channels[key] = None
             else:
                 self.daq_channels[key] = self.lineEdit[key].text()
-                
-        # for key,value in self.daq_channels.items():
-        #     if value is not None:
-        #         print(key+value)
-        #     else:
-        #         print(key + "/None")
     
     def closeEvent(self, event):
         reply = QMessageBox.question(
