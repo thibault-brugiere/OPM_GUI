@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>569</width>
+    <width>442</width>
     <height>224</height>
    </rect>
   </property>
@@ -63,9 +63,12 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the step size for piezo movement as a percentage of the total range.&lt;/p&gt;&lt;p&gt;Adjust between 21% and 100% to control the increment of each movement command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="minimum">
-        <number>21</number>
+        <number>1</number>
        </property>
        <property name="maximum">
+        <number>100</number>
+       </property>
+       <property name="value">
         <number>100</number>
        </property>
        <property name="orientation">
@@ -79,9 +82,12 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the step size for piezo movement as a percentage of the total range.&lt;/p&gt;&lt;p&gt;Adjust between 21% and 100% to control the increment of each movement command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="minimum">
-        <number>21</number>
+        <number>1</number>
        </property>
        <property name="maximum">
+        <number>100</number>
+       </property>
+       <property name="value">
         <number>100</number>
        </property>
       </widget>
@@ -92,6 +98,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QPushButton" name="pb_move_bw10">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 10 step backward.&lt;/p&gt;&lt;p&gt;Around 500nm to 2,5µm depending on step size&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -102,6 +114,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="pb_move_bw1">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 1 step backward.&lt;/p&gt;&lt;p&gt;Around 50nm to 250nm depending on step size&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -112,6 +130,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="pb_move_fw1">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 1 step forward.&lt;/p&gt;&lt;p&gt;Around 50nm to 250nm depending on step size&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -122,6 +146,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="pb_move_fw10">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 10 step forward&lt;/p&gt;&lt;p&gt;Around 500nm to 2,5µm depending on step size&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -136,6 +166,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QPushButton" name="pb_move_bwj2">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo backward with a speed around 0.25mm/s&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -146,6 +182,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="pb_move_bwj1">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo backward with a speed around 2.5 µm/s&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -156,6 +198,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="pb_move_fwj1">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo forward with a speed of 50 steps/s.&lt;/p&gt;&lt;p&gt;Arount 2.5 ot 12 µm/s depending on step size&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -166,6 +214,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="pb_move_fwj2">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo forward with a speed around 0.25mm/s&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -651,7 +705,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>24</height>
+       <height>16</height>
       </size>
      </property>
     </spacer>

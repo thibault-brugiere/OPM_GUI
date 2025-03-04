@@ -4,6 +4,7 @@ Created on Mon Feb 10 17:19:56 2025
 
 @author: tbrugiere
 """
+import math
 import numpy as np
 import serial
 import serial.tools.list_ports
@@ -230,6 +231,10 @@ class functions_super_agilis():
             print(f"Error opening serial port: {e}")
             
         return response
+    
+    def percent(minimum,maximum,value):
+        percent = math.floor((maximum - minimum) * value / maximum + minimum)
+        return percent
             
     """
     Command list:

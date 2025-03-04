@@ -23,7 +23,7 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(569, 224)
+        Form.resize(442, 224)
         self.verticalLayout = QVBoxLayout(Form)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
@@ -56,16 +56,18 @@ class Ui_Form(object):
 
         self.slider_step_size = QSlider(Form)
         self.slider_step_size.setObjectName(u"slider_step_size")
-        self.slider_step_size.setMinimum(21)
+        self.slider_step_size.setMinimum(1)
         self.slider_step_size.setMaximum(100)
+        self.slider_step_size.setValue(100)
         self.slider_step_size.setOrientation(Qt.Horizontal)
 
         self.horizontalLayout_2.addWidget(self.slider_step_size)
 
         self.spinBox_step_size = QSpinBox(Form)
         self.spinBox_step_size.setObjectName(u"spinBox_step_size")
-        self.spinBox_step_size.setMinimum(21)
+        self.spinBox_step_size.setMinimum(1)
         self.spinBox_step_size.setMaximum(100)
+        self.spinBox_step_size.setValue(100)
 
         self.horizontalLayout_2.addWidget(self.spinBox_step_size)
 
@@ -76,21 +78,25 @@ class Ui_Form(object):
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.pb_move_bw10 = QPushButton(Form)
         self.pb_move_bw10.setObjectName(u"pb_move_bw10")
+        self.pb_move_bw10.setMinimumSize(QSize(32, 32))
 
         self.horizontalLayout_3.addWidget(self.pb_move_bw10)
 
         self.pb_move_bw1 = QPushButton(Form)
         self.pb_move_bw1.setObjectName(u"pb_move_bw1")
+        self.pb_move_bw1.setMinimumSize(QSize(32, 32))
 
         self.horizontalLayout_3.addWidget(self.pb_move_bw1)
 
         self.pb_move_fw1 = QPushButton(Form)
         self.pb_move_fw1.setObjectName(u"pb_move_fw1")
+        self.pb_move_fw1.setMinimumSize(QSize(32, 32))
 
         self.horizontalLayout_3.addWidget(self.pb_move_fw1)
 
         self.pb_move_fw10 = QPushButton(Form)
         self.pb_move_fw10.setObjectName(u"pb_move_fw10")
+        self.pb_move_fw10.setMinimumSize(QSize(32, 32))
 
         self.horizontalLayout_3.addWidget(self.pb_move_fw10)
 
@@ -101,21 +107,25 @@ class Ui_Form(object):
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.pb_move_bwj2 = QPushButton(Form)
         self.pb_move_bwj2.setObjectName(u"pb_move_bwj2")
+        self.pb_move_bwj2.setMinimumSize(QSize(32, 32))
 
         self.horizontalLayout_4.addWidget(self.pb_move_bwj2)
 
         self.pb_move_bwj1 = QPushButton(Form)
         self.pb_move_bwj1.setObjectName(u"pb_move_bwj1")
+        self.pb_move_bwj1.setMinimumSize(QSize(32, 32))
 
         self.horizontalLayout_4.addWidget(self.pb_move_bwj1)
 
         self.pb_move_fwj1 = QPushButton(Form)
         self.pb_move_fwj1.setObjectName(u"pb_move_fwj1")
+        self.pb_move_fwj1.setMinimumSize(QSize(32, 32))
 
         self.horizontalLayout_4.addWidget(self.pb_move_fwj1)
 
         self.pb_move_fwj2 = QPushButton(Form)
         self.pb_move_fwj2.setObjectName(u"pb_move_fwj2")
+        self.pb_move_fwj2.setMinimumSize(QSize(32, 32))
 
         self.horizontalLayout_4.addWidget(self.pb_move_fwj2)
 
@@ -207,7 +217,7 @@ class Ui_Form(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_5)
 
-        self.verticalSpacer = QSpacerItem(20, 24, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.verticalSpacer = QSpacerItem(20, 16, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout.addItem(self.verticalSpacer)
 
