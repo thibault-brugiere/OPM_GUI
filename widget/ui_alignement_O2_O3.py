@@ -17,13 +17,14 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QLCDNumber,
     QLabel, QPushButton, QSizePolicy, QSlider,
-    QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
+    QSpacerItem, QSpinBox, QTextBrowser, QVBoxLayout,
+    QWidget)
 
 class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(442, 224)
+        Form.resize(442, 443)
         self.verticalLayout = QVBoxLayout(Form)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
@@ -217,9 +218,10 @@ class Ui_Form(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_5)
 
-        self.verticalSpacer = QSpacerItem(20, 16, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.textBrowser = QTextBrowser(Form)
+        self.textBrowser.setObjectName(u"textBrowser")
 
-        self.verticalLayout.addItem(self.verticalSpacer)
+        self.verticalLayout.addWidget(self.textBrowser)
 
 
         self.retranslateUi(Form)
@@ -282,5 +284,30 @@ class Ui_Form(object):
 #if QT_CONFIG(tooltip)
         self.lcdNumber_Position.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Displays the current position of the piezo controller</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
+        self.textBrowser.setHtml(QCoreApplication.translate("Form", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">The Piezo Controller interface for fine-tuning the focus between Objective 2 and Objective 3 of the microscope. This interface allows you to precisely adjust the position of the piezo stage to achieve optimal focus while imaging sample with the camera.</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt"
+                        "-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">Elements of the Interface:</span></p>\n"
+"<ol style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" font-size:8pt;\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Port Selection (ComboBox):</span></li>\n"
+"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 2;\"><li style=\" font-size:8pt;\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Select the serial port to which the piezo controller is connected. Ensure the correct port is chosen for proper communication with the device.</li></ul>\n"
+"<li style=\" font-size:8pt;\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">"
+                        "<span style=\" font-weight:600;\">Connection Status (QLabel):</span></li>\n"
+"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 2;\"><li style=\" font-size:8pt;\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Indicates whether the piezo controller is successfully connected via the selected port. A green checkmark means the device is connected, while a red cross indicates no connection.</li></ul>\n"
+"<li style=\" font-size:8pt;\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Step Size (SpinBox):</span></li>\n"
+"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 2;\"><li style=\" font-size:8pt;\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Set the step size fo"
+                        "r piezo movement as a percentage of the total range. This controls the increment of each movement command, allowing for precise adjustments.</li></ul>\n"
+"<li style=\" font-size:8pt;\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Movement Control Buttons:</span></li>\n"
+"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 2;\"><li style=\" font-size:8pt;\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Forward and Backward Arrows:</span> </li></ul>\n"
+"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 3;\"><li style=\" font-size:8pt;\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Use these buttons to move the piezo stage in th"
+                        "e specified direction. Each button is labeled with the direction and speed of movement: </li></ul>\n"
+"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 4;\"><li style=\" font-size:8pt;\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Small Step (~50 nm and ~2 \u00b5m):</span> Move the piezo by a fixed small distance (green arrow).</li>\n"
+"<li style=\" font-size:8pt;\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Continuous Movement (~5 \u00b5m/s and ~250 \u00b5m/s):</span> Move the piezo continuously at the specified speed until the button is released (blue arrows).</li></ul>\n"
+"<li style=\" font-size:8pt;\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-w"
+                        "eight:600;\">Current Position (QLCDNumber):</span></li></ol>\n"
+"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 2;\"><li style=\" font-size:8pt;\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Displays the current position of the piezo stage. This value updates in real-time as the piezo moves, reflecting its precise location.</li></ul></body></html>", None))
     # retranslateUi
 
