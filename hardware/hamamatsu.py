@@ -332,7 +332,7 @@ class HamamatsuCamera(object):
             self.hcam.checkStatus(self.hcam._dcam.dcamdev_open(ctypes.byref(paramopen)), "dcamdev_open", self.camera_id)
             self.handle = ctypes.c_void_p(paramopen.hdcam)
 
-            # Set up wait handle
+            # up wait handle
             paramwait = DCAMWAIT_OPEN(0, 0, None, self.handle)
             paramwait.size = ctypes.sizeof(paramwait)
             self.hcam.checkStatus(self.hcam._dcam.dcamwait_open(ctypes.byref(paramwait)), "dcamwait_open", self.camera_id)
@@ -892,6 +892,8 @@ class HamamatsuCamera(object):
         #                                                   self.camera[camera_id].max_backlog,
         #                                                   self.camera[camera_id].number_image_buffers))
         self.camera[camera_id].max_backlog = 0
+        # Free image buffers.
+        self.number_image_buffers = 0
 
     def newFrames(self, camera_id):
         """
@@ -995,7 +997,6 @@ class HamamatsuCamera(object):
                 key = prop.key
                 value = prop.value
                 self.setPropertyValue(key, value, camera_id)
-                # time.sleep(0.01)
 
             assert int(self.config.camera[camera_id].subarray_hpos.value) == int(self.getPropertyValue("subarray_hpos", camera_id)[0])
             assert int(self.config.camera[camera_id].subarray_hsize.value) == int(self.getPropertyValue("subarray_hsize", camera_id)[0])
@@ -1079,16 +1080,24 @@ class HamamatsuCamera(object):
         handle = self.camera[camera_id].handle
         self.checkStatus(self._dcam.dcamwait_close(wait_handle), "dcamwait_close", camera_id)
         self.checkStatus(self._dcam.dcamdev_close(handle), "dcamdev_close", camera_id)
+    
+    def openCamera(self, camera_id):
+        paramopen = DCAMDEV_OPEN(0, camera_id, None)
+        paramopen.size = ctypes.sizeof(paramopen)
+        self.checkStatus(self._dcam.dcamdev_open(ctypes.byref(paramopen)), "dcamdev_open", camera_id)
 
-    def close(self):
-        """
-        Close down the connection to the camera.
-        """
-        self.closeCamera(0)
-        self.closeCamera(1)
-        print("uniniting api...")
+    # def close(self): # REMOVE this functions
+    #     """
+    #     Close down the connection to the camera. 
+    #     """
+    #     self.closeCamera(0)
+    #     self.closeCamera(1)
+    #     print("uniniting api...")
+    #     self.checkStatus(self._dcam.dcamapi_uninit(), "dcamapi_uninit")
+    #     print("done uniniting api...")
+        
+    def uninit(self):
         self.checkStatus(self._dcam.dcamapi_uninit(), "dcamapi_uninit")
-        print("done uniniting api...")
 
     def checkStatus(self, fn_return, fn_name="unknown", camera_id=0):
         """
@@ -1109,7 +1118,6 @@ class HamamatsuCamera(object):
             raise DCAMException("dcam error " + str(fn_name) + " " + str(c_buf.value))
             # print "dcam error", fn_name, c_buf.value
         return fn_return
-
 
 ###########
 # Testing.#
