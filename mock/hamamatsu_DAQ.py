@@ -18,6 +18,12 @@ class HamamatsuCamera(object):
                        'subarray_vsize' : 200,
                        "binning" : 1
                        }
+        
+    def openCamera(self, camera_id):
+        pass
+    
+    def uninit(self):
+        pass
 
     def setACQMode(self, mode, number_frames, camera_id):
         pass
