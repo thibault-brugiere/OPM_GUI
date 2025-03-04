@@ -5,6 +5,8 @@ Created on Mon Feb 10 17:19:56 2025
 @author: tbrugiere
 """
 import numpy as np
+import serial
+import serial.tools.list_ports
 import time as t
 
 from PySide6.QtCore import QThread, Signal
@@ -177,4 +179,65 @@ class functions_daq():
                 wait_function(wait_instruction)
             
             task.stop()
+
+class functions_super_agilis():
     
+    def list_serial_ports():
+        """
+        List all available serial ports.
+        """
+        ports = serial.tools.list_ports.comports()
+        devices = []
+        for port in ports:
+            # print(f"Device: {port.device}, Description: {port.description}")
+            devices.append(port.device)
+            
+        return devices
+    
+    def send_command(command, port = 'COM3'):
+        """
+        Send a command to the Super Agilis Controller.
+    
+        Parameters:
+        - port (str): The serial port to which the device is connected.
+        - command (str): The command to send to the device.
+        """
+        try:
+            # Ouvrir la connexion série
+            with serial.Serial(port, 9600, timeout=1) as ser:
+                # Envoyer la commande
+                ser.write(command.encode('ascii') + b'\r\n')
+        except serial.SerialException as e:
+            print(f"Error opening serial port: {e}")
+    
+    def send_command_response(command, port = 'COM3'):
+        """
+        Send a command to the Super Agilis Controller and get response.
+    
+        Parameters:
+        - port (str): The serial port to which the device is connected.
+        - command (str): The command to send to the device.
+        """
+        try:
+            # Ouvrir la connexion série
+            with serial.Serial(port, 9600, timeout=1) as ser:
+                # Envoyer la commande
+                ser.write(command.encode('ascii') + b'\r\n')
+                # Lire la réponse
+                response = ser.readline().decode('ascii').strip()
+                # print(f"Response: {response}")
+        except serial.SerialException as e:
+            print(f"Error opening serial port: {e}")
+            
+        return response
+            
+    """
+    Command list:
+    note : query the current value when the command name is followed by a “?”
+    
+    XF1000 : set step frequancy to 1000 Hz
+    XR1 : Move of 1 step
+    XU-21,21 : set the step size at 21% in negative and positive direction (seems to be the minimum) (step frequency should be <1000)
+    tp : Get current position
+    JA : move jogging (1 : 50/s steps, 2 : 1000 steps/s)
+    """
