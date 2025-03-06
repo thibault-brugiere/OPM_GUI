@@ -4,7 +4,6 @@ Created on Mon Feb 10 17:19:56 2025
 
 @author: tbrugiere
 """
-import math
 import numpy as np
 import serial
 import serial.tools.list_ports
@@ -231,18 +230,31 @@ class functions_super_agilis():
             print(f"Error opening serial port: {e}")
             
         return response
-    
-    def percent(minimum,maximum,value):
-        percent = math.floor((maximum - minimum) * value / maximum + minimum)
-        return percent
+            
             
     """
+    Note : ce n'est paspossible de bloquer la position dans l'absolue car si on éteint le piezzo,
+    la position relative est perdue et le 0 correspond à la position lors de l'allumage.
+    Pour avoir de nouveau la position il faut faire la commande RFH qui refait le référencing
+    (et replace le piezzo sur le 0 absolue)
+    De même il est impossible de faire un déplacement "absolu" sans référencement préalable.
+    Ce qui nécessiterai de bouger le piezzo vers sa position 0.
+    Utiliser la commande RFP qui permet de revenir à la position actuelle ?
+        
     Command list:
+    --------------
     note : query the current value when the command name is followed by a “?”
     
-    XF1000 : set step frequancy to 1000 Hz
-    XR1 : Move of 1 step
-    XU-21,21 : set the step size at 21% in negative and positive direction (seems to be the minimum) (step frequency should be <1000)
-    tp : Get current position
-    JA : move jogging (1 : 50/s steps, 2 : 1000 steps/s)
+    RFH/RFP/RFM : start referencing of the positions, avant d'avoir accés à la position absolue (RFMnn to set position)
+    OL : Open loop state (needed for the interface)
+    OR : Cycle Loop state
+    PA : move absolute (PA1 move to 1mm)
+    PR : move relative (PR-1 move backward of 1mm)
+    XF : set step frequancy to (XF1000 to set to 1000 Hz)
+    XRn : Move of n steps (XR10 move of 10 steps)
+    XU-n,n : set the step size at n% in negative and positive direction step frequency should be <1000 Hz
+        (XU-1,21 change step size to 1% in negative axis and 21% in positive axis)
+    TP? : Get current position
+    JA : move jogging (1 : 50/s steps, 2 : 1000 steps/s 3: 5000 steps/s and 4:10000steps/s), needs ST to stop the motion
+    ST : stop the current motion
     """
