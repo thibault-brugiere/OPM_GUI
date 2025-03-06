@@ -10,7 +10,7 @@ Convert file.ui to file.py
 
 pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
 
-TODO :
+# TODO :
     => Fonctions function_ui.label_volume_duration pour l'estimation du nombre de frames et durée de chaque volumes
     => Enregistrer camera / experiment / microscope
     => Que le channel.is_active soit marqué comme True s'il est dans la liste des channels
@@ -33,8 +33,8 @@ from configs.config import camera, channel_config, microscope, experiment
 from Functions_UI import functions_ui, HistogramThread
 from Functions_Hardware import CameraThread, functions_camera
 # from Functions_Hardware import functions_daq
-# from hardware.hamamatsu import HamamatsuCamera
-from mock.hamamatsu_DAQ import HamamatsuCamera
+from hardware.hamamatsu import HamamatsuCamera
+# from mock.hamamatsu_DAQ import HamamatsuCamera
 from mock.hamamatsu_DAQ import functions_daq
 from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
 
@@ -76,7 +76,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.microscope = microscope() # Variable contenant les paramétres du microscope
         self.experiment = experiment() # Variable contenant l'expérience
         
-        self.hcam = HamamatsuCamera() # Initialize the camera
+        self.hcam = HamamatsuCamera() # Initialize the cameras
         
         #
         # Saved datas
@@ -519,11 +519,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def spinBox_scan_range_value_changed(self):
         self.experiment.scan_range = self.spinBox_scan_range.value()
-        print(self.spinBox_scan_range.value())
-        print(self.microscope.sample_pixel_size)
-        print(self.spinBox_aspect_ratio.value())
-        print(self.microscope.tilt_angle)
-        print(self.preview_channel.exposure_time)
         self.label_volume_duration.setText(functions_ui.label_volume_duration(self.spinBox_scan_range.value(),
                                                                               self.microscope.sample_pixel_size,
                                                                               self.spinBox_aspect_ratio.value(),
@@ -691,7 +686,18 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.comboBox_channel_name_index_changed()
         
     def spinBox_channel_exposure_time_value_changed(self):
-        pass
+        """
+        Update the exposure time for the preview channel and the associated camera in real-time.
+        If the interface is currently displaying a live image preview, the
+        exposure time of the camera is also adjusted accordingly.
+        """
+        self.preview_channel.exposure_time = self.spinBox_channel_exposure_time.value()
+        self.camera[self.preview_channel.camera].exposure_time = self.preview_channel.exposure_time /1000
+        
+        if self.is_preview:
+            self.hcam.setPropertyValue("exposure_time",
+                                       self.camera[self.preview_channel.camera].exposure_time,
+                                       self.preview_channel.camera)
     
     def comboBox_channel_filter_index_changed(self):
         pass
@@ -834,9 +840,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.preview_tools_desactivation()
 
             # Retrieve the exposure time from the corresponding spinBox, default to 10ms if not availables
-            self.camera[self.preview_channel.camera].exposure_time = self.preview_channel.exposure_time/1000
-
-            # self.hcam = HamamatsuCamera() # Create and open cameras
+            # self.camera[self.preview_channel.camera].exposure_time = self.preview_channel.exposure_time/1000
 
             # Create and configure the acquisition thread
             self.camera_thread = CameraThread(self.hcam, self.preview_channel.camera)
@@ -886,12 +890,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.camera_thread.stop()
         self.camera_thread.wait()
         self.hcam.stopAcquisition(self.preview_channel.camera)
-        
-        self.hcam.closeCamera(self.preview_channel.camera) # Close cameras
-        # self.hcam.uninit()
-        self.hcam.openCamera(self.preview_channel.camera) # reopen the camera
-        
-        # TODO : il faut trouver comment ne pas avoir à redémarrer la caméra pour modifier les paramètres !
         
         # Turn off lasers
         self.pb_laser_emission.setChecked(False)

@@ -16,8 +16,6 @@ George 11/17 - Updated for SDK4 and to allow fixed length acquisition
 import ctypes
 import ctypes.util
 import numpy
-import time
-import warnings
 
 # from progressbar import printProgressBar
 
@@ -893,7 +891,12 @@ class HamamatsuCamera(object):
         #                                                   self.camera[camera_id].number_image_buffers))
         self.camera[camera_id].max_backlog = 0
         # Free image buffers.
-        self.number_image_buffers = 0
+        self.camera[camera_id].number_image_buffers = 0
+        # I readded this part from the original code to free image buffer at th end of the acquisition
+        # it is necessary to change image size
+        self.checkStatus(self._dcam.dcambuf_release(handle,
+                                                DCAMBUF_ATTACHKIND_FRAME),
+                          "dcambuf_release")
 
     def newFrames(self, camera_id):
         """
