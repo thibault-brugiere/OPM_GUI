@@ -239,6 +239,8 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         
     def initialize(self):
         self.spinBox_step_size_value_changed() # Set step size
+        piezzo.send_command('OL')
+        t.sleep(0.01)
         piezzo.send_command('XF1000', self.port) # set step frequancy to 1000 Hz, to set step size < 100%
         t.sleep(0.01)
         self.get_position()
