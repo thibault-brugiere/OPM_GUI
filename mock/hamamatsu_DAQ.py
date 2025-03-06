@@ -5,10 +5,98 @@ Created on Wed Feb 19 15:46:19 2025
 @author: tbrugiere
 """
 
-import ctypes
 import numpy as np
 import time
 from scipy.ndimage import zoom
+
+class DCAM:
+    def __init__(self):
+        pass
+        
+    def get_cameras_number():
+        return 1
+    
+    class DCAMCamera(object):
+        
+        def __init__(self, camera_id):
+            self.cav = {'camera_id' : camera_id,
+                        'subarray_hsize' : 400,
+                        'subarray_vsize' : 200,
+                        "binning" : 1
+                        }
+            
+            # hcam.cav["SUBARRAY MODE"]=2
+            # hcam.cav["EXPOSURE TIME"] = camera.exposure_time
+            # hcam.cav["subarray_hsize"] =  camera.hsize
+            # hcam.cav["subarray_vsize"] = camera.vsize
+            # hcam.cav["subarray_hpos"] =  camera.hpos
+            # hcam.cav["subarray_vpos"] =  camera.vpos
+            # hcam.cav["binning"] = camera.binning
+
+        
+        def set_exposure(timing):
+            pass
+        
+        def start_acquisition(bla,blabla, blablabla):
+            pass
+        
+        def close(self):
+            pass
+        
+        def clear_acquisition(self):
+            pass
+        
+        def read_multiple_images(self):
+            """
+            Simule la capture d'une image par une caméra de hamamatsu.
+            
+            Cette fonction crée une instance de Frame avec des dimensions spécifiées dans les paramètres
+            de la caméra, simulant ainsi la capture d'une image par une caméra réelle.
+            
+            Args:
+                camera_id (str): Identifiant de la caméra utilisée pour la capture.
+            
+            Returns:
+                list: Liste contenant l'instance de Frame, une chaîne vide, et les dimensions de l'image.
+            """
+            frame = self.generate_gradient()
+            frames = [frame]
+            
+            return frames
+        
+        def generate_gradient(self):
+            """
+            Génère un motif de gradient en niveaux de gris qui semble se déplacer de bas en haut,
+            en générant d'abord une image plus petite puis en la redimensionnant.
+        
+            Returns:
+                numpy.ndarray: Tableau 2D contenant le motif de gradient en niveaux de gris.
+            """
+            # Dimensions réduites pour la génération initiale
+            small_hsize = self.cav['subarray_hsize'] // 4
+            small_vsize = self.cav['subarray_vsize'] // 4
+        
+            # Obtenir le temps actuel en secondes avec précision en millisecondes
+            current_time = time.time()
+        
+            # Calculer un décalage vertical basé sur le temps
+            offset = int((current_time * 50) % small_vsize)
+        
+            # Créer un gradient vertical en niveaux de gris avec décalage
+            y = np.arange(small_vsize)
+            gradient_column = ((y + offset) % small_vsize).astype(np.uint16)
+        
+            # Normaliser les valeurs pour qu'elles soient dans la plage des 16 bits
+            gradient_column = (gradient_column / small_vsize * 65535).astype(np.uint16)
+        
+            # Dupliquer la colonne pour créer l'image réduite
+            small_gradient = np.tile(gradient_column[:, np.newaxis], (1, small_hsize))
+        
+            # Redimensionner l'image à la taille finale
+            gradient = zoom(small_gradient, zoom=(4, 4), order=0)  # Utilisation de l'interpolation "nearest"
+        
+            return gradient
+        
 
 class HamamatsuCamera(object):
     
@@ -53,6 +141,7 @@ class HamamatsuCamera(object):
         Returns:
             list: Liste contenant l'instance de Frame, une chaîne vide, et les dimensions de l'image.
         """
+        # frame provient de la fonction définit plus tard 
         frame_instance = frame(hsize = self.camera['subarray_hsize'], vsize = self.camera['subarray_vsize'])
         frames = [frame_instance]
         

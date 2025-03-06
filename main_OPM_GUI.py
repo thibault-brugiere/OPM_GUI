@@ -21,6 +21,7 @@ import json
 import numpy as np
 import os
 import pickle
+# from pylablib.devices import DCAM
 import sys
 import tifffile
 
@@ -29,12 +30,12 @@ from PySide6.QtCore import QTimer #, QCoreApplication, QEventLoop
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
 
-from configs.config import camera, channel_config, microscope, experiment
+from configs.config import channel_config, microscope, experiment #, camera
 from Functions_UI import functions_ui, HistogramThread
 from Functions_Hardware import CameraThread, functions_camera
 # from Functions_Hardware import functions_daq
-from hardware.hamamatsu import HamamatsuCamera
 # from mock.hamamatsu_DAQ import HamamatsuCamera
+from mock.hamamatsu_DAQ import DCAM
 from mock.hamamatsu_DAQ import functions_daq
 from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
 
@@ -76,8 +77,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.microscope = microscope() # Variable contenant les paramétres du microscope
         self.experiment = experiment() # Variable contenant l'expérience
         
-        self.hcam = HamamatsuCamera() # Initialize the cameras
-        
         #
         # Saved datas
         #
@@ -85,13 +84,25 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.experiment.data_path = "D:/EqSibarita/Python/Control_Microscope_GUI/Images"
         self.experiment.exp_name = "Image"
         
+                
         #
-        # Creation of the cameras, set interface
+        # Initialize the cameras (all)
         #
         
-        self.camera = [camera(camera_id = 0 )] #, camera(camera_id = 1)] # Avant il y avait deux camera dans le soft
+        # TODO : ajouter message d'erreur si pas de caméra détectée
+        # TODO : créer un bouton pour initialiser les cameras ? (si plusieurs cameras trouvées, active les comboBoxes ?)
+        
+        self.n_camera = DCAM.get_cameras_number()
+        
+        print('number of camera detected : ' + str(self.n_camera))
+        
+        self.hcam , self.camera = functions_camera.initialize_cameras(self.n_camera)
+        
+        self.camera_indexes = functions_ui.generate_camera_indexes(self.n_camera) # indexes for combo_box
         
         self.camera_id = 0 # index de la caméra actuellement sélectionnée
+        
+            # Set the interface
         
         if self.loaded_variables:
             self.preset_size = self.saved_variables['preset_size']
@@ -305,8 +316,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 # Eteint les lasers si nécessaire
                 self.pb_laser_emission.setChecked(False)
                 self.pb_laser_emission_clicked()
-            self.hcam.closeCamera(self.preview_channel.camera) # Close cameras
-            self.hcam.uninit()
+                
+            functions_camera.close_cameras(self.hcam)
             event.accept()
         else:
             event.ignore()
@@ -694,10 +705,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.preview_channel.exposure_time = self.spinBox_channel_exposure_time.value()
         self.camera[self.preview_channel.camera].exposure_time = self.preview_channel.exposure_time /1000
         
-        if self.is_preview:
-            self.hcam.setPropertyValue("exposure_time",
-                                       self.camera[self.preview_channel.camera].exposure_time,
-                                       self.preview_channel.camera)
+        if self.is_preview: # Change exposure time during preview
+            self.hcam[self.preview_channel.camera].set_exposure(self.camera[self.preview_channel.camera].exposure_time)
+            
     
     def comboBox_channel_filter_index_changed(self):
         pass
@@ -839,19 +849,18 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             # Disable different parameters modifications while preview is running
             self.preview_tools_desactivation()
 
-            # Retrieve the exposure time from the corresponding spinBox, default to 10ms if not availables
-            # self.camera[self.preview_channel.camera].exposure_time = self.preview_channel.exposure_time/1000
-
             # Create and configure the acquisition thread
-            self.camera_thread = CameraThread(self.hcam, self.preview_channel.camera)
+            self.camera_thread = CameraThread(self.hcam[self.preview_channel.camera])
             self.camera_thread.new_frame.connect(self.store_frame) # Get the frame from camera thread process
             
             # Set camera acquisition mode and parameters
 
-            functions_camera.configure_camera_for_preview(self.hcam, self.camera[self.preview_channel.camera])
+            functions_camera.configure_camera_for_preview(self.hcam[self.preview_channel.camera],
+                                                          self.camera[self.preview_channel.camera])
 
             # Start the camera acquisition and turn on laser
-            self.hcam.startAcquisition(self.preview_channel.camera)
+            self.hcam[self.preview_channel.camera].start_acquisition('sequence',20)
+            
             self.pb_laser_emission.setChecked(True)
             self.pb_laser_emission_clicked()
             # Start the acquisition thread to handle continuous frame capture
@@ -889,7 +898,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.preview_timer.stop()
         self.camera_thread.stop()
         self.camera_thread.wait()
-        self.hcam.stopAcquisition(self.preview_channel.camera)
+        self.hcam[self.preview_channel.camera].clear_acquisition() # Not using stop_acquisition beacause it doesn't relese buffer
         
         # Turn off lasers
         self.pb_laser_emission.setChecked(False)
@@ -981,8 +990,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             # Eteint les lasers si nécessaire
             self.pb_laser_emission.setChecked(False)
             self.pb_laser_emission_clicked()
-        self.hcam.closeCamera(self.preview_channel.camera) # Close cameras
-        self.hcam.uninit()
+            
+        functions_camera.close_cameras(self.hcam)
+        
         if self.active_channels and self.active_channels[0] != 'None' :
             try:
                 send_to_snoutscope_acquisition(self.camera[0], self.channel[self.active_channels[0]], self.experiment, self.microscope)
@@ -992,7 +1002,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.status_bar.showMessage("parameters saving didn't worked!", 5000)
         else:
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
-        self.hcam = HamamatsuCamera() # Initialize the camera
+            
+        self.hcam , self.cameras = functions_camera.initialize_cameras(self.n_camera)
             
     def pb_multidimensional_acquisition_clicked_connect(self):
         """Start acquisition with the Multi Dimentionnal Acquisition protocole from Thibault"""

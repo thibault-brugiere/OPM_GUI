@@ -47,6 +47,23 @@ class functions_ui():
     # Camera
     #
     
+    def generate_camera_indexes(n_camera):
+        """
+        Generate a list of camera names based on the number of cameras
+        to set comboBox options
+        
+        Parameters:
+        - n_camera (int): The number of cameras.
+        
+        Returns:
+        - List[str]: A list of camera names in the format 'camera_1', 'camera_2', etc.
+        """
+        
+        camera_names = [f'camera_{i + 1}' for i in range(n_camera)]
+        
+        return camera_names
+            
+
     def set_pos(pos,size,chipsize):
         """
     Adjusts the position of a subarray within the camera sensor.

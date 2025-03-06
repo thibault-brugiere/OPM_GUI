@@ -5,11 +5,16 @@ Created on Mon Feb 10 17:19:56 2025
 @author: tbrugiere
 """
 import numpy as np
+# from pylablib.devices import DCAM
 import serial
 import serial.tools.list_ports
 import time as t
 
 from PySide6.QtCore import QThread, Signal
+
+from configs.config import camera
+
+from mock.hamamatsu_DAQ import DCAM
 
 # Camera
 
@@ -19,39 +24,66 @@ from nidaqmx.constants import AcquisitionType
 
 class functions_camera():
     
+    def initialize_cameras(n_camera):
+        """
+        Initialize a list of camera objects based on the number of detected cameras.
+        
+        Returns:
+        - List[DCAM.DCAMCamera]: A list of initialized camera objects.
+        - list[camera]: A list of camera objects from config
+        """
+        
+        hcams = []
+        cameras = []
+        
+        for camera_id in range(n_camera):
+            hcam =DCAM.DCAMCamera(camera_id)
+            hcams.append(hcam)
+            
+            cam = camera(camera_id)
+            
+            # Automatically get the parameters from the camera
+            # cam.hchipsize = hcam.get_attribute_value('image_detector_pixel_num_horz')
+            # cam.vchipsize = hcam.get_attribute_value('image_detector_pixel_num_vert')
+            # cam.pixel_size = hcam.get_attribute_value('image_detector_pixel_width')
+            
+            cameras.append(cam)
+            
+        return hcams, cameras
+    
+    def close_cameras(hamamatsu_cameras):
+        n_camera = len(hamamatsu_cameras)
+        
+        for camera_id in range(n_camera) :
+            hamamatsu_cameras[camera_id].close()
+    
     def configure_camera_for_preview(hcam, camera):
         """Configure les paramètres de la caméra."""
-        camera_id = camera.camera_id
         
-        hcam.setACQMode("run_till_abort", 20, camera.camera_id) #5 correspond au nombre d'images dans le buffer
-        
-        hcam.setPropertyValue("subarray_hsize", camera.hsize, camera_id)
-        hcam.setPropertyValue("subarray_vsize", camera.vsize, camera_id)
-        hcam.setPropertyValue("subarray_hpos", camera.hpos, camera_id)
-        hcam.setPropertyValue("subarray_vpos", camera.vpos, camera_id)
-        
-        hcam.setPropertyValue("binning", camera.binning, camera_id)
-        
-        hcam.setPropertyValue("exposure_time", camera.exposure_time, camera_id)
-       
+        hcam.cav["SUBARRAY MODE"]=2
+        hcam.cav["EXPOSURE TIME"] = camera.exposure_time
+        hcam.cav["subarray_hsize"] =  camera.hsize
+        hcam.cav["subarray_vsize"] = camera.vsize
+        hcam.cav["subarray_hpos"] =  camera.hpos
+        hcam.cav["subarray_vpos"] =  camera.vpos
+        hcam.cav["binning"] = camera.binning
+
 class CameraThread(QThread):
     """Thread qui acquiert en continu la dernière image de la caméra."""
     new_frame = Signal(np.ndarray)  # Signal émis à chaque nouvelle image
 
-    def __init__(self, hcam, camera_id):
+    def __init__(self, hcam):
         super().__init__()
-        self.camera_id = camera_id
         self.hcam = hcam
         self.running = True  # Permet de contrôler l'arrêt propre du thread
 
     def run(self):
         """Boucle d'acquisition d'images en continu."""
         while self.running:
-            frames, dims, [w, h] = self.hcam.getFrames(self.camera_id)
+            frames = self.hcam.read_multiple_images()
             if frames:
-                aframe = frames[-1]  # On prend la dernière image disponible
-                frame = aframe.getData()
-                frame.shape = (h, w)
+                frame = frames[-1]  # On prend la dernière image disponible
+
                 self.new_frame.emit(frame)  # Émettre l'image pour l'affichage
 
     def stop(self):
