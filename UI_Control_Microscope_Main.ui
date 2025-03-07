@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1880</width>
-    <height>1163</height>
+    <height>1174</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -165,6 +165,13 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_camera_detected">
+        <property name="text">
+         <string>0 Camera decteded</string>
         </property>
        </widget>
       </item>
@@ -362,7 +369,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label">
+         <widget class="QLabel" name="label_binning">
           <property name="text">
            <string>Binning</string>
           </property>

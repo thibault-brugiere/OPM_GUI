@@ -21,7 +21,7 @@ import json
 import numpy as np
 import os
 import pickle
-# from pylablib.devices import DCAM
+from pylablib.devices import DCAM
 import sys
 import tifffile
 
@@ -34,8 +34,7 @@ from configs.config import channel_config, microscope, experiment #, camera
 from Functions_UI import functions_ui, HistogramThread
 from Functions_Hardware import CameraThread, functions_camera
 # from Functions_Hardware import functions_daq
-# from mock.hamamatsu_DAQ import HamamatsuCamera
-from mock.hamamatsu_DAQ import DCAM
+# from mock.hamamatsu_DAQ import DCAM # A remplacer aussi dans Functions_Hardware
 from mock.hamamatsu_DAQ import functions_daq
 from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
 
@@ -88,10 +87,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         # Initialize the cameras (all)
         #
-        
-        # TODO : ajouter message d'erreur si pas de caméra détectée
+
         # TODO : créer un bouton pour initialiser les cameras ?
-        # TODO : Continuer mise a jour interface ouverture
         
         self.n_camera = DCAM.get_cameras_number()
         
@@ -106,6 +103,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                      functions_ui.generate_camera_indexes(self.n_camera))
             self.comboBox_camera.setDisabled(False)
             self.comboBox_channel_camera.setDisabled(False)
+        elif self.n_camera == 0:
+            self.desactivate_camera_options(True)
         
         self.camera_id = 0 # index de la caméra actuellement sélectionnée
         
@@ -203,8 +202,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         # Petites choses de l'interface
         #
-        
-        self.label_fov_size_set_text()
+
+        if self.n_camera > 0 :
+            self.label_fov_size_set_text()
         
         self.Red_Light_Icon_On = QPixmap('Icons/Red_Light_Icon_On.png')
         self.Red_Light_Icon_Off = QPixmap('Icons/Red_Light_Icon_Off.png')
@@ -383,6 +383,25 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         The updated values are stored in the `camera` dictionary, indexed by the camera's 
         current selection in `comboBox_camera`.
         """
+    def desactivate_camera_options(self, desactivation):
+        """ Desactive the options that use the camera if no camera is find in the system """
+        self.label_camera_detected.setText('WARNING: No camera detected ! Please restart the interface.')
+        
+        self.spinBox_hsize.setDisabled(desactivation)
+        self.spinBox_hpos.setDisabled(desactivation)
+        self.spinBox_vsize.setDisabled(desactivation)
+        self.spinBox_vpos.setDisabled(desactivation)
+        self.comboBox_size_preset.setDisabled(desactivation)
+        self.pb_center_FOV.setDisabled(desactivation)
+        self.comboBox_binning.setDisabled(desactivation)
+        self.spinBox_channel_exposure_time.setDisabled(desactivation)
+        self.pb_preview.setDisabled(desactivation)
+        self.pb_pause_preview.setDisabled(desactivation)
+        self.pb_stop_preview.setDisabled(desactivation)
+        self.pb_snap.setDisabled(desactivation)
+        self.pb_snoutscope_acquisition.setDisabled(desactivation)
+        self.pb_multidimensional_acquisition.setDisabled(desactivation)
+
     def comboBox_camera_index_changed(self):
         self.camera_id = self.comboBox_camera.currentIndex()
         
@@ -536,8 +555,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         These functions update the scanning parameters based on user input from spin boxes.
         """
-        
-        
+
     def spinBox_scanner_position_value_changed(self):
         self.experiment.scanner_position = self.spinBox_scanner_position.value()
         
@@ -1061,11 +1079,14 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def openPreserROIEditor(self):
         "display window to eddit preset ROI that can be used"
-        self.presetROI_editor = PresetROIWindow(self.preset_size ,
-                                                [self.camera[self.camera_id].hchipsize ,
-                                                 self.camera[self.camera_id].vchipsize],
-                                                self)
-        self.presetROI_editor.show()
+        if self.n_camera > 0 :
+            self.presetROI_editor = PresetROIWindow(self.preset_size ,
+                                                    [self.camera[self.camera_id].hchipsize ,
+                                                     self.camera[self.camera_id].vchipsize],
+                                                    self)
+            self.presetROI_editor.show()
+        else:
+            self.statusbar.showMessage('No camera connected', 5000)
     
     def openChannelEditor(self):
         "display window to eddit default channels of the microscope"

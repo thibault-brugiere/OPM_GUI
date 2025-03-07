@@ -59,6 +59,11 @@ class ChannelEditorWindow(QWidget, Ui_Form):
         
         self.label_status.setText("Ready")
         
+        if self.parent() is not None and self.parent().n_camera > 1 :
+            functions_ui.set_comboBox(self.comboBox_channel_camera ,
+                                      functions_ui.generate_camera_indexes(self.parent().n_camera))
+            self.comboBox_channel_camera.setDisabled(False)
+        
         ### Library to set the channels
         
         self.lasers = ["405","488","561","640"] # = self.microscope.lasers
@@ -151,8 +156,10 @@ class ChannelEditorWindow(QWidget, Ui_Form):
         """
         Updates the interfaceand channels based on the avaliable filters
         """
-        
-        options = copy.deepcopy(self.parent().microscope.filters)
+        if self.parent() is not None :
+            options = copy.deepcopy(self.parent().microscope.filters)
+        else:
+            options = []
         
         options.insert(0, '-None-')
         

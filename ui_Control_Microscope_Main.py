@@ -28,7 +28,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1880, 1163)
+        MainWindow.resize(1880, 1174)
         MainWindow.setAutoFillBackground(False)
         MainWindow.setAnimated(True)
         MainWindow.setDockNestingEnabled(True)
@@ -115,6 +115,11 @@ class Ui_MainWindow(object):
         self.label_camera_settings.setAlignment(Qt.AlignCenter)
 
         self.verticalLayout.addWidget(self.label_camera_settings)
+
+        self.label_camera_detected = QLabel(self.centralwidget)
+        self.label_camera_detected.setObjectName(u"label_camera_detected")
+
+        self.verticalLayout.addWidget(self.label_camera_detected)
 
         self.comboBox_camera = QComboBox(self.centralwidget)
         self.comboBox_camera.addItem("")
@@ -1177,6 +1182,7 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.lineEdit_exp_name.setText(QCoreApplication.translate("MainWindow", u"Image", None))
         self.label_camera_settings.setText(QCoreApplication.translate("MainWindow", u"Camera Settings", None))
+        self.label_camera_detected.setText(QCoreApplication.translate("MainWindow", u"0 Camera decteded", None))
         self.comboBox_camera.setItemText(0, QCoreApplication.translate("MainWindow", u"Camera 1", None))
 
 #if QT_CONFIG(tooltip)
