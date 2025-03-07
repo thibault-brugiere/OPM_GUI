@@ -5,7 +5,7 @@ Created on Mon Feb 10 17:19:56 2025
 @author: tbrugiere
 """
 import numpy as np
-# from pylablib.devices import DCAM
+from pylablib.devices import DCAM
 import serial
 import serial.tools.list_ports
 import time as t
@@ -14,7 +14,7 @@ from PySide6.QtCore import QThread, Signal
 
 from configs.config import camera
 
-from mock.hamamatsu_DAQ import DCAM
+# from mock.hamamatsu_DAQ import DCAM
 
 # Camera
 
@@ -43,9 +43,8 @@ class functions_camera():
             cam = camera(camera_id)
             
             # Automatically get the parameters from the camera
-            # cam.hchipsize = hcam.get_attribute_value('image_detector_pixel_num_horz')
-            # cam.vchipsize = hcam.get_attribute_value('image_detector_pixel_num_vert')
-            # cam.pixel_size = hcam.get_attribute_value('image_detector_pixel_width')
+            cam.hchipsize, cam.vchipsize = hcam.get_detector_size()
+            cam.pixel_size = hcam.get_attribute_value('image_detector_pixel_width')
             
             cameras.append(cam)
             
@@ -59,9 +58,11 @@ class functions_camera():
     
     def configure_camera_for_preview(hcam, camera):
         """Configure les paramètres de la caméra."""
-        
+
         hcam.cav["SUBARRAY MODE"]=2
         hcam.cav["EXPOSURE TIME"] = camera.exposure_time
+        hcam.cav["subarray_hpos"] =  0 # Needed to avoid "INVALIDSUBARRAY"
+        hcam.cav["subarray_vpos"] =  0 # Needed to avoid "INVALIDSUBARRAY"
         hcam.cav["subarray_hsize"] =  camera.hsize
         hcam.cav["subarray_vsize"] = camera.vsize
         hcam.cav["subarray_hpos"] =  camera.hpos

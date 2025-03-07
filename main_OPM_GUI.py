@@ -90,15 +90,22 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         
         # TODO : ajouter message d'erreur si pas de caméra détectée
-        # TODO : créer un bouton pour initialiser les cameras ? (si plusieurs cameras trouvées, active les comboBoxes ?)
+        # TODO : créer un bouton pour initialiser les cameras ?
+        # TODO : Continuer mise a jour interface ouverture
         
         self.n_camera = DCAM.get_cameras_number()
         
-        print('number of camera detected : ' + str(self.n_camera))
+        self.label_camera_detected.setText(f"Number of cameras detected: {self.n_camera}")
         
         self.hcam , self.camera = functions_camera.initialize_cameras(self.n_camera)
         
-        self.camera_indexes = functions_ui.generate_camera_indexes(self.n_camera) # indexes for combo_box
+        if self.n_camera > 1:
+            functions_ui.set_comboBox(self.comboBox_camera,
+                                      functions_ui.generate_camera_indexes(self.n_camera))
+            functions_ui.set_comboBox(self.comboBox_channel_camera,
+                                     functions_ui.generate_camera_indexes(self.n_camera))
+            self.comboBox_camera.setDisabled(False)
+            self.comboBox_channel_camera.setDisabled(False)
         
         self.camera_id = 0 # index de la caméra actuellement sélectionnée
         
@@ -107,7 +114,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.loaded_variables:
             self.preset_size = self.saved_variables['preset_size']
         else:
-            self.preset_size = ['44032 - 0 x 2368 - 0','2048 - 1192 x 2048 - 160']
+            self.preset_size = ['4432 - 0 x 2368 - 0','2048 - 1192 x 2048 - 160']
         
         self.comboBox_size_preset_set_indexes()
         
@@ -378,6 +385,16 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         """
     def comboBox_camera_index_changed(self):
         self.camera_id = self.comboBox_camera.currentIndex()
+        
+        self.spinBox_hsize.setMaximum(self.camera[self.camera_id].hchipsize)
+        self.spinBox_hsize.setValue(self.camera[self.camera_id].hsize)
+        self.spinBox_hpos.setValue(self.camera[self.camera_id].hpos)
+
+        self.spinBox_vsize.setMaximum(self.camera[self.camera_id].vchipsize)
+        self.spinBox_vsize.setValue(self.camera[self.camera_id].vsize)
+        self.spinBox_hpos.setValue(self.camera[self.camera_id].vpos)
+        
+        self.comboBox_binning.setCurrentText(str(self.camera[self.camera_id].binning))
     
     def spinBox_hsize_value_changed(self):
         'Horizontal size of the ROI'
