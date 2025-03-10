@@ -614,6 +614,11 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_32)
 
+        self.label_daq_detected = QLabel(self.centralwidget)
+        self.label_daq_detected.setObjectName(u"label_daq_detected")
+
+        self.verticalLayout.addWidget(self.label_daq_detected)
+
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout.addItem(self.verticalSpacer)
@@ -1182,6 +1187,9 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.lineEdit_exp_name.setText(QCoreApplication.translate("MainWindow", u"Image", None))
         self.label_camera_settings.setText(QCoreApplication.translate("MainWindow", u"Camera Settings", None))
+#if QT_CONFIG(tooltip)
+        self.label_camera_detected.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>If no camera has been detected, after checking the camera connection, restart the interface.</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.label_camera_detected.setText(QCoreApplication.translate("MainWindow", u"0 Camera decteded", None))
         self.comboBox_camera.setItemText(0, QCoreApplication.translate("MainWindow", u"Camera 1", None))
 
@@ -1226,7 +1234,7 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(tooltip)
         self.comboBox_binning.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Adjust the binning on the camera sensor. <span style=\" font-weight:600;\">NOTE:</span> the pixels and position, horizontal and vertical, doesn't take in account the binning</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.label.setText(QCoreApplication.translate("MainWindow", u"Binning", None))
+        self.label_binning.setText(QCoreApplication.translate("MainWindow", u"Binning", None))
         self.label_channels_settings.setText(QCoreApplication.translate("MainWindow", u"Channels Settings", None))
 #if QT_CONFIG(tooltip)
         self.lineEdit_channel_name.setToolTip(QCoreApplication.translate("MainWindow", u"Name of the new channel if press add", None))
@@ -1314,6 +1322,7 @@ class Ui_MainWindow(object):
         self.pb_laser_emission.setText(QCoreApplication.translate("MainWindow", u"Emission", None))
         self.label_laser_icon.setText("")
         self.label_laser.setText(QCoreApplication.translate("MainWindow", u"OFF", None))
+        self.label_daq_detected.setText(QCoreApplication.translate("MainWindow", u"0 DAQ detected", None))
         self.label_timelaps_settings.setText(QCoreApplication.translate("MainWindow", u"Timelaps Settings", None))
 #if QT_CONFIG(tooltip)
         self.spinBox_timepoints.setToolTip(QCoreApplication.translate("MainWindow", u"Set the number of timepoints in the timelapse experiment.\n"

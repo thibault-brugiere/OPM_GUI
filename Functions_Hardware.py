@@ -5,7 +5,6 @@ Created on Mon Feb 10 17:19:56 2025
 @author: tbrugiere
 """
 import numpy as np
-from pylablib.devices import DCAM
 import serial
 import serial.tools.list_ports
 import time as t
@@ -14,13 +13,18 @@ from PySide6.QtCore import QThread, Signal
 
 from configs.config import camera
 
-# from mock.hamamatsu_DAQ import DCAM
-
 # Camera
+from pylablib.devices import DCAM
+# from mock.hamamatsu_DAQ import DCAM
 
 #DAQ
 import nidaqmx
+from nidaqmx.system import System
 from nidaqmx.constants import AcquisitionType
+
+#
+# Functions camera
+#
 
 class functions_camera():
     
@@ -92,8 +96,33 @@ class CameraThread(QThread):
         self.running = False
         self.quit()
         self.wait()
+
+#
+# Functions DAQ
+#
         
 class functions_daq():
+
+    def get_connected_daq_devices():
+        """
+        Check for connected National Instruments DAQ devices and return a list of their names.
+
+        Returns:
+        - List[str]: A list of names of connected DAQ devices.
+        """
+        try:
+            # Créez une instance du système NI-DAQmx
+            system = System.local()
+
+            # Obtenez la liste des dispositifs DAQ connectés
+            devices = system.devices
+
+            # Retournez une liste des noms des dispositifs
+            return [device.name for device in devices]
+
+        except Exception as e:
+            print(f"Error detecting DAQ devices: {e}")
+            return []
     
     def analog_out(tension=0, output_channel='Dev1/ao0'):
         """
@@ -212,6 +241,10 @@ class functions_daq():
                 wait_function(wait_instruction)
             
             task.stop()
+
+#
+# Functions command serial ports - piezzo
+#
 
 class functions_super_agilis():
     
