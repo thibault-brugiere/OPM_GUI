@@ -10,7 +10,7 @@ LASERS = ["405","488","561","640"]
 class camera(object):
     "Object discribing camera settings"
     def __init__(self, camera_id):
-        self.camera_id = 0
+        self.camera_id = camera_id
         self.hchipsize = 4432
         self.vchipsize = 2368
         self.pixel_size = 4.6 #in µm

@@ -21,7 +21,7 @@ import json
 import numpy as np
 import os
 import pickle
-from pylablib.devices import DCAM
+# from pylablib.devices import DCAM
 import sys
 import tifffile
 
@@ -34,9 +34,10 @@ from configs.config import channel_config, microscope, experiment #, camera
 from Functions_UI import functions_ui, HistogramThread
 from Functions_Hardware import CameraThread, functions_camera
 # from Functions_Hardware import functions_daq
-# from mock.hamamatsu_DAQ import DCAM # A remplacer aussi dans Functions_Hardware
+from mock.hamamatsu_DAQ import DCAM # A remplacer aussi dans Functions_Hardware
 from mock.hamamatsu_DAQ import functions_daq
 from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
+from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
@@ -82,8 +83,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.experiment.data_path = "D:/EqSibarita/Python/Control_Microscope_GUI/Images"
         self.experiment.exp_name = "Image"
-        
-                
+
         #
         # Initialize the cameras (all)
         #
@@ -1043,7 +1043,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             try:
                 send_to_snoutscope_acquisition(self.camera[0], self.channel[self.active_channels[0]], self.experiment, self.microscope)
                 # Enregistre les données, ne prendra en compre que le premier channel choisi
-                functions_ui.start_snoutscope_acquisition('D:/EqSibarita/Python/snoutscopev3-main/Snoutscope.py')
+                functions_ui.start_snoutscope_acquisition('D:/Projets_Python/OPM_GUI/snoutscopev3/Snoutscope.py')
             except:
                 self.status_bar.showMessage("parameters saving didn't worked!", 5000)
         else:
@@ -1053,8 +1053,23 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
     def pb_multidimensional_acquisition_clicked_connect(self):
         """Start acquisition with the Multi Dimentionnal Acquisition protocole from Thibault"""
-        print("start multidimensional acquisition")      
-        self.status_bar.showMessage("start multidimensional acquisition")
+        if self.is_preview:
+            # Eteint l'acquisition si nécessaire
+            self.pb_stop_preview_clicked()
+            # Eteint les lasers si nécessaire
+            self.pb_laser_emission.setChecked(False)
+            self.pb_laser_emission_clicked()
+        if self.active_channels and self.active_channels[0] != 'None' :
+            try:
+                channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
+                send_to_multidimensionnal_acquisition(self.camera, channel_acquisition, self.experiment, self.microscope)
+                print("start multidimensional acquisition")
+                self.status_bar.showMessage("start multidimensional acquisition")
+                functions_ui.start_multidimensional_acquisition('')
+            except:
+                self.status_bar.showMessage("parameters saving didn't worked!", 5000)
+        else:
+            self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
         
     ###############################################
     ## Fonctions appelées par les menus d'action ##

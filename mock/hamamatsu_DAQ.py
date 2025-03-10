@@ -32,6 +32,9 @@ class DCAM:
         def get_attribute_value(self,key):
             value = self.cav[key]
             return value
+
+        def get_detector_size(self):
+            return self.cav['image_detector_pixel_num_horz'], self.cav['image_detector_pixel_num_vert']
         
         def set_exposure(timing):
             pass

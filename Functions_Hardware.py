@@ -14,8 +14,8 @@ from PySide6.QtCore import QThread, Signal
 from configs.config import camera
 
 # Camera
-from pylablib.devices import DCAM
-# from mock.hamamatsu_DAQ import DCAM
+# from pylablib.devices import DCAM
+from mock.hamamatsu_DAQ import DCAM
 
 #DAQ
 import nidaqmx
@@ -41,7 +41,7 @@ class functions_camera():
         cameras = []
         
         for camera_id in range(n_camera):
-            hcam =DCAM.DCAMCamera(camera_id)
+            hcam = DCAM.DCAMCamera(camera_id)
             hcams.append(hcam)
             
             cam = camera(camera_id)

@@ -345,6 +345,20 @@ class functions_ui():
             subprocess.run(["python", file_path], check=True)
         except subprocess.CalledProcessError as e:
             print(f"Erreur lors de l'exécution du fichier : {e}")
+
+    def get_active_channel(active_channels, channel):
+        channel_acquisition = []
+        for channel_name in active_channels :
+            if channel_name != 'None' :
+                channel_acquisition.append(channel[channel_name])
+            else:
+                print('None channel detected')
+
+        return channel_acquisition
+
+    def start_multidimensional_acquisition(file_path):
+        pass
+
     
     #
     # General functions
