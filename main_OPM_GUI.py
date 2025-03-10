@@ -116,6 +116,17 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.preset_size = ['4432 - 0 x 2368 - 0','2048 - 1192 x 2048 - 160']
         
         self.comboBox_size_preset_set_indexes()
+
+        #
+        # Check the DAQ
+        #
+
+        self.connected_daq = functions_daq.get_connected_daq_devices()
+
+        if len(self.connected_daq) > 0 :
+            self.label_daq_detected.setText(f'{len(self.connected_daq)} ni-DAQ detected : {self.connected_daq[0]}')
+        else :
+            self.label_daq_detected.setText('WARNING: No ni-DAQ detected ! Please restart the interface.')
         
         #
         # creation of the channels / lasers
@@ -386,7 +397,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     def desactivate_camera_options(self, desactivation):
         """ Desactive the options that use the camera if no camera is find in the system """
         self.label_camera_detected.setText('WARNING: No camera detected ! Please restart the interface.')
-        
+
         self.spinBox_hsize.setDisabled(desactivation)
         self.spinBox_hpos.setDisabled(desactivation)
         self.spinBox_vsize.setDisabled(desactivation)

@@ -170,6 +170,9 @@
       </item>
       <item>
        <widget class="QLabel" name="label_camera_detected">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If no camera has been detected, after checking the camera connection, restart the interface.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
          <string>0 Camera decteded</string>
         </property>
@@ -1374,6 +1377,13 @@
          </spacer>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_daq_detected">
+        <property name="text">
+         <string>0 DAQ detected</string>
+        </property>
+       </widget>
       </item>
       <item>
        <spacer name="verticalSpacer">

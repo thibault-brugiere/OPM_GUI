@@ -174,3 +174,5 @@ cython_debug/
 .pypirc
 
 Images/
+snoutscopev3/
+idea/

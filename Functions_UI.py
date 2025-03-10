@@ -421,7 +421,7 @@ class HistogramThread(QThread):
         # Définir la taille de la police pour les axes
         ax.tick_params(axis='both', which='major', labelsize=self.font_size)
         ax.set_xlabel('Gray Value', fontsize=self.font_size)
-        ax.set_ylabel('Frequency', fontsize=self.font_size)
+        ax.set_ylabel('Density', fontsize=self.font_size)
 
         # Ajoute les position des min et max gray value
         ax.axvline(x=self.min_grayscale, color='blue', linestyle='--', linewidth=self.line_width)

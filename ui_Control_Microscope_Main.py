@@ -233,10 +233,10 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_28.addWidget(self.comboBox_binning)
 
-        self.label = QLabel(self.centralwidget)
-        self.label.setObjectName(u"label")
+        self.label_binning = QLabel(self.centralwidget)
+        self.label_binning.setObjectName(u"label_binning")
 
-        self.horizontalLayout_28.addWidget(self.label)
+        self.horizontalLayout_28.addWidget(self.label_binning)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_28)
