@@ -50,6 +50,8 @@ def send_to_snoutscope_acquisition(camera, channel, experiment, microscope, file
                   'MAG_TOTAL' : microscope.mag_total,
                   'CAMERA_PIXELSIZE' : camera.pixel_size,
                   'VOLTS_PER_UM' : microscope.volts_per_um,
+                  'GALVO_RESPONSE_TIME' : microscope.galvo_response_time,
+                  'GALVO_FLYBACK_TIME' : microscope.galvo_flyback_time,
                   'DAQ_CHANNELS' : microscope.daq_channels,
                   }
     
