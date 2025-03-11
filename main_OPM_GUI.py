@@ -35,8 +35,8 @@ from Functions_UI import functions_ui
 from display.histogram import HistogramThread
 from hardware.functions_camera import CameraThread, functions_camera
 # from hardware.functions_DAQ import functions_daq
-from mock.hamamatsu_DAQ import DCAM # A remplacer aussi dans Functions_Hardware
-from mock.hamamatsu_DAQ import functions_daq
+from mock.hamamatsu import DCAM # A remplacer aussi dans Functions_Hardware
+from mock.DAQ import functions_daq
 from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
 from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
 

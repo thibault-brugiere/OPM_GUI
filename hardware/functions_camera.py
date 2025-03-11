@@ -11,7 +11,7 @@ from PySide6.QtCore import QThread, Signal
 from configs.config import camera
 
 # from pylablib.devices import DCAM
-from mock.hamamatsu_DAQ import DCAM
+from mock.hamamatsu import DCAM
 
 class functions_camera():
     
