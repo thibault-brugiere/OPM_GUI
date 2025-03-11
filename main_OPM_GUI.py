@@ -68,9 +68,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.status_bar = self.statusBar()
         self.status_bar.showMessage("Ready") #Change le message de la status bar
         
-    ############################
-    ## Création des Variables ##
-    ############################
+    ###############################
+    ## Creation of the Variables ##
+    ###############################
         
         self.load_variables() #Si des variables de l'interface ont étées enregistrées, elles seront changées ici
         self.load_channels()
@@ -225,9 +225,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.spinBox_aspect_ratio.setValue(self.experiment.aspect_ratio)
         
-        #########################################
-        ## Fonctions appelées pour les boutons ##
-        #########################################
+        ##############################################
+        ## Connection between functions and buttons ##
+        ##############################################
         
             ## Saving / Setup
         self.pb_data_path.clicked.connect(self.pb_data_path_value_changed)
@@ -298,7 +298,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_multidimensional_acquisition.clicked.connect(self.pb_multidimensional_acquisition_clicked_connect)
         
     ###############################################
-    ## Fonctions appelées par les menus d'action ##
+    ## Connection between functions and toolbars ##
     ###############################################
     
             ## Fichier
@@ -316,9 +316,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.action_Preset_ROI_size.triggered.connect(self.openPreserROIEditor)
         
         
-    #########################################################
-    ## Fonctions appelées lors de la fermture du programme ##
-    #########################################################
+    #############################################
+    ## Fonctions called when program is closed ##
+    #############################################
         
     def closeEvent(self, event):
         # Show a dialog box asking the user to close the interface
@@ -1072,9 +1072,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
         
-    ###############################################
-    ## Fonctions appelées par les menus d'action ##
-    ###############################################
+    ##################################
+    ## Fonctions called by toolbars ##
+    ##################################
     
     def save_config(self):
         "save cnfigurations of the microscope"
@@ -1121,9 +1121,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.channel_editor.show()
         pass
     
-    ################################################################
-    ## Fonctions appelées pour sauvegarder et changer l'interface ##
-    ################################################################
+    ############################################
+    ## Fonctions to save interface variables ##
+    ###########################################
     
     #
     # different simples varibles .json
