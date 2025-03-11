@@ -28,6 +28,14 @@ def test_legalize_name():
     
     pass
 
+def test_generate_camera_indexes():
+    camera_names = functions_ui.generate_camera_indexes(2)
+    
+    if camera_names == ['camera_1', 'camera_2']:
+        print('test pass')
+    else:
+        print(f'Result is {camera_names}\nand it should be : [''camera_1'', ''camera_2'']')
+
 def test_set_pos():
     hchipsize = 4432
     hsize = 1024
@@ -42,7 +50,7 @@ def test_set_pos():
         print("Test pass!")
     else:
         print("     Result are : "+str(pos1)+(" , ") + str(pos2)+(" , ") + str(pos3) +
-              "\nand i should be : "+str(1020)+(" , ") + str(3408)+(" , ") + str(1020))
+              "\nand it should be : "+str(1020)+(" , ") + str(3408)+(" , ") + str(1020))
         
 def test_set_size():
     hchipsize = 4432

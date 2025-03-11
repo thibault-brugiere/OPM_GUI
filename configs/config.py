@@ -89,7 +89,7 @@ class microscope(object):
                              "co_terminal": "/Dev1/PFI0", # ADD: trigger start of each volume
                              "galvo": "Dev1/ao0", # Fait bouger le galvo pour le scanning
                              "camera_0": "Dev1/port0/line0", # Trigger l'exposition de la camera
-                             "camera_1": "Dev1/port0/line1", # None
+                             "camera_1": "None", # Trigger l'exposition de la deuxieme camera (si presente)
                              "405" : "Dev1/ao1", # Régle la puissance du laser 405
                              "488" : None,      # Régle la puissance du laser 488
                              "561" : "Dev1/ao2", # Régle la puissance du laser 561
