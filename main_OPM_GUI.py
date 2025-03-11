@@ -32,7 +32,7 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
 
 from configs.config import channel_config, microscope, experiment #, camera
 from Functions_UI import functions_ui, HistogramThread
-from Functions_Hardware import CameraThread, functions_camera
+from hardware.functions_camera import CameraThread, functions_camera
 # from Functions_Hardware import functions_daq
 from mock.hamamatsu_DAQ import DCAM # A remplacer aussi dans Functions_Hardware
 from mock.hamamatsu_DAQ import functions_daq

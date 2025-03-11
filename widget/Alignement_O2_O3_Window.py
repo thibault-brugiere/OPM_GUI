@@ -28,7 +28,7 @@ if __name__ == "__main__":
     parent_dir = os.path.dirname(current_dir)
     sys.path.append(parent_dir)
 
-from Functions_Hardware import functions_super_agilis as piezzo
+from hardware.functions_super_agilis import functions_super_agilis as piezzo
 from widget.ui_alignement_O2_O3 import Ui_Form
 
 class alignement_O2_O3_Window(QWidget, Ui_Form):
