@@ -21,7 +21,7 @@ import json
 import numpy as np
 import os
 import pickle
-from pylablib.devices import DCAM
+# from pylablib.devices import DCAM
 import sys
 import tifffile
 
@@ -34,9 +34,9 @@ from configs.config import channel_config, microscope, experiment #, camera
 from Functions_UI import functions_ui
 from display.histogram import HistogramThread
 from hardware.functions_camera import CameraThread, functions_camera
-from hardware.functions_DAQ import functions_daq
-# from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
-# from mock.DAQ import functions_daq
+# from hardware.functions_DAQ import functions_daq
+from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
+from mock.DAQ import functions_daq
 from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
 from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
 
@@ -104,6 +104,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                      functions_ui.generate_camera_indexes(self.n_camera))
             self.comboBox_camera.setDisabled(False)
             self.comboBox_channel_camera.setDisabled(False)
+            self.microscope.sample_pixel_size = self.camera[0].sample_pixel_size
         elif self.n_camera == 0:
             self.desactivate_camera_options(True)
         
@@ -607,6 +608,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         This ensures that the user interface accurately reflects the current
         state of the laser connections, providing a seamless user experience.
         """
+        
+        # TODO: Il faut que le laser non connecté soit mis à 0v et désactivé dans le channel
         
         for laser in self.checkBox_laser.keys():
             self.channel = copy.deepcopy(self.default_channel)

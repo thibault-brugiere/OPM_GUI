@@ -14,15 +14,17 @@ class camera(object):
         self.hchipsize = 4432
         self.vchipsize = 2368
         self.pixel_size = 4.6 #in µm
+        self.sample_pixel_size = 0.153 # in µm, calculated later
         self.hsize = 4432
         self.hpos = 0
         self.vsize = 2308
         self.vpos = 0
         self.binning = 1
         self.exposure_time = 0.0087 # in seconds
-        self.line_per_seconds = 270000  # Nombre de lignes lues / seconds
-                                        # Permet de calculer le temps de lecture en fonction de la vsize
-                                        # Ne pas prendre en compte le binning !
+        self.line_readout_time = 3.8e-6    # temps de lecture d'une ligne (en secondes)
+                                                    # 3,62E-06 (d'aprés la doc)
+                                                    # Permet de calculer le temps de lecture en fonction de la vsize
+                                                    # Ne pas prendre en compte le binning !
         
 class channel_config(object):
     "Object discribing channels settings"
@@ -55,6 +57,9 @@ class experiment(object):
         self.scanner_position = 0
         self.scan_range = 20
         self.aspect_ratio = 3
+        self.n_steps = 0 # Calculé plus tard
+        self.step_size = 0 # Calculé plus tard
+        
         self.slit_aperture = 800 #in µm
         
         self.cameras = []
@@ -66,8 +71,8 @@ class microscope(object):
         
         # scanning galvo
         self.volts_per_um = 0.05
-        self.galvo_response_time = 400  # A mesure
-        self.galvo_flyback_time = 1200 # A mesurer
+        self.galvo_response_time = 0.400  # A mesure
+        self.galvo_flyback_time = 0.1200 # A mesurer
         
         # Filters
         self.filters = ['BFP','GFP','CY3.5','TexRed','empty5', 'empty6'] #should be 6 options
@@ -79,10 +84,11 @@ class microscope(object):
                                         '561' : 5.0 / 100.0, # 5v max
                                         '640' : 5.0 / 100.0  # 5v max
                                         }
+        self.laser_response_time = 2 # in ms
         
         # Microscope magnification
         self.mag_total = 29.61
-        self.sample_pixel_size = 0.160 #in µm
+        self.sample_pixel_size = 0.160 #in µm SUPPRIMER
         
         # DAQ
         self.daq_channels = {"co_channel": "Dev1/ctr0", # ADD: trigger start of each volume

@@ -6,6 +6,7 @@ Created on Wed Feb 26 15:22:11 2025
 """
 import json
 import os
+from .functions_acquisition import functions_acquisition as fa
 
 def send_to_snoutscope_acquisition(camera, channel, experiment, microscope, filename='GUI_parameters.json'):
     """
@@ -82,16 +83,28 @@ def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment,
 
     cameras = {}
     channels = {}
+    
+    #
+    # Cameras
+    #
 
     for camera in camera_list :
+        camera.sample_pixel_size = camera.pixel_size / microscope.mag_total
+        
         camera_parameters = {'camera_id': camera.camera_id,
                              'subarray_hpos': camera.hpos,
                              'subarray_hsize': camera.hsize,
                              'subarray_vpos': camera.vpos,
                              'subarray_vsize': camera.vsize,
+                             'sample_pixel_size' : camera.sample_pixel_size,
+                             'line_readout_time' : camera.line_readout_time
                             }
 
         cameras.update({f'camera_{camera.camera_id}': camera_parameters})
+        
+    #
+    # Channels
+    #
 
     for channel in channel_list :
         # Permet d'ajuster le pourcentage de laser à la tension nécessaire au DAC
@@ -106,22 +119,42 @@ def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment,
                               'laser_power': channel.laser_power,
                               }
         channels.update({f'channel_{channel.channel_id}': channel_parameters})
-
-    experiment_parameters = {'ASPECT_RATIO': experiment.aspect_ratio,
-                             'SCAN_RANGE_UM': experiment.scan_range,
-                             'SLIT_APERTURE': experiment.slit_aperture,
-                             'TIME_INTERVAL': experiment.time_intervals,
-                             'NUM_TIMEPOINTS': experiment.timepoints,
+        
+    #
+    # Experiment
+    #
+    
+    experiment.n_steps, experiment.step_size, experiment.scan_range = fa.calculate_size_Z(experiment.scan_range,
+                                                                                          camera_list[0].sample_pixel_size,
+                                                                                          experiment.aspect_ratio,
+                                                                                          microscope.tilt_angle)
+    experiment_parameters = {'aspect_ration': experiment.aspect_ratio,
+                             'scan_range': experiment.scan_range,
+                             'slit_aperture': experiment.slit_aperture,
+                             'time_intervals': experiment.time_intervals,
+                             'num_timepoints': experiment.timepoints,
+                             'n_steps' : experiment.n_steps,
+                             'step_size' : experiment.step_size
                              }
+    
+    #
+    # Mocroscope
+    #
 
-    microscope_parameters = {'EXP_NAME': experiment.exp_name,
-                             'DATA_PATH': experiment.data_path,
-                             'TILT_ANGLE': microscope.tilt_angle,
-                             'MAG_TOTAL': microscope.mag_total,
-                             'CAMERA_PIXELSIZE': camera.pixel_size,
-                             'VOLTS_PER_UM': microscope.volts_per_um,
-                             'DAQ_CHANNELS': microscope.daq_channels,
+    microscope_parameters = {'exp_name': experiment.exp_name,
+                             'data_path': experiment.data_path,
+                             'tilt_angle': microscope.tilt_angle,
+                             'mag_total': microscope.mag_total,
+                             'camera_pixelsize': camera.pixel_size,
+                             'volts_per_um': microscope.volts_per_um,
+                             'galvo_response_time' : microscope.galvo_response_time,
+                             'galvo_flyback_time' : microscope.galvo_flyback_time,
+                             'laser_response_time' : microscope.laser_response_time,
+                             'daq_channels': microscope.daq_channels,
                              }
+    #
+    # Final dictionnary
+    #
 
     parameters = {'cameras': cameras,
                   'channels': channels,
@@ -129,7 +162,11 @@ def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment,
                   'microscope': microscope_parameters
                   }
 
+    #
+    # Saving
+    #
+
     file_path = os.path.join(dirname, filename)  # filename définit en entrée de la fonction
 
     with open(file_path, 'w') as json_file:
-        json.dump(parameters, json_file)
+        json.dump(parameters, json_file, indent=4)
