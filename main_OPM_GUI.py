@@ -21,7 +21,7 @@ import json
 import numpy as np
 import os
 import pickle
-# from pylablib.devices import DCAM
+from pylablib.devices import DCAM
 import sys
 import tifffile
 
@@ -34,9 +34,9 @@ from configs.config import channel_config, microscope, experiment #, camera
 from Functions_UI import functions_ui
 from display.histogram import HistogramThread
 from hardware.functions_camera import CameraThread, functions_camera
-# from hardware.functions_DAQ import functions_daq
-from mock.hamamatsu import DCAM # A remplacer aussi dans Functions_Hardware
-from mock.DAQ import functions_daq
+from hardware.functions_DAQ import functions_daq
+# from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
+# from mock.DAQ import functions_daq
 from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
 from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
 

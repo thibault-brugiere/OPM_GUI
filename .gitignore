@@ -175,6 +175,7 @@ cython_debug/
 
 Images/
 snoutscopev3/
+multidimensional_acquisition/
 idea/
 .idea/
 .spyproject/
