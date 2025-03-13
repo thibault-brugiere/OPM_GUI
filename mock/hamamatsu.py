@@ -25,7 +25,8 @@ class DCAM:
                         'image_detector_pixel_width' : 5,
                         'subarray_hsize' : 4000,
                         'subarray_vsize' : 2000,
-                        "binning" : 1,
+                        'binning' : 1,
+                        'internal_line_interval' : 7.309e-06,
                         # "pixel_size" : 5
                         }
             

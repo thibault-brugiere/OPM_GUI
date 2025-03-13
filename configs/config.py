@@ -21,10 +21,8 @@ class camera(object):
         self.vpos = 0
         self.binning = 1
         self.exposure_time = 0.0087 # in seconds
-        self.line_readout_time = 3.8e-6    # temps de lecture d'une ligne (en secondes)
-                                                    # 3,62E-06 (d'aprés la doc)
-                                                    # Permet de calculer le temps de lecture en fonction de la vsize
-                                                    # Ne pas prendre en compte le binning !
+        self.line_readout_time = 8e-6 # (s) temps de lecture/ligne (7.309E-06/2 lignes d'aprés la doc)
+        # Pour calculer le temps de lecture selon la vsize (Ne pas prendre en compte le binning !)
         
 class channel_config(object):
     "Object discribing channels settings"
@@ -71,8 +69,8 @@ class microscope(object):
         
         # scanning galvo
         self.volts_per_um = 0.05
-        self.galvo_response_time = 0.400  # A mesure
-        self.galvo_flyback_time = 0.1200 # A mesurer
+        self.galvo_response_time = 0.400  # A mesure in ms
+        self.galvo_flyback_time = 00 # A mesurer in ms
         
         # Filters
         self.filters = ['BFP','GFP','CY3.5','TexRed','empty5', 'empty6'] #should be 6 options

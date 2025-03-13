@@ -10,8 +10,8 @@ from PySide6.QtCore import QThread, Signal
 
 from configs.config import camera
 
-from pylablib.devices import DCAM
-# from mock.hamamatsu import DCAM
+# from pylablib.devices import DCAM
+from mock.hamamatsu import DCAM
 
 class functions_camera():
     
@@ -36,6 +36,7 @@ class functions_camera():
             # Automatically get the parameters from the camera
             cam.hchipsize, cam.vchipsize = hcam.get_detector_size()
             cam.pixel_size = hcam.get_attribute_value('image_detector_pixel_width')
+            cam.line_readout_time = hcam.get_attribute_value('internal_line_interval')
             
             cameras.append(cam)
             
