@@ -54,6 +54,10 @@ class Ui_MainWindow(object):
         self.action_Align_O2_O3.setObjectName(u"action_Align_O2_O3")
         self.action_Filters = QAction(MainWindow)
         self.action_Filters.setObjectName(u"action_Filters")
+        self.action_Microscope = QAction(MainWindow)
+        self.action_Microscope.setObjectName(u"action_Microscope")
+        self.actionL_laser_561_GUI = QAction(MainWindow)
+        self.actionL_laser_561_GUI.setObjectName(u"actionL_laser_561_GUI")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout_38 = QHBoxLayout(self.centralwidget)
@@ -1136,7 +1140,9 @@ class Ui_MainWindow(object):
         self.menuFichier.addAction(self.action_SaveConfig)
         self.menuConfig.addAction(self.action_DAQ)
         self.menuConfig.addAction(self.action_Filters)
+        self.menuConfig.addAction(self.action_Microscope)
         self.menuAlign.addAction(self.action_Align_O2_O3)
+        self.menuAlign.addAction(self.actionL_laser_561_GUI)
         self.menuParameters.addAction(self.action_channel_editor)
         self.menuParameters.addAction(self.action_Preset_ROI_size)
 
@@ -1176,6 +1182,8 @@ class Ui_MainWindow(object):
         self.action_Preset_ROI_size.setText(QCoreApplication.translate("MainWindow", u"Preset ROI", None))
         self.action_Align_O2_O3.setText(QCoreApplication.translate("MainWindow", u"Align O2 - O3", None))
         self.action_Filters.setText(QCoreApplication.translate("MainWindow", u"Filters", None))
+        self.action_Microscope.setText(QCoreApplication.translate("MainWindow", u"Microscope", None))
+        self.actionL_laser_561_GUI.setText(QCoreApplication.translate("MainWindow", u"Laser_561_GUI", None))
         self.label_saving.setText(QCoreApplication.translate("MainWindow", u"Saving", None))
         self.label_data_path.setText(QCoreApplication.translate("MainWindow", u"D:/Projets_Python/OPM_GUI/Images", None))
 #if QT_CONFIG(tooltip)
@@ -1432,7 +1440,7 @@ class Ui_MainWindow(object):
 "Acquisition", None))
         self.menuFichier.setTitle(QCoreApplication.translate("MainWindow", u"Fichier", None))
         self.menuConfig.setTitle(QCoreApplication.translate("MainWindow", u"Config", None))
-        self.menuAlign.setTitle(QCoreApplication.translate("MainWindow", u"Align", None))
+        self.menuAlign.setTitle(QCoreApplication.translate("MainWindow", u"Tools", None))
         self.menuParameters.setTitle(QCoreApplication.translate("MainWindow", u"Parameters", None))
     # retranslateUi
 

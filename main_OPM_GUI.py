@@ -10,10 +10,10 @@ Convert file.ui to file.py
 
 pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
 
+# TODO : Present preview size should be limited by camera parameters
+# TODO : ouvrir laser_GUI depuis l'interface
+# TODO : Widget pour modifier tous les paramétres du microscope
 """
-# TODO : *** Fonctions function_ui.label_volume_duration pour l'estimation du nombre de frames et durée de chaque volumes
-# TODO : ***ouvrir laser_GUI depuis l'interface
-# TODO : *** Widget pour modifier tous les paramétres du microscope
 
 import copy
 import json
@@ -109,6 +109,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.desactivate_camera_options(True)
         
         self.camera_id = 0 # index de la caméra actuellement sélectionnée
+        
+        self.spinBox_hsize.setValue(self.camera[self.camera_id].hsize)
+        self.spinBox_vsize.setValue(self.camera[self.camera_id].vsize)
         
             # Set the interface
         
@@ -469,6 +472,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         #set vpos
         self.spinBox_vpos_value_changed()
+        
+        self.label_volume_duration_update()
         
     def spinBox_vpos_value_changed(self):
         'Vertical position of the ROI'

@@ -65,7 +65,9 @@ class experiment(object):
         
 class microscope(object):
     def __init__(self):
-        self.tilt_angle = 45 #in degrees
+        
+        self.tilt_angle = 45.0 #in degrees
+        self.mag_total = 29.61
         
         # scanning galvo
         self.volts_per_um = 0.05
@@ -82,12 +84,8 @@ class microscope(object):
                                         '561' : 5.0 / 100.0, # 5v max
                                         '640' : 5.0 / 100.0  # 5v max
                                         }
-        self.laser_response_time = 2 # in ms
-        
-        # Microscope magnification
-        self.mag_total = 29.61
-        self.sample_pixel_size = 0.160 #in µm SUPPRIMER
-        
+        self.laser_response_time = 2.0 # in ms
+
         # DAQ
         self.daq_channels = {"co_channel": "Dev1/ctr0", # ADD: trigger start of each volume
                              "co_terminal": "/Dev1/PFI0", # ADD: trigger start of each volume

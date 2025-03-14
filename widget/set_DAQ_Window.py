@@ -94,9 +94,11 @@ class setDAQWindow(QWidget, Ui_Form):
 if __name__ == '__main__':
     "To test the window"
     app = QApplication(sys.argv)
-    daq_channels = {"galvo": "Dev1/ao0",
-                    "camera_1": "Dev1/port0/line0",
-                    "camera_2": None,
+    daq_channels = {"co_channel" : "Dev1/ctr0",
+                    "co_terminal" : "/Dev1/PFI0",
+                    "galvo": "Dev1/ao0",
+                    "camera_0": "Dev1/port0/line0",
+                    "camera_1": None,
                     "405" : "Dev1/ao1",
                     "488" : None,
                     "561" : "Dev1/ao2",

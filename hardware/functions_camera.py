@@ -35,6 +35,7 @@ class functions_camera():
             
             # Automatically get the parameters from the camera
             cam.hchipsize, cam.vchipsize = hcam.get_detector_size()
+            cam.hsize, cam.vsize = cam.hchipsize, cam.vchipsize
             cam.pixel_size = hcam.get_attribute_value('image_detector_pixel_width')
             cam.line_readout_time = hcam.get_attribute_value('internal_line_interval')
             cam.sample_pixel_size = cam.pixel_size / magnification

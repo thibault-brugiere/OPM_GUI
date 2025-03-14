@@ -69,7 +69,8 @@ def send_to_snoutscope_acquisition(camera, channel, experiment, microscope, file
     with open(file_path, 'w') as json_file:
         json.dump(parameters, json_file, indent = 4)
 
-def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment, microscope, dirname = 'acquisition', filename = 'GUI_parameters.json'):
+def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment, microscope,
+                                          dirname = 'acquisition', filename = 'GUI_parameters.json'):
     """
     Save parameters in a fichier JSON file.
 
