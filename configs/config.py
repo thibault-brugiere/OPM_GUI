@@ -49,8 +49,8 @@ class experiment(object):
         self.exp_name = 'Image'
         self.data_path = "D:/EqSibarita/Python/Control_Microscope_GUI/Images"
         self.timepoints = 10
-        self.time_intervals = 1.0
-        self.total_duration = 10.0
+        self.time_intervals = 1.0 # in s
+        self.total_duration = 10.0 # in s
         
         self.scanner_position = 0
         self.scan_range = 20
@@ -69,8 +69,8 @@ class microscope(object):
         
         # scanning galvo
         self.volts_per_um = 0.05
-        self.galvo_response_time = 0.400  # A mesure in ms
-        self.galvo_flyback_time = 00 # A mesurer in ms
+        self.galvo_response_time = 2.0  # A mesure in ms
+        self.galvo_flyback_time = 3.0 # A mesurer in ms
         
         # Filters
         self.filters = ['BFP','GFP','CY3.5','TexRed','empty5', 'empty6'] #should be 6 options

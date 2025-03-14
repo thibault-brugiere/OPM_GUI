@@ -10,11 +10,10 @@ Convert file.ui to file.py
 
 pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
 
-# TODO :
-    => Fonctions function_ui.label_volume_duration pour l'estimation du nombre de frames et durée de chaque volumes
-    => Enregistrer camera / experiment / microscope
-    => Que le channel.is_active soit marqué comme True s'il est dans la liste des channels
 """
+# TODO : *** Fonctions function_ui.label_volume_duration pour l'estimation du nombre de frames et durée de chaque volumes
+# TODO : ***ouvrir laser_GUI depuis l'interface
+# TODO : *** Widget pour modifier tous les paramétres du microscope
 
 import copy
 import json
@@ -30,25 +29,23 @@ from PySide6.QtCore import QTimer #, QCoreApplication, QEventLoop
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
 
+from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
+from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
 from configs.config import channel_config, microscope, experiment #, camera
-from Functions_UI import functions_ui
 from display.histogram import HistogramThread
+from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
 # from hardware.functions_DAQ import functions_daq
 from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
 from mock.DAQ import functions_daq
-from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
-from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
-from widget.set_DAQ_Window import setDAQWindow
-from widget.Set_Filters_Window import filtersEditionWindow
-
 from widget.Alignement_O2_O3_Window import alignement_O2_O3_Window
-
 from widget.Channel_Editor_Window import ChannelEditorWindow
 from widget.Preset_ROI_Window import PresetROIWindow
+from widget.set_DAQ_Window import setDAQWindow
+from widget.Set_Filters_Window import filtersEditionWindow
 
 class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     """
@@ -620,8 +617,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         state of the laser connections, providing a seamless user experience.
         """
         
-        # TODO: Il faut que le laser non connecté soit mis à 0v et désactivé dans le channel
-        
         for laser in self.checkBox_laser.keys():
             self.channel = copy.deepcopy(self.default_channel)
             if self.microscope.daq_channels[laser] is None :
@@ -652,6 +647,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                            self.channel[self.comboBox_channel_name.currentText()])
         
         self.preview_channel = self.channel[self.comboBox_channel_name.currentText()] # Change the current name of the channel used for preview
+        self.sync_laser_interface() # Check the connection of laser to DAQ
+        self.pb_channel_save_clicked_connect() # To save the modification on the channel if it is the case
         
     def pb_channel_save_clicked_connect(self):
         "Saves the settings from the interface elements into the specified channel object."

@@ -28,6 +28,7 @@ def send_to_snoutscope_acquisition(camera, channel, experiment, microscope, file
               'subarray_hsize' : camera.hsize,
               'subarray_vpos' : camera.vpos,
               'subarray_vsize' : camera.vsize,
+              'line_readout_time' : camera.line_readout_time
               }
     
     channel_parameters = {'channel_id' : channel.channel_id,
@@ -51,8 +52,8 @@ def send_to_snoutscope_acquisition(camera, channel, experiment, microscope, file
                   'MAG_TOTAL' : microscope.mag_total,
                   'CAMERA_PIXELSIZE' : camera.pixel_size,
                   'VOLTS_PER_UM' : microscope.volts_per_um,
-                  'GALVO_RESPONSE_TIME' : microscope.galvo_response_time,
-                  'GALVO_FLYBACK_TIME' : microscope.galvo_flyback_time,
+                  'GALVO_RESPONSE_TIME' : int(microscope.galvo_response_time * 1000), # should be in µs
+                  'GALVO_FLYBACK_TIME' : int(microscope.galvo_flyback_time * 1000), # should be in µs
                   'DAQ_CHANNELS' : microscope.daq_channels,
                   }
     
@@ -62,11 +63,11 @@ def send_to_snoutscope_acquisition(camera, channel, experiment, microscope, file
                   'microscope' : microscope_parameters
                   }
     
-    config_dir = 'D:/EqSibarita/Python/snoutscopev3-main/config'
+    config_dir = 'snoutscopev3/config'
     file_path = os.path.join(config_dir, filename)  # filename définit en entrée de la fonction
     
     with open(file_path, 'w') as json_file:
-        json.dump(parameters, json_file)
+        json.dump(parameters, json_file, indent = 4)
 
 def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment, microscope, dirname = 'acquisition', filename = 'GUI_parameters.json'):
     """
