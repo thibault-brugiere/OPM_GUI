@@ -205,12 +205,45 @@ class functions_ui():
     # Scanner
     #
     
-    def label_volume_duration(scan_range, sample_pixel_size, aspect_ratio, tilt_angle, exposure_time):
-        scan_step_size = aspect_ratio * sample_pixel_size / np.sin(tilt_angle)
-        slices_per_vol = 1 + int(round(scan_range / scan_step_size))
-        estimated_time = slices_per_vol * exposure_time + 2 # 2 ms : estimated time for all steps between two slices
+    def label_volume_duration(scan_range, sample_pixel_size, aspect_ratio, tilt_angle,
+                              exposure_time, vsize, line_readout_time, galvo_response_time):
+        """
+        Return a label for the interface containing the number of steps / volume
+        as well as the duration of eachvolumes.
+
+        Parameters
+        ----------
+        scan_range : float
+            
+        sample_pixel_size : float (µm)
+            size of each pixels in the sample
+        aspect_ratio : int
+            
+        tilt_angle : float (°)
+            angle of the lightsheet
+        exposure_time : float (ms)
+
+        vsize : int
+            number of pixels in the vertical size of the camera
+        line_readout_time : float (s)
+            time to read two lines of the camera 
+        galvo_response_time :  (ms)
+            time for galvo to move of 1 step
+
+        Returns
+        -------
+        message : str
+        """
         
-        message = ("Number of frames/volumes: " + str(slices_per_vol) + "\nEstimated volume duration: " + str(round(estimated_time/1000,3)) + " s")
+        step_size = aspect_ratio * sample_pixel_size / np.sin(tilt_angle)
+        n_steps = 1 + int(round(scan_range / step_size))
+        
+        estimated_time = n_steps * (exposure_time + vsize * line_readout_time * 1000 / 2
+                                    + galvo_response_time)
+        
+        message  = f'Number of frames/volume: {str(n_steps)}\n'
+        message += f'Step size: {round(step_size,3)}µm\n'
+        message += f'Estimated volume duration: {round(estimated_time/1000,3)}s/channel'
         
         return message
     

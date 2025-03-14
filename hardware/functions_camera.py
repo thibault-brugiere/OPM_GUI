@@ -15,7 +15,7 @@ from mock.hamamatsu import DCAM
 
 class functions_camera():
     
-    def initialize_cameras(n_camera):
+    def initialize_cameras(n_camera, magnification):
         """
         Initialize a list of camera objects based on the number of detected cameras.
         
@@ -37,6 +37,7 @@ class functions_camera():
             cam.hchipsize, cam.vchipsize = hcam.get_detector_size()
             cam.pixel_size = hcam.get_attribute_value('image_detector_pixel_width')
             cam.line_readout_time = hcam.get_attribute_value('internal_line_interval')
+            cam.sample_pixel_size = cam.pixel_size / magnification
             
             cameras.append(cam)
             

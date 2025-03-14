@@ -95,7 +95,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.label_camera_detected.setText(f"Number of cameras detected: {self.n_camera}")
         
-        self.hcam , self.camera = functions_camera.initialize_cameras(self.n_camera)
+        self.hcam , self.camera = functions_camera.initialize_cameras(self.n_camera, self.microscope.mag_total)
         
         if self.n_camera > 1:
             functions_ui.set_comboBox(self.comboBox_camera,
@@ -104,7 +104,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                      functions_ui.generate_camera_indexes(self.n_camera))
             self.comboBox_camera.setDisabled(False)
             self.comboBox_channel_camera.setDisabled(False)
-            self.microscope.sample_pixel_size = self.camera[0].sample_pixel_size
         elif self.n_camera == 0:
             self.desactivate_camera_options(True)
         
@@ -225,6 +224,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
         
         self.spinBox_aspect_ratio.setValue(self.experiment.aspect_ratio)
+        
+        self.label_volume_duration_update()
         
         ##############################################
         ## Connection between functions and buttons ##
@@ -525,7 +526,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def label_fov_size_set_text(self):
         'show the size of the fild of view in µm depending on camera settings'
-        sample_pixel_size = self.microscope.sample_pixel_size
+        sample_pixel_size = self.camera[self.camera_id].sample_pixel_size
         hum = self.camera[self.camera_id].hsize*sample_pixel_size # horizontal size in µm
         vum = self.camera[self.camera_id].vsize*sample_pixel_size # vertical size in µm
         
@@ -578,17 +579,27 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def spinBox_scan_range_value_changed(self):
         self.experiment.scan_range = self.spinBox_scan_range.value()
-        self.label_volume_duration.setText(functions_ui.label_volume_duration(self.spinBox_scan_range.value(),
-                                                                              self.microscope.sample_pixel_size,
-                                                                              self.spinBox_aspect_ratio.value(),
-                                                                              self.microscope.tilt_angle,
-                                                                              self.preview_channel.exposure_time))
+        self.label_volume_duration_update()
+
         
     def spinBox_aspect_ratio_value_changed(self):
         self.experiment.aspect_ratio = self.spinBox_aspect_ratio.value()
+        self.label_volume_duration_update()
     
     def spinBox_slit_aperture_value_changed(self):
         self.experiment.slit_aperture = self.spinBox_slit_aperture.value
+        
+    def label_volume_duration_update(self):
+        message = functions_ui.label_volume_duration(self.experiment.scan_range,
+                                                     self.camera[self.camera_id].sample_pixel_size ,
+                                                     self.experiment.aspect_ratio,
+                                                     self.microscope.tilt_angle,
+                                                     self.preview_channel.exposure_time,
+                                                     self.camera[self.camera_id].vsize,
+                                                     self.camera[self.camera_id].line_readout_time,
+                                                     self.microscope.galvo_response_time)
+        
+        self.label_volume_duration.setText(message)
     
         #
         # Channels settings
