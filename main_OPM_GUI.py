@@ -43,6 +43,7 @@ from ui_Control_Microscope_Main import Ui_MainWindow
 
 from widget.Alignement_O2_O3_Window import alignement_O2_O3_Window
 from widget.Channel_Editor_Window import ChannelEditorWindow
+from widget.Microscope_Settings_Window import microscope_settings_window
 from widget.Preset_ROI_Window import PresetROIWindow
 from widget.set_DAQ_Window import setDAQWindow
 from widget.Set_Filters_Window import filtersEditionWindow
@@ -71,10 +72,13 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.load_variables() #Si des variables de l'interface ont étées enregistrées, elles seront changées ici
         self.load_channels()
+        self.load_microscope_settings()
         
-        self.microscope = microscope() # Variable contenant les paramétres du microscope
+        if self.loaded_microscope_settings == False:
+            self.microscope = microscope() # Variable contenant les paramétres du microscope
+            
         self.experiment = experiment() # Variable contenant l'expérience
-        
+
         #
         # Saved datas
         #
@@ -306,6 +310,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ## Config
         self.action_DAQ.triggered.connect(self.openDAQEditor)
         self.action_Filters.triggered.connect(self.openFiltersEditor)
+        self.action_Microscope.triggered.connect(self.openMicroscopeEditor)
         
             # Align
         self.action_Align_O2_O3.triggered.connect(self.openAlign_O2_O3) #Action pas encore définie
@@ -1098,6 +1103,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         if reply == QMessageBox.Yes:
             self.save_channels()
             self.save_variables()
+            self.save_microscope_settings()
         elif reply == QMessageBox.No:
             pass
         
@@ -1109,6 +1115,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     def openFiltersEditor(self):
         self.filters_editor = filtersEditionWindow(self.microscope.filters,self)
         self.filters_editor.show()
+        
+    def openMicroscopeEditor(self):
+        self.microscope_settings_editor = microscope_settings_window(self.microscope, self)
+        self.microscope_settings_editor.show()
         
     def openAlign_O2_O3(self):
         "display window to aligne O2 and O3 using the piezzo stage"
@@ -1158,7 +1168,37 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         with open(file_path, 'w') as file:
             json.dump(saved_variables, file)
+            
+    #
+    # Microscope
+    #
+    
+    def load_microscope_settings(self):
+        config_dir = 'configs'
+        file_path = os.path.join(config_dir, 'microscope_settings.pkl')
         
+        self.loaded_microscope_settings = False
+        
+        if os.path.exists(file_path):
+            with open(file_path, 'rb') as file:
+                data = pickle.load(file)
+                self.microscope = data
+                
+            self.loaded_microscope_settings = True
+        
+        return self.loaded_microscope_settings
+    
+    def save_microscope_settings(self):
+        config_dir = 'configs'
+        os.makedirs(config_dir, exist_ok=True)  # Crée le dossier s'il n'existe pas
+        file_path = os.path.join(config_dir, 'microscope_settings.pkl')
+        
+        microscope_settings_data = self.microscope
+        
+        with open(file_path, 'wb') as file:
+            pickle.dump(microscope_settings_data, file)
+    
+    
     #
     # Channels
     #
