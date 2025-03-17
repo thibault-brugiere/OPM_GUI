@@ -13,6 +13,8 @@ pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
 # TODO : Present preview size should be limited by camera parameters
 # TODO : ouvrir laser_GUI depuis l'interface
 # TODO : Widget pour modifier tous les paramétres du microscope
+# TODO : faire un dictionnaire.json dans config pour toute la description du microscope
+        Pour qu'elle soit enregistrée lors de l'acquisition
 """
 
 import copy
@@ -20,7 +22,7 @@ import json
 import numpy as np
 import os
 import pickle
-# from pylablib.devices import DCAM
+from pylablib.devices import DCAM
 import sys
 import tifffile
 
@@ -35,9 +37,9 @@ from configs.config import channel_config, microscope, experiment #, camera
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
-# from hardware.functions_DAQ import functions_daq
-from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
-from mock.DAQ import functions_daq
+from hardware.functions_DAQ import functions_daq
+# from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
+# from mock.DAQ import functions_daq
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
@@ -1063,15 +1065,18 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         if self.active_channels and self.active_channels[0] != 'None' :
             try:
-                send_to_snoutscope_acquisition(self.camera[0], self.channel[self.active_channels[0]], self.experiment, self.microscope)
+                send_to_snoutscope_acquisition(self.camera[0],
+                                               self.channel[self.active_channels[0]],
+                                               self.experiment, self.microscope)
                 # Enregistre les données, ne prendra en compre que le premier channel choisi
-                functions_ui.start_snoutscope_acquisition('D:/Projets_Python/OPM_GUI/snoutscopev3/Snoutscope.py')
+                functions_ui.start_snoutscope_acquisition(file_path = 'D:/Projets_Python/OPM_GUI/snoutscopev3/Snoutscope.py',
+                                                          working_directory = 'D:/Projets_Python/OPM_GUI/snoutscopev3')
             except:
                 self.status_bar.showMessage("parameters saving didn't worked!", 5000)
         else:
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
             
-        self.hcam , self.cameras = functions_camera.initialize_cameras(self.n_camera)
+        self.hcam , self.cameras = functions_camera.initialize_cameras(self.n_camera, self.microscope.mag_total)
             
     def pb_multidimensional_acquisition_clicked_connect(self):
         """Start acquisition with the Multi Dimentionnal Acquisition protocole from Thibault"""
@@ -1084,7 +1089,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.active_channels and self.active_channels[0] != 'None' :
             try:
                 channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
-                send_to_multidimensionnal_acquisition(self.camera, channel_acquisition, self.experiment, self.microscope)
+                send_to_multidimensionnal_acquisition(self.camera,
+                                                      channel_acquisition,
+                                                      self.experiment,
+                                                      self.microscope)
                 print("start multidimensional acquisition")
                 self.status_bar.showMessage("start multidimensional acquisition")
                 functions_ui.start_multidimensional_acquisition('')
