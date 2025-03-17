@@ -15,6 +15,8 @@ pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
 # TODO : Widget pour modifier tous les paramétres du microscope
 # TODO : faire un dictionnaire.json dans config pour toute la description du microscope
         Pour qu'elle soit enregistrée lors de l'acquisition
+
+Resolved FTDI DLL issue by copying ftd2xx64.dll from Thorlabs software to C:\Windows\System32 and renaming it to ftd2xx.dll.
 """
 
 import copy
