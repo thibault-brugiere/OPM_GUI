@@ -107,13 +107,14 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                      functions_ui.generate_camera_indexes(self.n_camera))
             self.comboBox_camera.setDisabled(False)
             self.comboBox_channel_camera.setDisabled(False)
+            
+            self.spinBox_hsize.setValue(self.camera[0].hsize)
+            self.spinBox_vsize.setValue(self.camera[0].vsize)
+            
         elif self.n_camera == 0:
             self.desactivate_camera_options(True)
         
         self.camera_id = 0 # index de la caméra actuellement sélectionnée
-        
-        self.spinBox_hsize.setValue(self.camera[self.camera_id].hsize)
-        self.spinBox_vsize.setValue(self.camera[self.camera_id].vsize)
         
             # Set the interface
         
@@ -223,6 +224,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
 
         if self.n_camera > 0 :
             self.label_fov_size_set_text()
+            self.label_volume_duration_update()
         
         self.Red_Light_Icon_On = QPixmap('Icons/Red_Light_Icon_On.png')
         self.Red_Light_Icon_Off = QPixmap('Icons/Red_Light_Icon_Off.png')
@@ -230,8 +232,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
         
         self.spinBox_aspect_ratio.setValue(self.experiment.aspect_ratio)
-        
-        self.label_volume_duration_update()
         
         ##############################################
         ## Connection between functions and buttons ##
