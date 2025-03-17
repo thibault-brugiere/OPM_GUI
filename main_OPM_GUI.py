@@ -581,10 +581,13 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def spinBox_scanner_position_value_changed(self):
         self.experiment.scanner_position = self.spinBox_scanner_position.value()
+        functions_daq.analog_out(self.spinBox_scanner_position.value()*self.microscope.volts_per_um,
+                                 self.microscope.daq_channels['galvo'])
         
     def pb_scanner_center_clicked_connect(self):
         self.experiment.scanner_position = 0
         self.spinBox_scanner_position.setValue(0)
+        
         
     def spinBox_scan_range_value_changed(self):
         self.experiment.scan_range = self.spinBox_scan_range.value()
