@@ -112,7 +112,7 @@
            </palette>
           </property>
           <property name="autoFillBackground">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="text">
            <string>D:/Projets_Python/OPM_GUI/Images</string>
@@ -2410,8 +2410,16 @@ Acquisition</string>
     <property name="title">
      <string>Tools</string>
     </property>
+    <widget class="QMenu" name="menuShortcuts">
+     <property name="title">
+      <string>Shortcuts</string>
+     </property>
+     <addaction name="action_Laser_405"/>
+     <addaction name="action_Laser_561"/>
+     <addaction name="action_Piezo"/>
+    </widget>
     <addaction name="action_Align_O2_O3"/>
-    <addaction name="actionL_laser_561_GUI"/>
+    <addaction name="menuShortcuts"/>
    </widget>
    <widget class="QMenu" name="menuParameters">
     <property name="title">
@@ -2486,9 +2494,19 @@ Acquisition</string>
     <string>Microscope</string>
    </property>
   </action>
-  <action name="actionL_laser_561_GUI">
+  <action name="action_Laser_561">
    <property name="text">
-    <string>Laser_561_GUI</string>
+    <string>UI Laser 561</string>
+   </property>
+  </action>
+  <action name="action_Laser_405">
+   <property name="text">
+    <string>UI Laser 405</string>
+   </property>
+  </action>
+  <action name="action_Piezo">
+   <property name="text">
+    <string>Piezo SUper Agilis</string>
    </property>
   </action>
  </widget>

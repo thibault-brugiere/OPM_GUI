@@ -161,4 +161,4 @@ class microscope(object):
             ## scan lens 2
         self.SCAN_LENS_2_MANUFACTURER = "Thorlabs"
         self.SCAN_LENS_2_MODEL = "CLS-SL"
-        self.SCAN_LENS_2_EFL = 70
+        self.SCAN_LENS_2_EFL = 70 
