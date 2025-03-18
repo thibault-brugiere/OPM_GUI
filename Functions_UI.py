@@ -431,7 +431,3 @@ class functions_ui():
                     
                     
         combo.blockSignals(False)
-        
-
-        
-        

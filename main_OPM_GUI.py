@@ -319,10 +319,13 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.action_Filters.triggered.connect(self.openFiltersEditor)
         self.action_Microscope.triggered.connect(self.openMicroscopeEditor)
         
-            # Align
-        self.action_Align_O2_O3.triggered.connect(self.openAlign_O2_O3) #Action pas encore définie
+            ## Tools
+        self.action_Align_O2_O3.triggered.connect(self.openAlign_O2_O3)
+        self.action_Laser_405.triggered.connect(self.launch_laser_405_program)
+        self.action_Laser_561.triggered.connect(self.launch_laser_561_program)
+        self.action_Piezo.triggered.connect(self.launch_pizo_program)
         
-            # Parameters
+            ## Parameters
         self.action_channel_editor.triggered.connect(self.openChannelEditor)
         self.action_Preset_ROI_size.triggered.connect(self.openPreserROIEditor)
         
@@ -1110,6 +1113,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     ## Fonctions called by toolbars ##
     ##################################
     
+        #
+        # Fichiers
+        #
+        
     def save_config(self):
         "save cnfigurations of the microscope"
         reply = QMessageBox.question(
@@ -1125,6 +1132,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         elif reply == QMessageBox.No:
             pass
         
+        #
+        # Config
+        #
+        
     def openDAQEditor(self):
         "display window to eddit DAC channels"
         self.DAQ_editor = setDAQWindow(self.microscope.daq_channels,self)
@@ -1138,10 +1149,35 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.microscope_settings_editor = microscope_settings_window(self.microscope, self)
         self.microscope_settings_editor.show()
         
+        #
+        # Tools
+        #
+        
     def openAlign_O2_O3(self):
         "display window to aligne O2 and O3 using the piezzo stage"
         self.alignement_O2_O3 = alignement_O2_O3_Window()
         self.alignement_O2_O3.show()
+        
+    def launch_program(self , shortcut_path):
+        try:
+            # Lancer le programme externe via le raccourci
+            os.startfile(shortcut_path)
+        except Exception as e:
+            print(f"Erreur lors du lancement du programme : {e}")
+        
+    def launch_laser_405_program(self):
+        pass
+    
+    def launch_laser_561_program(self):
+        pass
+        
+    def launch_pizo_program(self):
+        shortcut_path = os.path.join(os.path.dirname(__file__), 'shortcuts', 'CONEX-SAG_Utility')
+        self.launch_program(shortcut_path)
+        
+        #
+        # Parameters
+        #
         
     def openPreserROIEditor(self):
         "display window to eddit preset ROI that can be used"
