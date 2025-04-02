@@ -1838,6 +1838,9 @@ This defines the maximum displacement during scanning.</string>
       </item>
       <item>
        <widget class="QLabel" name="label_volume_duration">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Estimated volume duration is for 1 color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="autoFillBackground">
          <bool>false</bool>
         </property>

@@ -149,7 +149,6 @@ class ChannelEditorWindow(QWidget, Ui_Form):
     def pb_channel_save_clicked_connect(self):
         "Saves the settings from the interface elements into the specified channel object."
         functions_ui.save_channel_from_interface(self.list_channel_interface,
-
                                                  self.channel[self.comboBox_channel_name.currentText()])
         
     def sync_filter_interface(self):

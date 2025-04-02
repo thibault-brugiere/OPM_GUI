@@ -9,6 +9,7 @@ LASERS = ["405","488","561","640"]
 
 class camera(object):
     "Object discribing camera settings"
+    # TODO: get camera brand, model, serial number 
     def __init__(self, camera_id):
         self.camera_id = camera_id
         self.hchipsize = 4432
@@ -161,4 +162,11 @@ class microscope(object):
             ## scan lens 2
         self.SCAN_LENS_2_MANUFACTURER = "Thorlabs"
         self.SCAN_LENS_2_MODEL = "CLS-SL"
-        self.SCAN_LENS_2_EFL = 70 
+        self.SCAN_LENS_2_EFL = 70
+        
+        # Filters, dichroics
+            ## Filter weel
+            
+            ## Filters
+            
+            ## Dichroic

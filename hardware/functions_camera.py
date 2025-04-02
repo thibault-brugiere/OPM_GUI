@@ -45,6 +45,7 @@ class functions_camera():
         return hcams, cameras
     
     def close_cameras(hamamatsu_cameras):
+        """"Close all the cameras openned"""
         n_camera = len(hamamatsu_cameras)
         
         for camera_id in range(n_camera) :
@@ -64,7 +65,7 @@ class functions_camera():
         hcam.cav["binning"] = camera.binning
 
 class CameraThread(QThread):
-    """Thread qui acquiert en continu la dernière image de la caméra."""
+    """Thread that continously get last image from camera."""
     new_frame = Signal(np.ndarray)  # Signal émis à chaque nouvelle image
 
     def __init__(self, hcam):

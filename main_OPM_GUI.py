@@ -166,9 +166,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                    "640" : self.slider_laser_640
                                    } # Dictionnary of the laser power spin boxes
         
-        self.list_channel_interface = {"checkBox_laser" :      self.checkBox_laser,
+        self.list_channel_interface = {"checkBox_laser" :       self.checkBox_laser,
                                        "spinBox_laser_power" :  self.spinBox_laser_power,
-                                       "slider_laser_power" : self.slider_laser_power,
+                                       "slider_laser_power" :   self.slider_laser_power,
                                        "filter" :               self.comboBox_channel_filter,
                                        "camera" :               self.comboBox_channel_camera,
                                        "exposure_time" :        self.spinBox_channel_exposure_time
@@ -635,6 +635,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     def sync_laser_interface(self):
         """
         Updates the laser interface and channels based on the connection status to the DAQ.
+        It is used when updarting the interface
         
         This function iterates over each laser and checks its connection status
         to the DAQ (Data Acquisition) system. If a laser is not connected, the
@@ -643,7 +644,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         the user to interact with them.
         
         This ensures that the user interface accurately reflects the current
-        state of the laser connections, providing a seamless user experience.
+        state of the laser connections.
         """
         
         for laser in self.checkBox_laser.keys():
@@ -665,6 +666,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ### channel creation and save
     def comboBox_channel_name_set_indexes(self):
         "set the options of the comboBox_channel_names depending on self.channel dictionnary options"
+
         self.comboBox_channel_name.blockSignals(True)
         self.comboBox_channel_name.clear()
         self.comboBox_channel_name.addItems(list(self.channel.keys()))
@@ -672,17 +674,18 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     
     def comboBox_channel_name_index_changed(self):
         "Configures the interface elements when changing the comboBox_channel from selected channel object."
+        # self.pb_channel_save_clicked_connect() # To save the modification on the channel if it is the case
+        
         functions_ui.channel_set_interface(self.list_channel_interface,
                                            self.channel[self.comboBox_channel_name.currentText()])
         
         self.preview_channel = self.channel[self.comboBox_channel_name.currentText()] # Change the current name of the channel used for preview
-        self.sync_laser_interface() # Check the connection of laser to DAQ
-        self.pb_channel_save_clicked_connect() # To save the modification on the channel if it is the case
         
     def pb_channel_save_clicked_connect(self):
         "Saves the settings from the interface elements into the specified channel object."
         functions_ui.save_channel_from_interface(self.list_channel_interface,
                                                  self.channel[self.comboBox_channel_name.currentText()])
+        # print(self.channel['BFP'].laser_power['405'])
     
     def pb_channel_add_clicked_connect(self):
         "Saves the settings from the interface elements into a new channel object named from channel_name lineEdit object."
@@ -699,7 +702,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.channel[index] = channel_config(index, self.lasers) #Create the new channel
         functions_ui.save_channel_from_interface(self.list_channel_interface,
                                                  self.channel[self.comboBox_channel_name.currentText()]) #save the channel parameters
-        
         self.comboBox_channel_name.addItem(index) # Add the new channel to the comboBox
         self.comboBox_channel_name.setCurrentText(index) # set the comboBox to this index
         self.lineEdit_channel_name.setText(index)
@@ -1002,11 +1004,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         # Clear interface
         self.status_bar.showMessage("Ready")
-            
+        
     def update_preview(self):
         """Show the most recent image."""
         if self.is_preview and self.preview_frame is not None :
-                        
+            
             qt_image = functions_ui.create_preview(self.preview_frame,
                                                    self.look_up_table,
                                                    self.min_grayscale,
