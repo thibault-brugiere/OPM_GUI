@@ -1,0 +1,18 @@
+Bibliothèques
+-------------
+Pyside6
+pylablib
+tifffile
+matplotlib
+OpenCV-python
+nidaqmx
+Zarr (pour snoutscope)
+
+A installer
+-----------
+DcamPI
+NiDAQ
+Kinesis software
+CP210x_Windows_Drivers
+
+ftd2xx.DLL a mettre dans le dossier C:\Windows\System32 (depuis le dossier kinesis par exemple)
