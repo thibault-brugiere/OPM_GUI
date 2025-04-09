@@ -1,8 +1,9 @@
 {
     "preset_size": [
         "4432 - 0 x 2368 - 0",
-        "2048 - 1192 x 2048 - 160"
+        "2048 - 1192 x 2048 - 160",
+        "1024 - 1704 - 1024 - 672"
     ],
-    "experiment_data_path": "Image",
+    "experiment_data_path": "D:/Projets_Python/OPM_GUI/Images",
     "slit_aperture": 800
 }

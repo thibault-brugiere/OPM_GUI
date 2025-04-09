@@ -39,9 +39,9 @@ from configs.config import channel_config, microscope, experiment #, camera
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
-# from hardware.functions_DAQ import functions_daq
+from hardware.functions_DAQ import functions_daq
 # from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
-from mock.DAQ import functions_daq
+# from mock.DAQ import functions_daq
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
@@ -1237,7 +1237,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         file_path = os.path.join(config_dir, 'saved_variables.json')
         
         saved_variables = {'preset_size' : self.preset_size,
-                           'experiment_data_path' : self.experiment.exp_name,
+                           'experiment_data_path' : self.experiment.data_path,
                            'slit_aperture' : self.experiment.slit_aperture}
         
         with open(file_path, 'w') as file:
