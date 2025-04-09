@@ -62,6 +62,8 @@ class Ui_MainWindow(object):
         self.action_Laser_405.setObjectName(u"action_Laser_405")
         self.action_Piezo = QAction(MainWindow)
         self.action_Piezo.setObjectName(u"action_Piezo")
+        self.action_Z_Stack = QAction(MainWindow)
+        self.action_Z_Stack.setObjectName(u"action_Z_Stack")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout_38 = QHBoxLayout(self.centralwidget)
@@ -839,6 +841,24 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_37)
 
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.doubleSpinBox_step_size = QDoubleSpinBox(self.centralwidget)
+        self.doubleSpinBox_step_size.setObjectName(u"doubleSpinBox_step_size")
+        self.doubleSpinBox_step_size.setDecimals(3)
+        self.doubleSpinBox_step_size.setMaximum(100.000000000000000)
+        self.doubleSpinBox_step_size.setSingleStep(0.100000000000000)
+
+        self.horizontalLayout_5.addWidget(self.doubleSpinBox_step_size)
+
+        self.label_step_size = QLabel(self.centralwidget)
+        self.label_step_size.setObjectName(u"label_step_size")
+
+        self.horizontalLayout_5.addWidget(self.label_step_size)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_5)
+
         self.line_4 = QFrame(self.centralwidget)
         self.line_4.setObjectName(u"line_4")
         self.line_4.setFrameShape(QFrame.Shape.HLine)
@@ -879,7 +899,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addWidget(self.groupBox_channel_order)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 188, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.verticalSpacer_2 = QSpacerItem(20, 138, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_2)
 
@@ -1123,7 +1143,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1880, 26))
+        self.menubar.setGeometry(QRect(0, 0, 1880, 23))
         self.menuFichier = QMenu(self.menubar)
         self.menuFichier.setObjectName(u"menuFichier")
         self.menuConfig = QMenu(self.menubar)
@@ -1149,8 +1169,8 @@ class Ui_MainWindow(object):
         self.menuConfig.addAction(self.action_Microscope)
         self.menuAlign.addAction(self.action_Align_O2_O3)
         self.menuAlign.addAction(self.menuShortcuts.menuAction())
+        self.menuAlign.addAction(self.action_Z_Stack)
         self.menuShortcuts.addAction(self.action_Laser_405)
-        self.menuShortcuts.addAction(self.action_Laser_561)
         self.menuShortcuts.addAction(self.action_Piezo)
         self.menuParameters.addAction(self.action_channel_editor)
         self.menuParameters.addAction(self.action_Preset_ROI_size)
@@ -1193,8 +1213,9 @@ class Ui_MainWindow(object):
         self.action_Filters.setText(QCoreApplication.translate("MainWindow", u"Filters", None))
         self.action_Microscope.setText(QCoreApplication.translate("MainWindow", u"Microscope", None))
         self.action_Laser_561.setText(QCoreApplication.translate("MainWindow", u"UI Laser 561", None))
-        self.action_Laser_405.setText(QCoreApplication.translate("MainWindow", u"UI Laser 405", None))
+        self.action_Laser_405.setText(QCoreApplication.translate("MainWindow", u"UI Laser", None))
         self.action_Piezo.setText(QCoreApplication.translate("MainWindow", u"Piezo SUper Agilis", None))
+        self.action_Z_Stack.setText(QCoreApplication.translate("MainWindow", u"Z Stack", None))
         self.label_saving.setText(QCoreApplication.translate("MainWindow", u"Saving", None))
         self.label_data_path.setText(QCoreApplication.translate("MainWindow", u"D:/Projets_Python/OPM_GUI/Images", None))
 #if QT_CONFIG(tooltip)
@@ -1382,9 +1403,13 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.label_scan_range_2.setText(QCoreApplication.translate("MainWindow", u"Aspect Ratio", None))
         self.label_slit_aperture.setText(QCoreApplication.translate("MainWindow", u"Slit aperture", None))
+        self.label_step_size.setText(QCoreApplication.translate("MainWindow", u"Step Size", None))
         self.label_channels.setText(QCoreApplication.translate("MainWindow", u"Channels", None))
         self.label_number_channels.setText(QCoreApplication.translate("MainWindow", u"Number of channels", None))
         self.groupBox_channel_order.setTitle(QCoreApplication.translate("MainWindow", u"Channels orders", None))
+#if QT_CONFIG(tooltip)
+        self.label_volume_duration.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Estimated volume duration is for 1 color</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.label_volume_duration.setText(QCoreApplication.translate("MainWindow", u"Number of frames/volumes\n"
 "Estimated volume duration: 0.000 s", None))
         self.label_image_preview.setText("")

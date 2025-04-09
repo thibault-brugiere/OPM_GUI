@@ -1755,6 +1755,30 @@ This defines the maximum displacement during scanning.</string>
        </layout>
       </item>
       <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QDoubleSpinBox" name="doubleSpinBox_step_size">
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="maximum">
+           <double>100.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_step_size">
+          <property name="text">
+           <string>Step Size</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
        <widget class="Line" name="line_4">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -1824,7 +1848,7 @@ This defines the maximum displacement during scanning.</string>
         <property name="sizeHint" stdset="0">
          <size>
           <width>20</width>
-          <height>188</height>
+          <height>138</height>
          </size>
         </property>
        </spacer>
@@ -2392,7 +2416,7 @@ Acquisition</string>
      <x>0</x>
      <y>0</y>
      <width>1880</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFichier">
@@ -2418,11 +2442,11 @@ Acquisition</string>
       <string>Shortcuts</string>
      </property>
      <addaction name="action_Laser_405"/>
-     <addaction name="action_Laser_561"/>
      <addaction name="action_Piezo"/>
     </widget>
     <addaction name="action_Align_O2_O3"/>
     <addaction name="menuShortcuts"/>
+    <addaction name="action_Z_Stack"/>
    </widget>
    <widget class="QMenu" name="menuParameters">
     <property name="title">
@@ -2504,12 +2528,17 @@ Acquisition</string>
   </action>
   <action name="action_Laser_405">
    <property name="text">
-    <string>UI Laser 405</string>
+    <string>UI Laser</string>
    </property>
   </action>
   <action name="action_Piezo">
    <property name="text">
     <string>Piezo SUper Agilis</string>
+   </property>
+  </action>
+  <action name="action_Z_Stack">
+   <property name="text">
+    <string>Z Stack</string>
    </property>
   </action>
  </widget>
