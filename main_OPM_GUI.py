@@ -35,6 +35,7 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
 
 from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
 from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
+from acquisition.z_stack import z_stack
 from configs.config import channel_config, microscope, experiment #, camera
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
@@ -316,6 +317,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.action_Laser_405.triggered.connect(self.launch_laser_405_program)
         self.action_Laser_561.triggered.connect(self.launch_laser_561_program)
         self.action_Piezo.triggered.connect(self.launch_pizo_program)
+        self.action_Z_Stack.triggered.connect(self.acquire_Z_Stack)
         
             ## Parameters
         self.action_channel_editor.triggered.connect(self.openChannelEditor)
@@ -382,7 +384,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.status_bar.showMessage(f"Experiment name set to: {exp_name}", 2000)
         else:
             self.status_bar.showMessage("Invalid experiment name! Avoid spaces and special characters.", 5000)
-            self.lineEdit_exp_name.setText(self.exp_name)
+            self.lineEdit_exp_name.setText(self.experiment.exp_name)
 
         #
         # Camera
@@ -1193,6 +1195,47 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         shortcut_path = os.path.join(os.path.dirname(__file__), 'shortcuts', 'CONEX-SAG_Utility')
         self.launch_program(shortcut_path)
         
+    def acquire_Z_Stack(self):
+        """Start acquisition of a Z-stack.
+        It is only in purpose of characterizing microscope,
+        nothing is optimized in these functions.
+        """
+        
+        # Get values from the interface for scanning
+        scan_range = self.spinBox_scan_range.value()
+        step_size = self.doubleSpinBox_step_size.value()
+        
+        if self.is_preview :
+            self.pb_stop_preview_clicked()
+        
+        if scan_range > 0 and step_size > 0 :
+            
+            self.status_bar.showMessage("Acquiring Z-Stack")
+            
+            self.is_preview = True
+            self.preview_tools_desactivation()
+            
+            functions_camera.configure_camera_for_preview(self.hcam[self.preview_channel.camera],
+                                                          self.camera[self.preview_channel.camera])
+            
+            path = os.path.join(self.experiment.data_path, self.experiment.exp_name)
+            
+            functions_ui.create_directory_if_not_exists(path)
+            
+            z_stack_acquisition = z_stack(self.hcam[self.preview_channel.camera],path, self.microscope.stage_port)
+            
+            self.pb_laser_emission.setChecked(True)
+            self.pb_laser_emission_clicked()
+            
+            z_stack_acquisition.acquisition(scan_range,
+                                            step_size)
+            
+            self.is_preview = False
+            self.preview_tools_desactivation()
+        
+        else :
+            self.status_bar.showMessage("scan range and step size shouldn't be 0")
+                
         #
         # Parameters
         #
@@ -1238,6 +1281,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         saved_variables = {'preset_size' : self.preset_size,
                            'experiment_data_path' : self.experiment.data_path,
+                           'exp_name' : self.experiment.exp_name,
                            'slit_aperture' : self.experiment.slit_aperture}
         
         with open(file_path, 'w') as file:
