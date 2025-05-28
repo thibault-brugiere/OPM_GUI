@@ -20,11 +20,11 @@ class DCAM:
         
         def __init__(self, camera_id):
             self.cav = {'camera_id' : camera_id,
-                        'image_detector_pixel_num_horz' : 4000,
-                        'image_detector_pixel_num_vert' : 2000,
+                        'image_detector_pixel_num_horz' : 4432,
+                        'image_detector_pixel_num_vert' : 2368,
                         'image_detector_pixel_width' : 5,
-                        'subarray_hsize' : 4000,
-                        'subarray_vsize' : 2000,
+                        'subarray_hsize' : 4432,
+                        'subarray_vsize' : 2368,
                         'binning' : 1,
                         'internal_line_interval' : 7.309e-06,
                         # "pixel_size" : 5

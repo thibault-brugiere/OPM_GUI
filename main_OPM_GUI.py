@@ -39,9 +39,9 @@ from configs.config import channel_config, microscope, experiment #, camera
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
-from hardware.functions_DAQ import functions_daq
-# from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
-# from mock.DAQ import functions_daq
+# from hardware.functions_DAQ import functions_daq
+from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
+from mock.DAQ import functions_daq
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
@@ -502,9 +502,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.spinBox_hpos.setValue(
             (self.camera[self.camera_id].hchipsize - self.spinBox_hsize.value())/2)
+        self.spinBox_hpos_value_changed()
         
         self.spinBox_vpos.setValue(
             (self.camera[self.camera_id].vchipsize - self.spinBox_vsize.value())/2)
+        self.spinBox_vpos_value_changed()
         
     def comboBox_size_preset_index_changed(self):
         'set hpos and vpos to preset values'
@@ -911,9 +913,18 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.status_bar.showMessage("No frame available to save.")
             return
     
-        # Création du chemin complet
+        # Création du chemin de base
         
-        file_path = os.path.join(self.experiment.data_path , f"{self.experiment.exp_name}.tiff")
+        base_file_path = os.path.join(self.experiment.data_path , f"{self.experiment.exp_name}_000.tiff")
+        
+        # Initialiser le suffixe
+        suffix = 0
+        file_path = base_file_path
+        
+        # Vérifier si le fichier existe déjà et trouver un nom disponible
+        while os.path.exists(file_path):
+            suffix += 1
+            file_path = os.path.join(self.experiment.data_path, f"{self.experiment.exp_name}_{suffix:03d}.tiff")
                 
         try:
             tifffile.imwrite(file_path, self.preview_frame)
