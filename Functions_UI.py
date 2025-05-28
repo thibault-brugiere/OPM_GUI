@@ -10,10 +10,11 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import numpy as np
+import os
 import re
 import subprocess
 
-from PySide6.QtCore import QTime, QThread, Signal
+from PySide6.QtCore import QTime
 from PySide6.QtGui import QImage
 
 class functions_ui():
@@ -42,6 +43,10 @@ class functions_ui():
             NAME = name
         
         return name_ok, NAME
+    
+    def create_directory_if_not_exists(directory_path):
+        if not os.path.exists(directory_path):
+            os.makedirs(directory_path)
     
     #
     # Camera

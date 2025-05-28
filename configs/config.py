@@ -75,6 +75,9 @@ class microscope(object):
         self.galvo_response_time = 2.0  # A mesure in ms
         self.galvo_flyback_time = 3.0 # A mesurer in ms
         
+        # stage
+        self.stage_port = 'COM10'
+        
         # Filters
         self.filters = ['BFP','GFP','CY3.5','TexRed','empty5', 'empty6'] #should be 6 options
         
@@ -94,9 +97,9 @@ class microscope(object):
                              "camera_0": "Dev1/port0/line0", # Trigger l'exposition de la camera
                              "camera_1": "Dev1/port0/line1", # Trigger l'exposition de la deuxieme camera (si presente)
                              "405" : "Dev1/ao1", # Régle la puissance du laser 405
-                             "488" : None,      # Régle la puissance du laser 488
-                             "561" : "Dev1/ao2", # Régle la puissance du laser 561
-                             "640" : "Dev1/ao3", # Régle la puissance du laser 640
+                             "488" : "Dev1/ao2",      # Régle la puissance du laser 488
+                             "561" : "Dev1/ao3", # Régle la puissance du laser 561
+                             "640" : None, # Régle la puissance du laser 640
                              "laser_blanking" : "Dev1/port0/line3" # Trigger le blanking de l'AOTF du banc laser
                              }
         
