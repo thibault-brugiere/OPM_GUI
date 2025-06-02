@@ -4,7 +4,9 @@ Created on Wed Feb 26 15:22:11 2025
 
 @author: tbrugiere
 """
+
 import json
+import math
 import os
 from .functions_acquisition import functions_acquisition as fa
 
@@ -48,7 +50,7 @@ def send_to_snoutscope_acquisition(camera, channel, experiment, microscope, file
     
     microscope_parameters = {'EXP_NAME' : experiment.exp_name,
                   'DATA_PATH' : experiment.data_path,
-                  'TILT_ANGLE' : microscope.tilt_angle,
+                  'TILT_ANGLE' : microscope.tilt_angle*math.pi/180, # To get the angle in radians
                   'MAG_TOTAL' : microscope.mag_total,
                   'CAMERA_PIXELSIZE' : camera.pixel_size,
                   'VOLTS_PER_UM' : microscope.volts_per_um,
@@ -140,7 +142,7 @@ def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment,
                              }
     
     #
-    # Mocroscope
+    # Microscope
     #
 
     microscope_parameters = {'exp_name': experiment.exp_name,
