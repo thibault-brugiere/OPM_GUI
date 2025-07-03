@@ -576,9 +576,9 @@ class Ui_MainWindow(object):
         self.spinBox_channel_exposure_time = QDoubleSpinBox(self.centralwidget)
         self.spinBox_channel_exposure_time.setObjectName(u"spinBox_channel_exposure_time")
         self.spinBox_channel_exposure_time.setDecimals(2)
-        self.spinBox_channel_exposure_time.setMinimum(8.699999999999999)
+        self.spinBox_channel_exposure_time.setMinimum(0.000000000000000)
         self.spinBox_channel_exposure_time.setMaximum(999.990000000000009)
-        self.spinBox_channel_exposure_time.setValue(8.699999999999999)
+        self.spinBox_channel_exposure_time.setValue(10.000000000000000)
 
         self.horizontalLayout_15.addWidget(self.spinBox_channel_exposure_time)
 

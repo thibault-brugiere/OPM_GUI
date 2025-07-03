@@ -21,7 +21,7 @@ class camera(object):
         self.vsize = 2308
         self.vpos = 0
         self.binning = 1
-        self.exposure_time = 0.0087 # in seconds
+        self.exposure_time = 0.01 # in seconds
         self.line_readout_time = 8e-6 # (s) temps de lecture/ligne (7.309E-06/2 lignes d'aprés la doc)
         # Pour calculer le temps de lecture selon la vsize (Ne pas prendre en compte le binning !)
         
@@ -37,7 +37,7 @@ class channel_config(object):
         self.laser_power = {}
         self.filter = 'BFP' #Name of the filter in the weel
         self.camera = 0 #Camera ID
-        self.exposure_time = 8.5 #Exposure time in ms
+        self.exposure_time = 10 #Exposure time in ms
         
         for laser in lasers:
             self.laser_is_active[laser] = False

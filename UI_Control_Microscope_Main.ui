@@ -1281,13 +1281,13 @@
            <number>2</number>
           </property>
           <property name="minimum">
-           <double>8.699999999999999</double>
+           <double>0.000000000000000</double>
           </property>
           <property name="maximum">
            <double>999.990000000000009</double>
           </property>
           <property name="value">
-           <double>8.699999999999999</double>
+           <double>10.000000000000000</double>
           </property>
          </widget>
         </item>
