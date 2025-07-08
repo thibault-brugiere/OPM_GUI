@@ -9,6 +9,12 @@ import numpy as np
 
 class functions_acquisition():
     
+    def calculate_image_readout_time(vsize, line_readout_time):
+        
+        image_readout_time = (vsize / 2 + 8) * line_readout_time
+        
+        return image_readout_time
+    
     def calculate_size_Z(scan_range, sample_pixel_size, aspect_ratio, tilt_angle):
         """
         

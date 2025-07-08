@@ -24,7 +24,7 @@ import json
 import numpy as np
 import os
 import pickle
-from pylablib.devices import DCAM
+# from pylablib.devices import DCAM # A remplacer aussi dans hardware functions_camera
 import sys
 import tifffile
 

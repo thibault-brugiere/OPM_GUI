@@ -10,8 +10,8 @@ from PySide6.QtCore import QThread, Signal
 
 from configs.config import camera
 
-from pylablib.devices import DCAM
-# from mock.hamamatsu import DCAM
+# from pylablib.devices import DCAM
+from mock.hamamatsu import DCAM
 
 class functions_camera():
     
@@ -20,8 +20,8 @@ class functions_camera():
         Initialize a list of camera objects based on the number of detected cameras.
         
         Returns:
-        - List[DCAM.DCAMCamera]: A list of initialized camera objects.
-        - list[camera]: A list of camera objects from config
+        - hcams : List[DCAM.DCAMCamera]: A list of initialized camera objects. (hcam for hamamatsu camera)
+        - cameras list[camera]: A list of camera objects from config
         """
         
         hcams = []
@@ -52,7 +52,14 @@ class functions_camera():
             hamamatsu_cameras[camera_id].close()
     
     def configure_camera_for_preview(hcam, camera):
-        """Configure les paramètres de la caméra."""
+        """Configure les paramètres de la caméra.
+        Parameters
+        ----------
+        
+        hcam : DCAM camera from pylablib
+        camera : camera object from config file
+        
+        """
 
         hcam.cav["SUBARRAY MODE"]=2
         hcam.cav["EXPOSURE TIME"] = camera.exposure_time

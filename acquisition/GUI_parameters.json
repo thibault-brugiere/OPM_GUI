@@ -5,18 +5,20 @@
             "subarray_hpos": 0,
             "subarray_hsize": 4432,
             "subarray_vpos": 0,
-            "subarray_vsize": 2308,
+            "subarray_vsize": 2368,
             "sample_pixel_size": 0.16886187098953057,
-            "line_readout_time": 7.309e-06
+            "line_readout_time": 7.309e-06,
+            "image_readout_time": 0.008712328
         },
         "camera_1": {
             "camera_id": 1,
             "subarray_hpos": 0,
             "subarray_hsize": 4432,
             "subarray_vpos": 0,
-            "subarray_vsize": 2308,
+            "subarray_vsize": 2368,
             "sample_pixel_size": 0.16886187098953057,
-            "line_readout_time": 7.309e-06
+            "line_readout_time": 7.309e-06,
+            "image_readout_time": 0.008712328
         }
     },
     "channels": {
@@ -24,7 +26,7 @@
             "channel_id": "BFP",
             "is_active": true,
             "camera": 0,
-            "exposure_time": 8.7,
+            "exposure_time": 10.0,
             "laser_is_active": {
                 "405": true,
                 "488": false,
@@ -38,21 +40,21 @@
                 "640": 0.0
             }
         },
-        "channel_CY3.5": {
-            "channel_id": "CY3.5",
+        "channel_GFP": {
+            "channel_id": "GFP",
             "is_active": true,
             "camera": 0,
-            "exposure_time": 8.7,
+            "exposure_time": 10.0,
             "laser_is_active": {
                 "405": false,
-                "488": false,
-                "561": true,
+                "488": true,
+                "561": false,
                 "640": false
             },
             "laser_power": {
                 "405": 0.0,
-                "488": 0.0,
-                "561": 0.25,
+                "488": 0.25,
+                "561": 0.0,
                 "640": 0.0
             }
         }
@@ -68,14 +70,14 @@
     },
     "microscope": {
         "exp_name": "Image",
-        "data_path": "D:/EqSibarita/Python/Control_Microscope_GUI/Images",
-        "tilt_angle": 45,
+        "data_path": "D:/Projets_Python/OPM_GUI/Images",
+        "tilt_angle": 45.0,
         "mag_total": 29.61,
         "camera_pixelsize": 5,
         "volts_per_um": 0.05,
-        "galvo_response_time": 0.4,
-        "galvo_flyback_time": 0,
-        "laser_response_time": 2,
+        "galvo_response_time": 2.0,
+        "galvo_flyback_time": 3.0,
+        "laser_response_time": 2.0,
         "daq_channels": {
             "co_channel": "Dev1/ctr0",
             "co_terminal": "/Dev1/PFI0",
@@ -83,9 +85,9 @@
             "camera_0": "Dev1/port0/line0",
             "camera_1": "Dev1/port0/line1",
             "405": "Dev1/ao1",
-            "488": null,
-            "561": "Dev1/ao2",
-            "640": "Dev1/ao3",
+            "488": "Dev1/ao2",
+            "561": "Dev1/ao3",
+            "640": null,
             "laser_blanking": "Dev1/port0/line3"
         }
     }
