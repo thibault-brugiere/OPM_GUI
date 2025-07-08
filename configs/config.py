@@ -22,9 +22,13 @@ class camera(object):
         self.vpos = 0
         self.binning = 1
         self.exposure_time = 0.01 # in seconds
-        self.line_readout_time = 8e-6 # (s) temps de lecture/ligne (7.309E-06 lignes d'aprés la doc)
-        # Pour calculer le temps de lecture selon la vsize (Ne pas prendre en compte le binning !)
+        self.line_readout_time = 7.309E-06 # (s) temps de lecture/ligne (7.309E-06 lignes d'aprés la doc)
         
+        self.calculate_image_readout_time()
+        
+    def calculate_image_readout_time(self):            
+        self.image_readout_time = (self.vsize / 2 + 8) * self.line_readout_time
+
 class channel_config(object):
     "Object discribing channels settings"
     def __init__(self, channel_id, lasers = LASERS): #lasers = ["405","488","561","640"]

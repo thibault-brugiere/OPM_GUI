@@ -102,7 +102,7 @@ def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment,
                              'subarray_vsize': camera.vsize,
                              'sample_pixel_size' : camera.sample_pixel_size,
                              'line_readout_time' : camera.line_readout_time,
-                             'image_readout_time' : fa.calculate_image_readout_time(camera.vsize, camera.line_readout_time)
+                             'image_readout_time' : camera.image_readout_time
                             }
 
         cameras.update({f'camera_{camera.camera_id}': camera_parameters})

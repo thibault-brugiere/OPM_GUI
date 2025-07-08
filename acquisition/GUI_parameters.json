@@ -8,7 +8,7 @@
             "subarray_vsize": 2368,
             "sample_pixel_size": 0.16886187098953057,
             "line_readout_time": 7.309e-06,
-            "image_readout_time": 0.008712328
+            "image_readout_time": 0.008493058
         },
         "camera_1": {
             "camera_id": 1,
@@ -18,7 +18,7 @@
             "subarray_vsize": 2368,
             "sample_pixel_size": 0.16886187098953057,
             "line_readout_time": 7.309e-06,
-            "image_readout_time": 0.008712328
+            "image_readout_time": 0.008493058
         }
     },
     "channels": {
