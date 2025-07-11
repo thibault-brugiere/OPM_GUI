@@ -14,7 +14,7 @@ class DCAM:
         pass
         
     def get_cameras_number():
-        return 2
+        return 1
     
     class DCAMCamera(object):
         

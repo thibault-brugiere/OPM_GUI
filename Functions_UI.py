@@ -13,9 +13,17 @@ import numpy as np
 import os
 import re
 import subprocess
+import sys
 
 from PySide6.QtCore import QTime
 from PySide6.QtGui import QImage
+
+# set multidimensional_acquisition importable
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "multidimensional_acquisition"))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+    
+from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
 
 class functions_ui():
     
@@ -400,8 +408,17 @@ class functions_ui():
 
         return channel_acquisition
 
-    def start_multidimensional_acquisition(file_path):
-        pass
+    def start_multidimensional_acquisition():
+        print("start multidimensional acquisition")
+        MDA = MultidimensionalAcquisition()
+        print("camera initialization")
+        MDA.initialize_cameras()
+        print("suite1")
+        MDA.initialize_acquisition_workers()
+        print("suite2")
+        MDA.configure_daq()
+        print("suite3")
+        MDA.run()
 
     
     #

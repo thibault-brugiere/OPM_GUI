@@ -23,7 +23,7 @@ class camera(object):
         self.binning = 1
         self.exposure_time = 0.01 # in seconds
         self.line_readout_time = 7.309E-06 # (s) temps de lecture/ligne (7.309E-06 lignes d'aprés la doc)
-        
+
         self.calculate_image_readout_time()
         
     def calculate_image_readout_time(self):            

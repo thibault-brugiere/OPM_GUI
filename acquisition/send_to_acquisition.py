@@ -96,11 +96,16 @@ def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment,
         camera.sample_pixel_size = camera.pixel_size / microscope.mag_total
         
         camera_parameters = {'camera_id': camera.camera_id,
-                             'subarray_hpos': camera.hpos,
-                             'subarray_hsize': camera.hsize,
-                             'subarray_vpos': camera.vpos,
-                             'subarray_vsize': camera.vsize,
+                             'hchipsize': camera.hchipsize,
+                             'vchipsize': camera.vchipsize,
+                             'pixel_size': camera.pixel_size,
                              'sample_pixel_size' : camera.sample_pixel_size,
+                             'hsize': camera.hsize,
+                             'hpos': camera.hpos,
+                             'vsize': camera.vsize,
+                             'vpos': camera.vpos,
+                             'exposure_time': camera.exposure_time,
+                             'binning': camera.binning,
                              'line_readout_time' : camera.line_readout_time,
                              'image_readout_time' : camera.image_readout_time
                             }
@@ -112,16 +117,14 @@ def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment,
     #
 
     for channel in channel_list :
-        # Permet d'ajuster le pourcentage de laser à la tension nécessaire au DAC
-        for laser in channel.laser_power.keys():
-            channel.laser_power[laser] = channel.laser_power[laser] * microscope.volts_per_laser_percent[laser]
-
         channel_parameters = {'channel_id': channel.channel_id,
                               'is_active': True,
-                              'camera': channel.camera,
-                              'exposure_time': channel.exposure_time,
+                              'channel_order': channel.channel_order,
                               'laser_is_active': channel.laser_is_active,
                               'laser_power': channel.laser_power,
+                              'filter': channel.filter,
+                              'camera': channel.camera,
+                              'exposure_time': channel.exposure_time,
                               }
         channels.update({f'channel_{channel.channel_id}': channel_parameters})
         
@@ -133,27 +136,33 @@ def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment,
                                                                                           camera_list[0].sample_pixel_size,
                                                                                           experiment.aspect_ratio,
                                                                                           microscope.tilt_angle)
-    experiment_parameters = {'aspect_ration': experiment.aspect_ratio,
-                             'scan_range': experiment.scan_range,
-                             'slit_aperture': experiment.slit_aperture,
+    experiment_parameters = {'exp_name': experiment.exp_name,
+                             'data_path': experiment.data_path,
+                             'timepoints': experiment.timepoints,
                              'time_intervals': experiment.time_intervals,
-                             'num_timepoints': experiment.timepoints,
+                             'total_duration': experiment.total_duration,
+                             'scanner_position': experiment.scanner_position,
+                             'scan_range': experiment.scan_range,
+                             'aspect_ratio': experiment.aspect_ratio,
                              'n_steps' : experiment.n_steps,
-                             'step_size' : experiment.step_size
+                             'step_size' : experiment.step_size,
+                             'slit_aperture': experiment.slit_aperture,
                              }
     
     #
     # Microscope
     #
 
-    microscope_parameters = {'exp_name': experiment.exp_name,
-                             'data_path': experiment.data_path,
+    microscope_parameters = {
                              'tilt_angle': microscope.tilt_angle,
                              'mag_total': microscope.mag_total,
-                             'camera_pixelsize': camera.pixel_size,
                              'volts_per_um': microscope.volts_per_um,
                              'galvo_response_time' : microscope.galvo_response_time,
                              'galvo_flyback_time' : microscope.galvo_flyback_time,
+                             'stage_port' : microscope.stage_port,
+                             'filters': microscope.filters,
+                             'lasers': microscope.lasers,
+                             'volts_per_laser_percent': microscope.volts_per_laser_percent,
                              'laser_response_time' : microscope.laser_response_time,
                              'daq_channels': microscope.daq_channels,
                              }
@@ -175,3 +184,4 @@ def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment,
 
     with open(file_path, 'w') as json_file:
         json.dump(parameters, json_file, indent=4)
+    

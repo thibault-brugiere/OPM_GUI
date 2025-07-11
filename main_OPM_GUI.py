@@ -1131,17 +1131,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 send_to_multidimensionnal_acquisition(self.camera,
                                                       channel_acquisition,
                                                       self.experiment,
-                                                      self.microscope)
-                send_to_multidimensionnal_acquisition(self.camera,
-                                                      channel_acquisition,
-                                                      self.experiment,
                                                       self.microscope,
                                                       dirname = 'multidimensional_acquisition/Config',
                                                       filename = 'GUI_parameters.json')
-                # TODO : save the GUI_parametyers.json file in the acquisition folder, it will be read here
-                print("start multidimensional acquisition")
+                
                 self.status_bar.showMessage("start multidimensional acquisition")
-                functions_ui.start_multidimensional_acquisition('')
+                functions_ui.start_multidimensional_acquisition()
             except:
                 self.status_bar.showMessage("parameters saving didn't worked!", 5000)
         else:
