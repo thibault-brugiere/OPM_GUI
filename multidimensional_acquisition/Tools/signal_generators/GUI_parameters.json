@@ -1,0 +1,110 @@
+{
+    "cameras": {
+        "camera_0": {
+            "camera_id": 0,
+            "hchipsize": 4432,
+            "vchipsize": 2368,
+            "pixel_size": 5,
+            "sample_pixel_size": 0.16886187098953057,
+            "hsize": 4432,
+            "hpos": 0,
+            "vsize": 2368,
+            "vpos": 0,
+            "exposure_time": 0.01,
+            "binning": 1,
+            "line_readout_time": 7.309e-06,
+            "image_readout_time": 0.008493058
+        },
+        "camera_1": {
+            "camera_id": 1,
+            "hchipsize": 4432,
+            "vchipsize": 2368,
+            "pixel_size": 5,
+            "sample_pixel_size": 0.16886187098953057,
+            "hsize": 4432,
+            "hpos": 0,
+            "vsize": 2368,
+            "vpos": 0,
+            "exposure_time": 0.01,
+            "binning": 1,
+            "line_readout_time": 7.309e-06,
+            "image_readout_time": 0.008493058
+        }
+    },
+    "channels": {
+        "channel_GFP": {
+            "channel_id": "GFP",
+            "is_active": true,
+            "channel_order": null,
+            "laser_is_active": {
+                "405": false,
+                "488": true,
+                "561": false,
+                "640": false
+            },
+            "laser_power": {
+                "405": 0,
+                "488": 5,
+                "561": 0,
+                "640": 0
+            },
+            "filter": "GFP",
+            "camera": 0,
+            "exposure_time": 10.0
+        }
+    },
+    "experiment": {
+        "exp_name": "Image",
+        "data_path": "D:/Projets_Python/OPM_GUI/Images",
+        "timepoints": 10,
+        "time_intervals": 1.0,
+        "total_duration": 10.0,
+        "scanner_position": 0,
+        "scan_range": 20.24190797700885,
+        "aspect_ratio": 3,
+        "n_steps": 35,
+        "step_size": 0.5953502346179074,
+        "slit_aperture": 800
+    },
+    "microscope": {
+        "tilt_angle": 45.0,
+        "mag_total": 29.61,
+        "volts_per_um": 0.05,
+        "galvo_response_time": 2.0,
+        "galvo_flyback_time": 3.0,
+        "stage_port": "COM10",
+        "filters": [
+            "BFP",
+            "GFP",
+            "CY3.5",
+            "TexRed",
+            "empty5",
+            "empty6"
+        ],
+        "lasers": [
+            "405",
+            "488",
+            "561",
+            "640"
+        ],
+        "volts_per_laser_percent": {
+            "405": 0.05,
+            "488": 0.05,
+            "561": 0.05,
+            "640": 0.05
+        },
+        "laser_response_time": 2.0,
+        "daq_channels": {
+            "co_channel": "Dev1/ctr0",
+            "co_terminal": "/Dev1/PFI0",
+            "galvo": "Dev1/ao0",
+            "camera_0": "Dev1/port0/line0",
+            "camera_1": "Dev1/port0/line1",
+            "405": "Dev1/ao1",
+            "488": "Dev1/ao2",
+            "561": "Dev1/ao3",
+            "640": null,
+            "laser_blanking": "Dev1/port0/line3"
+        }
+    }
+}
