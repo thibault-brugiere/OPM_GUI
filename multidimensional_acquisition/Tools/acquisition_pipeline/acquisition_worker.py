@@ -46,6 +46,7 @@ class AcquisitionWorker:
         self.viewer_callback = None  # Fonction externe appelée à chaque nouvelle image (GUI, etc.)
 
         # Statistiques
+        self.total_images = 0
         self.total_frames = 0
         self.total_dropped = 0
         self.total_volumes = 0
@@ -128,6 +129,7 @@ class AcquisitionWorker:
                 except queue.Full:
                     self.total_dropped += 1
                     print("[WARNING] Frame queue full. Dropping frame.")
+                self.total_images = self.total_frames + self.total_dropped
             time.sleep(0.001)  # Petite pause pour éviter de monopoliser le CPU
 
     def saving_loop(self):

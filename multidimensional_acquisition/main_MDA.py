@@ -123,11 +123,11 @@ class MultidimensionalAcquisition:
         self.daq.trigger_acquisition()
         
         # Wait until all volumes are acquired
-        expected_volumes = self.config.experiment.timepoints
+        expected_images = self.config.experiment.timepoints * self.config.experiment.n_steps
         try:
             while True:
-                volumes = [w.total_volumes for w in self.acquisition_workers]
-                if all(v >= expected_volumes for v in volumes):
+                images = [w.total_images for w in self.acquisition_workers]
+                if all(v >= expected_images for v in images):
                     print("[INFO] All volumes acquired.")
                     break
                 time.sleep(0.5)
