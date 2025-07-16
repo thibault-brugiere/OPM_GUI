@@ -1136,7 +1136,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                                       filename = 'GUI_parameters.json')
                 
                 self.status_bar.showMessage("start multidimensional acquisition")
-                functions_ui.start_multidimensional_acquisition()
+                functions_ui.start_multidimensional_acquisition(self.hcam)
             except:
                 self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
         else:
