@@ -133,8 +133,6 @@ class camera_acquisition():
         Camera must be configured before this call.
         """
         
-        print(f'[CAMERA] id: {self.camera.camera_id} - {self.state}')
-        
         if self.state != "configured" :
             raise RuntimeError("Camera not configured. Call initialize_camera() first.")
             
@@ -179,7 +177,8 @@ class camera_acquisition():
             images = self.hcam.read_multiple_images()
             self.read_count = self.read_count + len(images)
             if len(images) > 0 :
-                print(f"[CAMERA] total read: {self.read_count} images", end='\r')
+                pass
+                # print(f"[CAMERA] total read: {self.read_count} images", end='\r')
             return images  # Can be an empty list if no images available yet
         except Exception as e:
             print(f"Error reading from camera: {e}")

@@ -66,8 +66,6 @@ class AcquisitionWorker:
         ]
         for t in self.threads:
             t.start()
-            
-            print("[Acquistion Workers] Threads started")
 
     def stop(self):
         """
@@ -80,8 +78,6 @@ class AcquisitionWorker:
         self._print_stats()
         
         self._append_acquisition_summary()
-        
-        print("[Acquistion Workers] Acquisition stopped")
 
     def _print_stats(self):
         """
@@ -121,7 +117,6 @@ class AcquisitionWorker:
         and puts them into the shared RAM queue. Tracks dropped frames.
         """
         # Lit les images depuis la caméra aussi rapidement que possible
-        print("[Acquistion Workers] Acquisition Loop")
         while not self.stop_event.is_set():
             frames = self.camera.read_camera()  # Doit retourner une liste de tableaux numpy
             for frame in frames:
@@ -129,6 +124,7 @@ class AcquisitionWorker:
                 try:
                     self.frame_queue.put(image, timeout=0.1)  # Place l'image dans la file partagée
                     self.total_frames += 1
+                    print(f"[Acquisition workers] total read: {self.total_frames} images", end='\r')
                 except queue.Full:
                     self.total_dropped += 1
                     print("[WARNING] Frame queue full. Dropping frame.")
@@ -139,7 +135,6 @@ class AcquisitionWorker:
         Saving thread: collects frames from the queue, assembles them into
         3D stacks (volumes), and saves them as TIFF files.
         """
-        print("[Acquistion Workers] Saving Loop")
         # Sauvegarde les volumes depuis la file vers le disque (SSD)
         os.makedirs(self.save_dir, exist_ok=True)
         volume_id = 0
@@ -161,6 +156,7 @@ class AcquisitionWorker:
                     if channel_index == 0:
                         volume_id += 1
                         self.total_volumes += 1
+                        # print(f"[Acquisition workers] total saved: {self.total_volumes} volumes", end='\r')
 
             except queue.Empty:
                 continue
@@ -172,7 +168,6 @@ class AcquisitionWorker:
         """
         # Affiche la dernière image disponible pour du live preview (si viewer_callback défini)
         # Transmet également les statistiques d'acquisition en temps réel
-        print("[Acquistion Workers] Viewer Loop")
         try:
             frame = self.frame_queue.queue[-1]  # Récupère la dernière image sans la retirer
             if self.viewer_callback:
