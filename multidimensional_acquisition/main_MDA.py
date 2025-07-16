@@ -71,7 +71,7 @@ class MultidimensionalAcquisition:
                                       microscope = self.config.experiment)
             if hcam is None:
                 cam.initialize_camera()
-                cam.configure_camera_for_acquisition()
+            cam.configure_camera_for_acquisition()
             self.cameras_acquisition.append(cam)
             
         self.state['camera'] = 'ready'
@@ -128,7 +128,7 @@ class MultidimensionalAcquisition:
             while True:
                 images = [w.total_images for w in self.acquisition_workers]
                 if all(v >= expected_images for v in images):
-                    print("[INFO] All volumes acquired.")
+                    # print("[INFO] All volumes acquired.")
                     break
                 time.sleep(0.5)
         except:

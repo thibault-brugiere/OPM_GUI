@@ -134,7 +134,7 @@ class camera_acquisition():
         """
         
         if self.state != "configured" :
-            raise RuntimeError("Camera not configured. Call initialize_camera() first.")
+            raise RuntimeError("Camera not configured. Call configure_camera_for_acquisition() first.")
             
         self.hcam.setup_acquisition(mode='sequence',nframes=1000)
         self.hcam.start_acquisition()

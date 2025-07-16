@@ -1,9 +1,11 @@
-import threading
-import queue
-import time
-import os
-from tifffile import imwrite  # Pour l'export TIFF
 import numpy as np
+import queue
+import os
+import threading
+from tqdm import tqdm
+from tifffile import imwrite
+import time
+
 
 # Container class for a single image frame, with optional timestamp and metadata
 class ImageFrame:
@@ -13,24 +15,31 @@ class ImageFrame:
         self.metadata = metadata or {}
 
 # Main class that handles image acquisition, saving, and live viewing in parallel threads
-# Main class that handles image acquisition, saving, and live viewing in parallel threads
 class AcquisitionWorker:
-    def __init__(self, camera_worker, save_dir, n_steps, timepoints,channel_names=None, max_volume_queue=5):
+    def __init__(self, camera_worker, save_dir, n_steps, timepoints,channel_names=None, max_volume_queue=10):
         """
-        Initialize the acquisition pipeline.
+        Initialize the acquisition pipeline with multithreaded image reading, buffering, and saving.
 
         Parameters:
         - camera_worker: object
-            Instance of a camera control class with a read_camera() method.
+            An instance of a camera interface class providing a read_camera() method that returns image frames.
+        
         - save_dir: str
-            Path where TIFF stacks (volumes) will be saved.
+            Path to the directory where TIFF stacks (volumes) will be saved on disk.
+        
         - n_steps: int
-            Number of frames per volume (Z-slices).
+            Number of image frames per volume (typically corresponding to Z-slices in a 3D acquisition).
+        
+        - timepoints: int
+            Number of volumes to acquire (typically corresponding to time-lapse or sequential acquisitions).
+        
         - channel_names: list of str, optional
-            Names of the acquisition channels (e.g. ["GFP", "RFP"]). Used for file naming.
+            List of channel identifiers (e.g., ["GFP", "RFP"]) used for naming saved volumes. Defaults to ["CH"].
+        
         - max_volume_queue: int
-            Maximum number of volumes to store in RAM before saving.
+            Maximum number of volumes allowed in the internal RAM buffer before being written to disk. This limits memory usage.
         """
+        
         self.camera = camera_worker  # Instance de la classe camera_worker (contrôle matériel caméra)
         self.save_dir = save_dir  # Répertoire où les images seront sauvegardées
         self.n_steps = n_steps  # Nombre d'images par volume
@@ -51,6 +60,12 @@ class AcquisitionWorker:
         self.total_dropped = 0
         self.total_volumes = 0
         self.start_time = None
+        
+        # TQDM bars and locks
+        self.pbar_lock = threading.Lock()
+        self.frame_bar = tqdm(total=self.n_steps * self.timepoints,
+                              desc="Frames Acquired", position=0)
+        self.volume_bar = tqdm(total=self.timepoints, desc="Volumes Saved", position=1)
 
     def start(self):
         """
@@ -76,6 +91,8 @@ class AcquisitionWorker:
         self.stop_event.set()
         for t in self.threads:
             t.join()
+        self.frame_bar.close()
+        self.volume_bar.close()
         self._print_stats()
         
         self._append_acquisition_summary()
@@ -125,10 +142,11 @@ class AcquisitionWorker:
                 try:
                     self.frame_queue.put(image, timeout=0.1)  # Place l'image dans la file partagée
                     self.total_frames += 1
-                    print(f"[Acquisition workers] total read: {self.total_frames} images", end='\r')
+                    with self.pbar_lock:
+                        self.frame_bar.update(1)
                 except queue.Full:
                     self.total_dropped += 1
-                    print("[WARNING] Frame queue full. Dropping frame.")
+                    print(f"[WARNING] Frame queue full. Dropping frame:{self.total_frames} images", end='\r')
                 self.total_images = self.total_frames + self.total_dropped
             time.sleep(0.001)  # Petite pause pour éviter de monopoliser le CPU
 
@@ -158,7 +176,8 @@ class AcquisitionWorker:
                     if channel_index == 0:
                         volume_id += 1
                         self.total_volumes += 1
-                        # print(f"[Acquisition workers] total saved: {self.total_volumes} volumes", end='\r')
+                        with self.pbar_lock:
+                            self.volume_bar.update(1)
 
             except queue.Empty:
                 continue
