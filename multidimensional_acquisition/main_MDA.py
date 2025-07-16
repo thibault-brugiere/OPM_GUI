@@ -10,10 +10,10 @@ import os
 import time
 
 from Config.MDA_config import config
-# from Hardware.daq_controller import NIDAQ_Acquisition
-# from Hardware.camera_controller import camera_acquisition
-from Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
-from Hardware.mock import MockCameraAcquisition as camera_acquisition
+from Hardware.daq_controller import NIDAQ_Acquisition
+from Hardware.camera_controller import camera_acquisition
+# from Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
+# from Hardware.mock import MockCameraAcquisition as camera_acquisition
 from Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
 from Tools.saving import prepare_saving_directory, save_metadata
 from Tools.signal_generators.single_channel import generate_single_channel_signals
@@ -26,22 +26,10 @@ class MultidimensionalAcquisition:
         self.hcams = hcams
         self.frequency = frequency
         
-        print('[Main MDA] suite1')
-        
         # Load configuration
         config_path = os.path.join(os.path.dirname(__file__), "Config")
         self.config = config(dirname=config_path)
-        # self.config = config(dirname="Config")
-        
-        # try:
-        #     self.config = config(dirname="Config")
-        #     print('[Main MDA] suite2')
-        # except Exception as e:
-        #     print("[ERROR] Failed to load config:", e)
-        
-        print('[Main MDA] suite2')
-        
-        # Generate DAQ signals
+
         self.n_channels = len(self.config.channels)
         if self.n_channels == 1:
             self.volume_tensions_library = generate_single_channel_signals(
@@ -52,12 +40,13 @@ class MultidimensionalAcquisition:
                 self.frequency)
 
             volume_duration = len(self.volume_tensions_library['tensions_galvo']) / self.frequency
+            print(f'[Main MDA] volume duration : {volume_duration} s')
             if volume_duration > self.config.experiment.time_intervals + 0.001:
                 self.config.experiment.time_intervals = volume_duration + 0.001
                 print(f"[INFO] Time interval too short. Adjusted to : {volume_duration + 0.001} s to match volume duration.")
         else:
             raise NotImplementedError("Only single-channel acquisition is currently supported.")
-
+        
         # Prepare saving directory and metadata
         self.save_dir = prepare_saving_directory(self.config.experiment.data_path,
                                                  self.config.experiment.exp_name)
@@ -77,31 +66,17 @@ class MultidimensionalAcquisition:
         for i, cam_cfg in enumerate(self.config.cameras):
             hcam = self.hcams[i] if self.hcams else None
             cam = camera_acquisition(cam_cfg, hcam,
-                                      channels = self.config.channels,
+                                     channels = self.config.channels,
                                       experiment = self.config.experiment,
                                       microscope = self.config.experiment)
             if hcam is None:
                 cam.initialize_camera()
+                cam.configure_camera_for_acquisition()
             self.cameras_acquisition.append(cam)
             
         self.state['camera'] = 'ready'
         
         print("[Main MDA] camera initialized")
-        
-    # def initialize_cameras(self):
-    #     print("[Main MDA] camera initialization started")
-    #     try:
-    #         for i, cam_cfg in enumerate(self.config.cameras):
-    #             print(f"[Main MDA] Init camera {i}")
-    #             hcam = self.hcams[i] if self.hcams else None
-    #             cam = camera_acquisition(cam_cfg, hcam)
-    #             if hcam is None:
-    #                 cam.initialize_camera()
-    #             self.cameras_acquisition.append(cam)
-    #         self.state["camera"] = "ready"
-    #         print("[Main MDA] camera initialized")
-    #     except Exception as e:
-    #         print("[ERROR] Exception in initialize_cameras():", e)
 
     def initialize_acquisition_workers(self):
         for cam in self.cameras_acquisition:

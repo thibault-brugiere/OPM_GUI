@@ -23,7 +23,7 @@ class camera_acquisition():
         Current state of the camera: 'idle', 'initialized', 'configured', or 'acquiring'.
     """
     
-    def __init__(self, camera, hcam = None):
+    def __init__(self, camera, hcam = None, channels=None, experiment=None, microscope=None):
         """
         Initialize the camera acquisition.
         
@@ -33,6 +33,7 @@ class camera_acquisition():
             Camera config object loaded from configuration.
         hcam : DCAMCamera or None
             Optional pre-initialized camera object.
+        others parameters are only needed for simulation
         """
         
         self.camera = camera
@@ -40,8 +41,7 @@ class camera_acquisition():
         
         self.state = "idle"
         if self.hcam is not None :
-            self.state = "initialized"
-        
+            self.state = "initialized"   
         
     def initialize_camera(self):
         """
@@ -119,12 +119,13 @@ class camera_acquisition():
         self.hcam.cav["trigger_source"] = 2 # 1=internal, 2=external, 3=software, 4=master pulse
         self.hcam.cav["trigger_mode"] = 1 # 1=normal, 2=start
         self.hcam.cav["trigger_active"] = 2 # 1=edge, 2=level, 3=syncreadout
-        self.hcam.cav["trigger_global_exposure"] = 1 # 1=delayed, 2=global reset
+        # self.hcam.cav["trigger_global_exposure"] = 1 # 1=delayed, 2=global reset
+        # self.hcam.cav["trigger_time"] = 1 # in µs
         self.hcam.cav["trigger_polarity"] = 2 # 1=negative, 2=positive
-        self.hcam.cav["trigger_time"] = 1 # in µs
         self.hcam.cav["trigger_delay"] = 0 # in µs
         
         self.state = "configured"
+        self.read_count = 0
         
     def start_acquisition(self):
         """
@@ -132,10 +133,12 @@ class camera_acquisition():
         Camera must be configured before this call.
         """
         
+        print(f'[CAMERA] id: {self.camera.camera_id} - {self.state}')
+        
         if self.state != "configured" :
-            raise RuntimeError("Camera not initialized. Call initialize_camera() first.")
+            raise RuntimeError("Camera not configured. Call initialize_camera() first.")
             
-        self.hcam.setup_acquisition(mode='sequence')
+        self.hcam.setup_acquisition(mode='sequence',nframes=1000)
         self.hcam.start_acquisition()
         
         self.state = "acquiring"
@@ -169,10 +172,14 @@ class camera_acquisition():
         """
         
         if self.state != "acquiring":
-            raise RuntimeError("Camera not acquiring. start acquisition first.")
+            # raise RuntimeError("Camera not acquiring. start acquisition first.")
+            return []
             
         try:
             images = self.hcam.read_multiple_images()
+            self.read_count = self.read_count + len(images)
+            if len(images) > 0 :
+                print(f"[CAMERA] total read: {self.read_count} images", end='\r')
             return images  # Can be an empty list if no images available yet
         except Exception as e:
             print(f"Error reading from camera: {e}")

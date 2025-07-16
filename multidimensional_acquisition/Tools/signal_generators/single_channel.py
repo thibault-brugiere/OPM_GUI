@@ -130,7 +130,6 @@ def generate_single_channel_signals(cameras, channels, experiment, microscope, f
     #
     
         # --- Preallocate output arrays ---
-        
     tensions_galvo = np.zeros(total_duration)
     tensions_camera = np.zeros(total_duration , dtype='bool')
     tensions_laser_blanking = np.full(total_duration, True) # Laser is On for all volume
@@ -253,6 +252,8 @@ if __name__ == '__main__':
     start_time = time.time()
         
     microscope_config = config()
+    
+    print(microscope_config.experiment.n_steps)
         
     frequency = 1e4
         

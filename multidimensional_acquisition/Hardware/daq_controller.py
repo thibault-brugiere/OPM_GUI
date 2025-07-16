@@ -127,10 +127,10 @@ class NIDAQ_Acquisition:
         
             # Configure trigger: AO task starts on rising edge of CO terminal signal, and is retriggerable
         self.task_ao.triggers.start_trigger.retriggerable = True
-        self.task_ao.triggers.start_trigger.cfg_dig_edge_start_trig(self.channels["co_terminal"],
+        self.task_ao.triggers.start_trigger.cfg_dig_edge_start_trig(self.daq_channels["co_terminal"],
                                                                     trigger_edge=nidaqmx.constants.Edge(10280)) #10280 => Rising Edge
             # Send analog waveforms (stack galvo + first 3 lasers)
-        self.task_ao.write(np.vstack([self.tensions_library["galvo"],
+        self.task_ao.write(np.vstack([self.tensions_library["tensions_galvo"],
                                       self.tensions_library['tensions_lasers'][:3]])) #Can only get the 3 first 
         
         #
@@ -138,20 +138,20 @@ class NIDAQ_Acquisition:
         #
         
             # Create DO channels: camera trigger + laser blanking
-        self.task_do.do_channels.add_do_chan(self.channels["camera_0"])
-        self.task_do.do_channels.add_do_chan(self.channels["laser_blanking"])
+        self.task_do.do_channels.add_do_chan(self.daq_channels["camera_0"])
+        self.task_do.do_channels.add_do_chan(self.daq_channels["laser_blanking"])
         
             # Set timing and synchronization identical to AO
         self.task_do.timing.cfg_samp_clk_timing(self.frequency, samps_per_chan=self.volume_duration)
         
             # Configure trigger: AO task starts on rising edge of CO terminal signal, and is retriggerable
         self.task_do.triggers.start_trigger.retriggerable = True
-        self.task_do.triggers.start_trigger.cfg_dig_edge_start_trig(self.channels["co_terminal"],
+        self.task_do.triggers.start_trigger.cfg_dig_edge_start_trig(self.daq_channels["co_terminal"],
                                                                     trigger_edge=nidaqmx.constants.Edge(10280)) #10280 => Rising Edge
         
             # Send digital waveforms (camera trigger and laser blanking signals)
-        self.task_do.write(np.vstack([self.tensions_library['cameras'],
-                                      self.tensions_library['laser_blanking']]))
+        self.task_do.write(np.vstack([self.tensions_library['tensions_camera'],
+                                      self.tensions_library['tensions_laser_blanking']]))
         
         #
         # Number of volumes counter
@@ -163,13 +163,13 @@ class NIDAQ_Acquisition:
             # high_ticks = duration of HIGH state (rest of the interval)
 
         self.channel_co = self.task_co.co_channels.add_co_pulse_chan_ticks( # co : Counter Output
-            counter=self.channels["co_channel"],
+            counter=self.daq_channels["co_channel"],
             source_terminal="/Dev1/100kHzTimebase",
             low_ticks=int(100),
-            high_ticks=int((self.time_intervals * 1e5 / 2)-100))
+            high_ticks=int((self.time_intervals * 1e5 )-100))
         
             # Specify where the TTL pulse is sent
-        self.channel_co.co_pulse_term = self.channels["co_terminal"]
+        self.channel_co.co_pulse_term = self.daq_channels["co_terminal"]
         
             # Set implicit timing to repeat the pulse signal for the number of timepoints
         self.task_co.timing.cfg_implicit_timing(samps_per_chan = self.timepoints)
@@ -178,7 +178,7 @@ class NIDAQ_Acquisition:
         
     def arm_task(self):
         """Prepare AO and DO tasks. They will wait for a trigger to begin output."""
-        if self.state != "armed":
+        if self.state != "ready":
             raise RuntimeError(f"Cannot start acquisition from state '{self.state}'. Must be 'armed'.")
             
         self.task_ao.start()
@@ -225,62 +225,4 @@ class NIDAQ_Acquisition:
         self.task_do = None
         self.task_co = None
 
-        self.state = "idle"
-        
-class NIDAQ_Acquisition_mock:
-    """
-    Mock class for NIDAQ_Acquisition, used for testing without actual hardware.
-    Simulates state transitions and method calls, but performs no DAQ operations.
-    """
-    
-    def __init__(self):
-        """Initialize mock DAQ with idle state and no tasks."""
-        self.state = "idle"
-
-    def send_signals_to_daq_single_channel_progress(self, tensions_library, timepoints, time_intervals,
-                                                    daq_channels, frequency = 1e4):
-        """
-        Mock setup of DAQ tasks — stores parameters and sets state to 'ready'.
-        """
-        print("[Mock] send_signals_to_daq_single_channel_progress called.")
-        self.tensions_library = tensions_library
-        self.timepoints = timepoints
-        self.time_intervals = time_intervals
-        self.daq_channels = daq_channels
-        self.frequency = frequency
-        self.state = "ready"
-
-    def arm_task(self):
-        """
-        Mock arming of AO and DO tasks — updates state to 'armed'.
-        """
-        if self.state != "ready":
-            raise RuntimeError(f"[Mock] Cannot arm from state '{self.state}'. Must be 'ready'.")
-        print("[Mock] Tasks armed.")
-        self.state = "armed"
-
-    def trigger_acquisition(self):
-        """
-        Mock triggering of acquisition — updates state to 'running'.
-        """
-        if self.state != "armed":
-            raise RuntimeError(f"[Mock] Cannot trigger acquisition from state '{self.state}'. Must be 'armed'.")
-        print("[Mock] Acquisition started.")
-        self.state = "running"
-
-    def stop(self):
-        """
-        Mock stop of all tasks — updates state back to 'ready'.
-        """
-        if self.state not in ["running", "armed"]:
-            print(f"[Mock] Nothing to stop. Current state: '{self.state}'.")
-            return
-        print("[Mock] Acquisition stopped.")
-        self.state = "ready"
-
-    def close(self):
-        """
-        Mock full shutdown — resets state to 'idle'.
-        """
-        print("[Mock] Closing all mock DAQ tasks.")
         self.state = "idle"

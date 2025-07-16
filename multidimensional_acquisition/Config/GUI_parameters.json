@@ -4,36 +4,36 @@
             "camera_id": 0,
             "hchipsize": 4432,
             "vchipsize": 2368,
-            "pixel_size": 5,
-            "sample_pixel_size": 0.16886187098953057,
+            "pixel_size": 4.6000000000000005,
+            "sample_pixel_size": 0.15535292131036815,
             "hsize": 4432,
             "hpos": 0,
             "vsize": 2368,
             "vpos": 0,
             "exposure_time": 0.01,
             "binning": 1,
-            "line_readout_time": 7.309e-06,
+            "line_readout_time": 7.3090909090909095e-06,
             "image_readout_time": 0.008493058
         }
     },
     "channels": {
-        "channel_BFP": {
-            "channel_id": "BFP",
+        "channel_GFP": {
+            "channel_id": "GFP",
             "is_active": true,
             "channel_order": null,
             "laser_is_active": {
-                "405": true,
-                "488": false,
+                "405": false,
+                "488": true,
                 "561": false,
                 "640": false
             },
             "laser_power": {
-                "405": 11,
-                "488": 0,
+                "405": 0,
+                "488": 5,
                 "561": 0,
                 "640": 0
             },
-            "filter": "BFP",
+            "filter": "GFP",
             "camera": 0,
             "exposure_time": 10.0
         }
@@ -41,20 +41,20 @@
     "experiment": {
         "exp_name": "Image",
         "data_path": "D:/Projets_Python/OPM_GUI/Images",
-        "timepoints": 3,
-        "time_intervals": 1.0,
-        "total_duration": 3.0,
+        "timepoints": 4,
+        "time_intervals": 0.750,
+        "total_duration": 4.0,
         "scanner_position": 0,
-        "scan_range": 20.24190797700885,
+        "scan_range": 20.07708475386423,
         "aspect_ratio": 3,
-        "n_steps": 35,
-        "step_size": 0.5953502346179074,
+        "n_steps": 34,
+        "step_size": 0.6083965076928555,
         "slit_aperture": 800
     },
     "microscope": {
-        "tilt_angle": 45.0,
+        "tilt_angle": 50.0,
         "mag_total": 29.61,
-        "volts_per_um": 0.05,
+        "volts_per_um": 0.01024,
         "galvo_response_time": 2.0,
         "galvo_flyback_time": 3.0,
         "stage_port": "COM10",

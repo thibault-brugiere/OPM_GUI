@@ -28,13 +28,18 @@ class MockCameraAcquisition:
         - channels, experiment, microscope: full config used to access acquisition timing
         """
         self.camera = camera
+        self.hcam = hcam
         self.channels = channels
         self.experiment = experiment
         self.microscope = microscope
     
         self.image_shape = (camera.vsize, camera.hsize)
         self.acquiring = False
-        self.state = "configured"
+        self.state = "idle"
+        
+        if self.hcam is not None :
+            self.state = "initialized"
+            
         self.start_time = None
         self.last_read_time = None
         self.frames_per_volume = experiment.n_steps if experiment else 10
@@ -44,12 +49,27 @@ class MockCameraAcquisition:
         self.generated_frames = 0
 
     def initialize_camera(self):
+        if self.hcam is not None:
+            raise RuntimeError("Camera already initialized")
+            
         self.state = "initialized"
+        self.hcam = True
         
         print("[MOCK CAM] Initialized")
         
+    def configure_camera_for_acquisition(self):
+        if self.hcam is None:
+            raise RuntimeError("Camera is not initialized. Call initialize_camera() first.")
+            
+        self.state = "configured"
+        
+        print("[MOCK CAM] configured")
+        
 
     def start_acquisition(self):
+        if self.state != "configured" :
+            raise RuntimeError("Camera not configured. Call initialize_camera() first.")
+            
         self.acquiring = True
         self.start_time = time.time()
         self.last_read_time = self.start_time
@@ -58,14 +78,19 @@ class MockCameraAcquisition:
         print("[MOCK CAM] acquiring")
 
     def stop_acquisition(self):
+        if self.state != "acquiring" :
+            raise RuntimeError("Camera not initialized. Call initialize_camera() first.")
+            
         self.acquiring = False
         self.state = "configured"
         
         print("[MOCK CAM] stopped")
 
     def release_camera(self):
-        self.acquiring = False
-        self.state = "idle"
+        if self.hcam is not None:
+            self.acquiring = False
+            self.hcam = None
+            self.state = "idle"
         
         print("[MOCK CAM] released")
 
@@ -77,6 +102,9 @@ class MockCameraAcquisition:
         - Determines how many volume triggers would have occurred
         - Returns n_steps × volumes synthetic frames
         """
+        # if self.state != "acquiring":
+        #     raise RuntimeError("Camera not acquiring. start acquisition first.")
+            
         if not self.acquiring:
             return []
 
@@ -155,6 +183,10 @@ class MockDAQAcquisition:
         """
         Simulate stopping DAQ tasks.
         """
+        if self.state != "running" and self.state != "armed":
+            print(f"DAQ not running or armed. Current state: '{self.state}'. Nothing to stop.")
+            return
+        
         print("[MOCK DAQ] Acquisition stopped.")
         self.state = "ready"
 
