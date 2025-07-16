@@ -2416,7 +2416,7 @@ Acquisition</string>
      <x>0</x>
      <y>0</y>
      <width>1880</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFichier">
@@ -2441,7 +2441,7 @@ Acquisition</string>
      <property name="title">
       <string>Shortcuts</string>
      </property>
-     <addaction name="action_Laser_405"/>
+     <addaction name="action_UI_Laser"/>
      <addaction name="action_Piezo"/>
     </widget>
     <addaction name="action_Align_O2_O3"/>
@@ -2526,7 +2526,7 @@ Acquisition</string>
     <string>UI Laser 561</string>
    </property>
   </action>
-  <action name="action_Laser_405">
+  <action name="action_UI_Laser">
    <property name="text">
     <string>UI Laser</string>
    </property>

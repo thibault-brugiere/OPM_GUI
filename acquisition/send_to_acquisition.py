@@ -135,7 +135,7 @@ def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment,
     experiment.n_steps, experiment.step_size, experiment.scan_range = fa.calculate_size_Z(experiment.scan_range,
                                                                                           camera_list[0].sample_pixel_size,
                                                                                           experiment.aspect_ratio,
-                                                                                          microscope.tilt_angle)
+                                                                                          microscope.tilt_angle*math.pi/180)
     experiment_parameters = {'exp_name': experiment.exp_name,
                              'data_path': experiment.data_path,
                              'timepoints': experiment.timepoints,

@@ -1138,7 +1138,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.status_bar.showMessage("start multidimensional acquisition")
                 functions_ui.start_multidimensional_acquisition()
             except:
-                self.status_bar.showMessage("parameters saving didn't worked!", 5000)
+                self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
         else:
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
         

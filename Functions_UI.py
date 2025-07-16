@@ -409,15 +409,15 @@ class functions_ui():
         return channel_acquisition
 
     def start_multidimensional_acquisition():
-        print("start multidimensional acquisition")
+        print("[functions UI] start multidimensional acquisition")
         MDA = MultidimensionalAcquisition()
-        print("camera initialization")
+        print("[functions UI] camera initialization")
         MDA.initialize_cameras()
-        print("suite1")
+        print("[functions UI] acquisition workers initialization")
         MDA.initialize_acquisition_workers()
-        print("suite2")
+        print("[functions UI] DAQ configuration")
         MDA.configure_daq()
-        print("suite3")
+        print("[functions UI] MDA RUN")
         MDA.run()
 
     

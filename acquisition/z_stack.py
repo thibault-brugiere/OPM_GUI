@@ -40,6 +40,7 @@ class z_stack():
         step_size = step_size * 10
         
         get_position = serial.send_command_response('WHERE Z', self.port)
+        print(get_position)
         start_position = int(get_position.split()[1])
         
         # calculate total number of steps
