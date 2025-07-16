@@ -214,4 +214,11 @@ class camera_acquisition():
             corrections.append(f"Corrected vsize: {self.camera.vsize} → {self.camera.vchipsize}")
             self.camera.vsize = self.camera.vchipsize
     
-        return corrections
+        return 
+    
+    def get_image_shape(self):
+        hstart, hend, vstart, vend, hbin, vbin = self.hcam.get_roi()
+        hsize = (hend - hstart) // hbin
+        vsize = (vend - vstart) // vbin
+        
+        return vsize, hsize

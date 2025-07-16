@@ -155,7 +155,7 @@ class MultidimensionalAcquisition:
             self.daq.stop()
             self.daq.close()
 
-        print("[INFO] Acquisition stopped and hardware released.")
+        print("[Main MDA] Acquisition stopped and hardware released.")
         
         self.state = {'camera': 'idle',
                       'acquisition_workers' : 'idle',

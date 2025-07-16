@@ -55,15 +55,11 @@ class MockCameraAcquisition:
         self.state = "initialized"
         self.hcam = True
         
-        print("[MOCK CAM] Initialized")
-        
     def configure_camera_for_acquisition(self):
         if self.hcam is None:
             raise RuntimeError("Camera is not initialized. Call initialize_camera() first.")
             
         self.state = "configured"
-        
-        print("[MOCK CAM] configured")
         
 
     def start_acquisition(self):
@@ -74,8 +70,6 @@ class MockCameraAcquisition:
         self.start_time = time.time()
         self.last_read_time = self.start_time
         self.state = "acquiring"
-        
-        print("[MOCK CAM] acquiring")
 
     def stop_acquisition(self):
         if self.state != "acquiring" :
@@ -83,16 +77,12 @@ class MockCameraAcquisition:
             
         self.acquiring = False
         self.state = "configured"
-        
-        print("[MOCK CAM] stopped")
 
     def release_camera(self):
         if self.hcam is not None:
             self.acquiring = False
             self.hcam = None
             self.state = "idle"
-        
-        print("[MOCK CAM] released")
 
     def read_camera(self):
         """
@@ -116,10 +106,9 @@ class MockCameraAcquisition:
         frames_to_return = expected_volumes * self.frames_per_volume
         if frames_to_return > 0 and self.generated_frames < self.total_frames :
             self.last_read_time = now
-            print("[MOCK CAM] Read Volume")
             self.generated_frames = self.generated_frames + frames_to_return
             return [
-                np.random.randint(0, 256, self.image_shape, dtype=np.uint8)
+                np.random.randint(0, 256, self.image_shape, dtype=np.uint16)
                 for _ in range(frames_to_return)
             ]
         else:
@@ -127,6 +116,9 @@ class MockCameraAcquisition:
 
     def legalize_roi(self):
         return []
+    
+    def get_image_shape(self):
+        return self.camera.vsize, self.camera.hsize
 
 
 class MockDAQAcquisition:
@@ -148,7 +140,6 @@ class MockDAQAcquisition:
         """
         Configure the mock DAQ with acquisition parameters.
         """
-        print("[MOCK DAQ] Signals configured.")
         self.timepoints = timepoints
         self.time_intervals = time_intervals
         self.state = "ready"
@@ -159,7 +150,6 @@ class MockDAQAcquisition:
         """
         if self.state != "ready":
             raise RuntimeError("[MOCK DAQ] Cannot arm unless state is 'ready'.")
-        print("[MOCK DAQ] Armed and waiting for trigger.")
         self.state = "armed"
 
     def trigger_acquisition(self):
@@ -169,12 +159,10 @@ class MockDAQAcquisition:
         """
         if self.state != "armed":
             raise RuntimeError("[MOCK DAQ] Cannot trigger unless state is 'armed'.")
-        print("[MOCK DAQ] Triggered acquisition.")
         self.state = "running"
 
         # Simulate periodic triggering
         for i in range(self.timepoints):
-            print(f"[MOCK DAQ] Simulated trigger {i+1}/{self.timepoints}")
             time.sleep(self.time_intervals)
 
         self.state = "complete"
@@ -184,16 +172,14 @@ class MockDAQAcquisition:
         Simulate stopping DAQ tasks.
         """
         if self.state != "running" and self.state != "armed":
-            print(f"DAQ not running or armed. Current state: '{self.state}'. Nothing to stop.")
             return
-        
-        print("[MOCK DAQ] Acquisition stopped.")
+
         self.state = "ready"
 
     def close(self):
         """
         Simulate closing/releasing DAQ resources.
         """
-        print("[MOCK DAQ] Resources released.")
+        
         self.state = "idle"
 
