@@ -7,6 +7,8 @@ from tqdm import tqdm
 from tifffile import imwrite
 import time
 
+from PySide6.QtCore import Signal, QObject
+
 
 # Container class for a single image frame, with optional timestamp and metadata
 class ImageFrame:
@@ -16,7 +18,9 @@ class ImageFrame:
         self.channel = channel
 
 # Main class that handles image acquisition, saving, and live viewing in parallel threads
-class AcquisitionWorker:
+class AcquisitionWorker(QObject):
+    new_volume_ready = Signal(np.ndarray, dict)  # signal Qt émis avec buffer + metadata
+    
     def __init__(self, camera_worker, save_dir, n_steps, timepoints,
              channel_names=None, max_volume_queue=6, save_type="TIFF"):
         """
@@ -39,9 +43,14 @@ class AcquisitionWorker:
             List of channel identifiers (e.g., ["GFP", "RFP"]) used for naming saved volumes. Defaults to ["CH"].
         
         - max_volume_queue: int
-            Maximum number of volumes allowed in the internal RAM buffer before being written to disk. This limits memory usage.
-        """
+            Maximum number of volumes allowed in the internal RAM buffer before being written to disk.
+            This limits memory usage.
         
+        - save_type:str, optional
+            saves volumes as TIFF stacks; 'RAW' saves raw binary files with accompanying JSON metadata.
+            Defaults to "TIFF"
+        """
+        super().__init__()
         self.camera = camera_worker
         self.save_dir = save_dir
         self.n_steps = n_steps
@@ -53,6 +62,8 @@ class AcquisitionWorker:
 
         self.stop_event = threading.Event()
         self.threads = []
+        
+        self.preview_callback = False
         
         self.total_images = 0
         self.total_frames = 0
@@ -71,12 +82,15 @@ class AcquisitionWorker:
                 buffer = np.empty((n_steps, *self.image_shape), dtype=np.uint16)
                 self.buffer_pool.put(buffer)
 
-        self.frame_bar = tqdm(total=self.n_steps * self.timepoints * len(self.channel_names),
-                              desc="Frames Acquired", position=0)
-        self.volume_bar = tqdm(total=self.timepoints, desc="Volumes Saved", position=1)
-
     def start(self):
         os.makedirs(self.save_dir, exist_ok=True)
+        
+                
+        # Initialize tqdm bars
+        self.frame_bar = tqdm(total=self.n_steps * self.timepoints * len(self.channel_names),
+                              desc="Frames Acquired", position=0)
+        self.volume_bar = tqdm(total=self.timepoints, desc="Volumes Saved   ", position=1)
+        
         self.stop_event.clear()
         self.start_time = time.time()
         self.threads = [
@@ -112,6 +126,14 @@ class AcquisitionWorker:
                     self.frame_bar.update(1)
                 
                 if slice_idx == self.n_steps:
+                    # 🔁 EMIT the volume as soon as it's filled
+                    if self.preview_callback:
+                        preview_data = {
+                            "volume_id": volume_id,
+                            "channel": current_channel,
+                            "shape": current_buffer.shape
+                        }
+                        self.new_volume_ready.emit(current_buffer.copy(), preview_data)
                     self.queue_to_save.put(ImageFrame(current_buffer, volume_id, current_channel))
                     channel_index = (channel_index + 1) % len(self.channel_names)
                     if channel_index == 0:
@@ -157,10 +179,20 @@ class AcquisitionWorker:
 
                 self.total_volumes += 1
                 self.volume_bar.update(1)
-                self.buffer_pool.put(buffer)  # recycle the buffer
+                    
+                self.buffer_pool.put(buffer)   # recycle the buffer
 
             except queue.Empty:
                 continue
+            
+    def set_preview_callback(self):
+        """
+        Register a function to be called with each new volume saved.
+        Function must accept two arguments: buffer (ndarray), metadata (dict).
+        The function is also connected to as Qt signal for Qt integration
+        """
+        self.preview_callback = True
+        # self.new_volume_ready.connect(callback_func)
 
     def _print_stats(self):
         elapsed = time.time() - self.start_time if self.start_time else 0

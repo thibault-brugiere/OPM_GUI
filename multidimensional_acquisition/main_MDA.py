@@ -10,10 +10,10 @@ import os
 import time
 
 from Config.MDA_config import config
-from Hardware.daq_controller import NIDAQ_Acquisition
-from Hardware.camera_controller import camera_acquisition
-# from Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
-# from Hardware.mock import MockCameraAcquisition as camera_acquisition
+# from Hardware.daq_controller import NIDAQ_Acquisition
+# from Hardware.camera_controller import camera_acquisition
+from Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
+from Hardware.mock import MockCameraAcquisition as camera_acquisition
 from Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
 from Tools.saving import prepare_saving_directory, save_metadata
 from Tools.signal_generators.single_channel import generate_single_channel_signals
@@ -118,6 +118,11 @@ class MultidimensionalAcquisition:
             
         for cam in self.cameras_acquisition:
             cam.start_acquisition()
+            
+        self.state = {'camera': 'acquiring',
+                      'acquisition_workers' : 'processing',
+                      'daq': 'controll'
+                      }
 
         self.daq.arm_task()
         self.daq.trigger_acquisition()
@@ -161,6 +166,12 @@ class MultidimensionalAcquisition:
                       'acquisition_workers' : 'idle',
                       'daq': 'idle'
                       }
+        
+    def worker(self,i):
+        """
+        Return the acquisition worker i to use in other processes
+        """
+        return self.acquisition_workers[i]
 
 ##############################################################################
 
