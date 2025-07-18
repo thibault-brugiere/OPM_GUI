@@ -248,11 +248,11 @@ class functions_ui():
         message : str
         """
         
-        step_size = aspect_ratio * sample_pixel_size / np.sin(tilt_angle)
+        step_size = aspect_ratio * sample_pixel_size / np.sin(tilt_angle * math.pi / 180)
         n_steps = 1 + int(round(scan_range / step_size))
         
         estimated_time = n_steps * (exposure_time + vsize * line_readout_time * 1000 / 2
-                                    + galvo_response_time)
+                                    + galvo_response_time) * galvo_response_time * 2
         
         message  = f'Number of frames/volume: {str(n_steps)}\n'
         message += f'Step size: {round(step_size,3)}µm\n'
