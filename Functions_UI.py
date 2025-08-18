@@ -330,6 +330,28 @@ class functions_ui():
             qt_image = QImage(frame.data, w, h, w, QImage.Format_Grayscale8) #create the QT image
         
         return qt_image
+    
+    def auto_contrast(image: np.ndarray, low_perc: float = 0.5, high_perc: float = 99.5):
+        """
+        Calcule automatiquement les niveaux de gris pour l'affichage à contraste adapté.
+        
+        Args:
+            image (np.ndarray): Image 2D ou 3D
+            low_perc (float): Percentile bas (ex: 0.5)
+            high_perc (float): Percentile haut (ex: 99.5)
+        
+        Returns:
+            (float, float): min_grayscale, max_grayscale
+        """
+        flat = image.flatten()
+        min_gray = np.percentile(flat, low_perc)
+        max_gray = np.percentile(flat, high_perc)
+
+        if min_gray == max_gray:
+            # Évite division par zéro ou contraste nul
+            min_gray, max_gray = float(flat.min()), float(flat.max())
+        
+        return min_gray, max_gray
         
     def create_gray_hystogram(frame, min_grayscale=10000, max_grayscale=50000,
                               w_px = 1200, h_px=600, dpi=100, line_width=1, font_size=12):

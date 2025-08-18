@@ -3,9 +3,7 @@
 Created on Thu Jan 30 14:00:36 2025
 
 @author: tbrugiere
-"""
 
-"""
 Convert file.ui to file.py
 
 pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py

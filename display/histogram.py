@@ -25,7 +25,7 @@ class HistogramThread(QThread):
     # Signal pour envoyer la scène du graphique une fois le travail terminé
     histogram_ready = Signal(np.ndarray, int, int)
 
-    def __init__(self, frame, min_grayscale=10000, max_grayscale=50000, w_px=1200, h_px=600, dpi=200, line_width=0.5, font_size=8):
+    def __init__(self, frame, min_grayscale=10000, max_grayscale=50000, w_px=1200, h_px=600, dpi=200, line_width=0.5, font_size=8, ax_xmax=65535):
         super().__init__()
         self.frame = frame
         self.min_grayscale = min_grayscale
@@ -35,6 +35,7 @@ class HistogramThread(QThread):
         self.dpi = dpi
         self.line_width = line_width
         self.font_size = font_size
+        self.ax_xmax = ax_xmax
 
     def run(self):
         """ Cette fonction sera exécutée dans un thread séparé. Elle crée le graphique et l'envoie au thread principal. """
@@ -48,7 +49,7 @@ class HistogramThread(QThread):
 
         # Trace l'histogramme
         ax.plot(bins[:-1], hist, color="black", linewidth=self.line_width)
-        ax.set_xlim(0, 65535)
+        ax.set_xlim(0, self.ax_xmax)
 
         # Définir la taille de la police pour les axes
         ax.tick_params(axis='both', which='major', labelsize=self.font_size)
@@ -73,6 +74,5 @@ class HistogramThread(QThread):
         
     def stop(self):
         """Arrête proprement l'acquisition."""
-        self.running = False
         self.quit()
         self.wait()
