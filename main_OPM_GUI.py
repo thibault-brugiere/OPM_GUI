@@ -16,6 +16,7 @@ pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
 
 Resolved FTDI DLL issue by copying ftd2xx64.dll from Thorlabs software to C:\Windows\System32 and renaming it to ftd2xx.dll
 """
+# Branche laser
 
 import copy
 import json
