@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Aug 13 12:03:14 2025
+Sample Finder GUI for live previewing camera images and controlling illumination.
 
-pyside6-uic widget/ui_sample_finder.ui -o widget/ui_sample_finder.py
+This widget connects to a Thorlabs camera (TLCamera via pylablib) and allows:
+- Live preview display with grayscale LUT, zoom, and auto-contrast
+- Snapshots saved to TIFF files
+- Real-time histogram visualization of the current frame
+- Basic control buttons (mirror, fluorescence, transmission light)
+  TODO : Save positions for multi-position acquisition
+  TODO : apply selected LUT
+  TODO : controll illuminators using DAQ
 """
+
 import numpy as np
 import os
 from pylablib.devices import Thorlabs
@@ -27,9 +35,21 @@ from widget.ui_sample_finder import Ui_Form
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 
-class sample_finder(QWidget, Ui_Form):
+class sample_finder_Window(QWidget, Ui_Form):
+    """
+    GUI widget for previewing images from a Thorlabs TLCamera device
+    and controlling simple illumination/mirror settings.
+    """
     
     def __init__(self, experiment = None, microscope = None, parent=None):
+        """
+        Initialize the sample finder widget.
+        
+        Args:
+            experiment (object): Experiment metadata (name, data path).
+            microscope (object): Microscope controller (not used directly here).
+            parent (QWidget): Parent widget for Qt hierarchy.
+        """
         
         super().__init__(parent)
         self.setupUi(self)
@@ -38,6 +58,8 @@ class sample_finder(QWidget, Ui_Form):
         self.on_init()
         
     def on_init(self):
+        """Perform all initialization: camera, GUI defaults, timers, connections."""
+        
         self.setWindowTitle('Sample Finder')
         
         ###############################
@@ -78,7 +100,7 @@ class sample_finder(QWidget, Ui_Form):
         self.cube = 1
         
             #
-            # Preview
+            # Preview defaults
             #
         
         self.min_grayscale = 0 # Lowest grey value of the preview
@@ -99,7 +121,7 @@ class sample_finder(QWidget, Ui_Form):
         self.positions = {} # Will be used to save positions for multi-position immaging
         
             #
-            # Petites choses de l'interface
+            # Interface icons
             #
             
         if __name__ == "__main__": # Si jamais la fenêtre est appelée depuis ce fichier
@@ -117,6 +139,10 @@ class sample_finder(QWidget, Ui_Form):
         self.label_fluo_icon.setPixmap(self.Red_Light_Icon_Off)
         self.label_transmission_icon.setPixmap(self.Red_Light_Icon_Off)
         
+            #
+            # Timers
+            #
+        
         self.timer_illuminator = QTimer() # Timer to show the illuminator weel position
         self.timer_illuminator.timeout.connect(self.update_illuminator)
         self.timer_illuminator.start(100)
@@ -130,6 +156,7 @@ class sample_finder(QWidget, Ui_Form):
         ##############################################
         ## Connection between functions and buttons ##
         ##############################################
+        
             ## Saving / Setup
         self.pb_data_path.clicked.connect(self.pb_data_path_value_changed)
         self.lineEdit_exp_name.editingFinished.connect(self.lineEdit_exp_name_modified)
@@ -160,10 +187,11 @@ class sample_finder(QWidget, Ui_Form):
         #####################################
         
     def desactivate_camera_options(self):
+        """Disable the whole widget when no camera is connected."""
         self.setDisabled(True)
         
             #
-            # Saving
+            # Saving experiment
             #
             
     def pb_data_path_value_changed(self):
@@ -177,7 +205,7 @@ class sample_finder(QWidget, Ui_Form):
             
     def lineEdit_exp_name_modified(self):
         """
-        Ensures the experiment name is correctly formatted
+        Validate and update the experiment name after editing.
         """
         exp_name = self.lineEdit_exp_name.text().strip()
 
@@ -199,6 +227,7 @@ class sample_finder(QWidget, Ui_Form):
             #
             
     def pb_mirror_clicked(self):
+        """Toggle the mirror in/out state and update the icon/label."""
         if self.pb_mirror.isChecked():
             self.label_mirror_icon.setPixmap(self.Green_Light_Icon_On)
             self.label_mirror.setText("IN ")
@@ -207,6 +236,7 @@ class sample_finder(QWidget, Ui_Form):
             self.label_mirror.setText("OUT")
             
     def pb_fluo_clicked(self):
+        """Toggle the fluorescence lamp on/off."""
         if self.pb_fluo.isChecked():
             self.label_fluo_icon.setPixmap(self.Red_Light_Icon_On)
             self.label_fluo.setText("ON ")
@@ -215,6 +245,7 @@ class sample_finder(QWidget, Ui_Form):
             self.label_fluo.setText("OFF")
             
     def pb_transmission_clicked(self):
+        """Toggle the transmission lamp on/off."""
         if self.pb_transmission.isChecked():
             self.label_transmission_icon.setPixmap(self.Red_Light_Icon_On)
             self.label_transmission.setText("ON")
@@ -223,10 +254,12 @@ class sample_finder(QWidget, Ui_Form):
             self.label_transmission.setText("OFF")
             
     def spinBox_channel_exposure_time_value_changed(self):
+        """Update exposure time on the camera when the spin box changes."""
         self.exposure_time = self.spinBox_channel_exposure_time.value()
         self.tlcam.set_exposure(self.exposure_time/1000)
             
     def update_illuminator(self):
+        """Update the illuminator wheel position randomly (placeholder)."""
         self.cube = random.randint(0, 5)
         self.comboBox_illuminator.setCurrentIndex(self.cube)
         
@@ -235,21 +268,19 @@ class sample_finder(QWidget, Ui_Form):
         #
         
     def comboBox_LUT_changed(self):
+        """Change the look-up table (LUT) used for image display."""
         index = self.comboBox_LUT.currentIndex()
         LUTs = ["grayscale","show_saturation"]
         self.look_up_table = LUTs[index]
         
     def comboBox_preview_zoom_changed(self):
+        """Update the preview zoom factor from the combo box."""
         self.preview_zoom = [0.25 , 2 , 1 , 0.5 , 1/3 , 0.25][self.comboBox_preview_zoom.currentIndex()]
         
             ### Changement min / max grayscales
     
     def spinBox_grayscale_value_changed(self):
-        """
-        Updates the grayscale min and max values used for image display, ensuring 
-        that min_grayscale is always less than max_grayscale. Also updates the 
-        coefficient for grayscale conversion and refreshes the UI elements accordingly.
-        """
+        """Update grayscale min/max values ensuring min < max."""
         
         # Retrieve the current values from the spin boxes
         self.min_grayscale = self.spinBox_min_grayscale.value()
@@ -270,10 +301,7 @@ class sample_finder(QWidget, Ui_Form):
             self.slider_min_grayscale.blockSignals(False)
         
     def pb_minmax_grayscale_clicked(self):
-        """"
-        Sets the grayscale min and max values based on the current preview frame,
-        or assigns default values if no frame is available.
-        """
+        """Set grayscale min/max based on current frame values."""
         if self.preview_frame is not None:
             frame = self.preview_frame
             self.spinBox_min_grayscale.setValue(np.min(frame))
@@ -282,6 +310,7 @@ class sample_finder(QWidget, Ui_Form):
             pass
     
     def pb_auto_grayscale_clicked(self):
+        """Automatically adjust grayscale values using auto contrast."""
         if self.preview_frame is not None :
             frame = self.preview_frame
             min_gray, max_gray = functions_ui.auto_contrast(frame)
@@ -290,6 +319,7 @@ class sample_finder(QWidget, Ui_Form):
             self.spinBox_max_grayscale.setValue(max_gray)
     
     def pb_resset_grayscale_clicked(self):
+        """Reset grayscale values to full dynamic range (0–4095)."""
         self.spinBox_min_grayscale.setValue(0)
         self.spinBox_max_grayscale.setValue(4095)
     
@@ -298,16 +328,18 @@ class sample_finder(QWidget, Ui_Form):
         #
     
     def pb_preview_clicked(self):
+        """Start live preview acquisition if not already running."""
         if not self.is_preview:
             self.label_message.setText("Displaying Preview")
             self.is_preview = True
             
+            # Start camera acquisition in separate thread
             self.camera_thread = TLCameraThread(self.tlcam)
             self.camera_thread.new_frame.connect(self.store_frame) # Get the frame from camera thread process
             self.tlcam.start_acquisition(nframes=2)
-            
             self.camera_thread.start()
             
+            # Start timers for updating display and histogram
             self.timer_preview.start(30)
             self.timer_gray_hystogram.start(50)
   
@@ -315,9 +347,11 @@ class sample_finder(QWidget, Ui_Form):
             self.is_preview_paused = False
     
     def pb_pause_preview_clicked(self):
+        """Pause or resume preview depending on button state."""
         self.is_preview_paused = self.pb_pause_preview.isChecked()
     
     def pb_stop_preview_clicked(self):
+        """Stop preview acquisition and threads."""
         if self.is_preview :
             self.is_preview = False
             self.timer_preview.stop()
@@ -326,18 +360,13 @@ class sample_finder(QWidget, Ui_Form):
             self.camera_thread.wait()
     
     def pb_snap_clicked(self):
-        """
-        Saves the currently displayed frame as a .tiff file for later use.
-        
-        The user is prompted to select a save location, and the NumPy array 
-        is stored in a compressed format.
-        """
+        """Save the current frame to a TIFF file with an incremental filename."""
         
         if self.preview_frame is None:
             self.label_image_preview.setText("No frame available to save.")
             return
     
-        # Création du chemin de base
+        # Build file path with increment
         
         base_file_path = os.path.join(self.data_path , f"{self.exp_name}_000.tiff")
         
@@ -355,15 +384,18 @@ class sample_finder(QWidget, Ui_Form):
             self.label_image_preview.setText(f"Frame saved to {file_path}")
         except Exception as e:
             QMessageBox.critical(self, "Save Error", f"Failed to save frame:\n{str(e)}")
-    
+            
+        #
+        # Frame acquisition and display
+        #
+        
     def store_frame(self, frame):
-        """Function used to get the frame from camera thread process"""
-        #Update frame if preview is not in pause
+        """Receive a frame from the camera thread and store it (unless paused)."""
         if not self.is_preview_paused :
             self.preview_frame = frame
     
     def update_preview(self):
-        """Show the most recent image."""
+        """Display the most recent frame in the GUI."""
         if self.is_preview and self.preview_frame is not None :
             
             qt_image = functions_ui.create_preview(self.preview_frame,
@@ -378,12 +410,12 @@ class sample_finder(QWidget, Ui_Form):
             self.label_image_preview.setText("No image!")
     
     def update_gray_histogram(self):
-        "start the generation of a new histogram"
+        """Trigger the histogram update if no thread is currently running."""
         if not self.histogram_greyvalue_thread or not self.histogram_greyvalue_thread.isRunning() :
             self.generate_histogram()
 
     def generate_histogram(self):
-        "call a new therad to generate the gray histogram"
+        """Launch a thread to compute the histogram of the current frame."""
         if self.preview_frame is not None:
             size = self.label_histogram_greyvalue.size()
             w , h = size.width() , size.height()
@@ -396,7 +428,7 @@ class sample_finder(QWidget, Ui_Form):
             self.histogram_greyvalue_thread.start()
         
     def display_gray_histogram(self, image_data, w, h):
-        " display the latest generated gray histogram"
+        """Display the latest generated histogram image in the GUI."""
         qimage = QImage(image_data, w, h, w * 4, QImage.Format_RGBA8888)
         self.label_histogram_greyvalue.setPixmap(QPixmap.fromImage(qimage))
     
@@ -405,6 +437,7 @@ class sample_finder(QWidget, Ui_Form):
         #
         
     def closeEvent(self, event):
+        """Intercept close event: confirm and release hardware resources."""
         reply = QMessageBox.question(
             self, 'Confirmer changes',
             """"Are you sure you want to close the sample finder window?""",
@@ -427,7 +460,10 @@ class sample_finder(QWidget, Ui_Form):
             event.accept()
             
 class TLCameraThread(QThread):
-    """Thread that continously get last image from camera."""
+    """
+    Thread dedicated to continuously reading images from the Thorlabs TLCamera.
+    Emits the most recent frame via the new_frame signal.
+    """
     new_frame = Signal(np.ndarray)  # Signal émis à chaque nouvelle image
 
     def __init__(self, tlcam):
@@ -436,7 +472,7 @@ class TLCameraThread(QThread):
         self.running = True  # Permet de contrôler l'arrêt propre du thread
 
     def run(self):
-        """Boucle d'acquisition d'images en continu."""
+        """Main acquisition loop: read and emit frames continuously."""
         while self.running:
             frames = self.tlcam.read_multiple_images()
             if frames:
@@ -447,7 +483,7 @@ class TLCameraThread(QThread):
             self.msleep(10)
 
     def stop(self):
-        """Arrête proprement l'acquisition."""
+        """Stop acquisition loop cleanly."""
         self.running = False
         self.quit()
         self.wait()
@@ -459,6 +495,6 @@ if __name__ == '__main__':
     "To test the window"
     app = QApplication(sys.argv)
     
-    editor = sample_finder()
+    editor = sample_finder_window()
     editor.show()
     sys.exit(app.exec())

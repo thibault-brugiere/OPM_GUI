@@ -48,6 +48,7 @@ from widget.Alignement_O2_O3_Window import alignement_O2_O3_Window
 from widget.Channel_Editor_Window import ChannelEditorWindow
 from widget.Microscope_Settings_Window import microscope_settings_window
 from widget.Preset_ROI_Window import PresetROIWindow
+from widget.Sample_Finder import sample_finder_Window
 from widget.set_DAQ_Window import setDAQWindow
 from widget.Set_Filters_Window import filtersEditionWindow
 
@@ -312,10 +313,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
             ## Tools
         self.action_Align_O2_O3.triggered.connect(self.openAlign_O2_O3)
-        self.action_Laser_405.triggered.connect(self.launch_laser_405_program)
-        self.action_Laser_561.triggered.connect(self.launch_laser_561_program)
         self.action_Piezo.triggered.connect(self.launch_pizo_program)
         self.action_Z_Stack.triggered.connect(self.acquire_Z_Stack)
+        self.action_Sample_finder.triggered.connect(self.opensample_finder)
         
             ## Parameters
         self.action_channel_editor.triggered.connect(self.openChannelEditor)
@@ -1196,12 +1196,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         except Exception as e:
             print(f"Erreur lors du lancement du programme : {e}")
         
-    def launch_laser_405_program(self):
-        pass
-    
-    def launch_laser_561_program(self):
-        pass
-        
     def launch_pizo_program(self):
         "launch program for piezo between O2 and O3 : CONEX-SAG_Utility "
         shortcut_path = os.path.join(os.path.dirname(__file__), 'shortcuts', 'CONEX-SAG_Utility')
@@ -1247,6 +1241,17 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         else :
             self.status_bar.showMessage("scan range and step size shouldn't be 0")
+            
+    def opensample_finder(self):
+        """
+        Stop the main preview if active, then open and show the
+        Sample Finder window.
+        """
+        if self.is_preview :
+            self.pb_stop_preview_clicked()
+            
+        self.sample_finder = sample_finder_Window()
+        self.sample_finder.show()
                 
         #
         # Parameters
