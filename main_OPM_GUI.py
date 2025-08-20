@@ -39,7 +39,8 @@ from configs.config import channel_config, microscope, experiment #, camera
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
-# from hardware.functions_DAQ import functions_daq
+# from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
+from hardware.Laser_Controller import LaserController
 from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
 from mock.DAQ import functions_daq
 
@@ -134,7 +135,14 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         # creation of the channels / lasers
         #
         
-        self.lasers = ["405","488","561","640"] # = self.microscope.lasers, can not be modified
+        self.laser_list = ["405","488","561","640"] # = self.microscope.lasers, can not be modified
+        
+        self.laser_controller = LaserController(self.microscope.daq_channels_laser_analog_out,
+                                                 self.microscope.daq_channels_laser_digital_out,
+                                                 self.microscope.volts_per_laser_percent,
+                                                 self.laser_list,
+                                                 self.microscope.OxxiusCombiner_port,
+                                                 self.microscope.OxxiusCombiner_model)
         
         if self.loaded_channels == False: # If channels haven't been loaded, create default channels
         
@@ -143,7 +151,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.channel_names = ['BFP','GFP','CY3.5','TexRed']
             
             for channel in self.channel_names:
-                self.default_channel[channel] = channel_config(channel, self.lasers)
+                self.default_channel[channel] = channel_config(channel, self.laser_list)
                 
         self.channel = copy.deepcopy(self.default_channel) # These are channels modified by the user
         
@@ -653,7 +661,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         for laser in self.checkBox_laser.keys():
             self.channel = copy.deepcopy(self.default_channel)
-            if self.microscope.daq_channels[laser] is None :
+            
+            if self.microscope.daq_channels[laser] is None and self.microscope.daq_channels[f'dm {laser}'] is None:
                 self.checkBox_laser[laser].setDisabled(True)
                 self.checkBox_laser[laser].setChecked(False)
                 self.spinBox_laser_power[laser].setDisabled(True)
@@ -703,7 +712,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         if name_ok == False : self.status_bar.showMessage("Invalid experiment name! Avoid spaces and special characters.", 5000)
         
-        self.channel[index] = channel_config(index, self.lasers) #Create the new channel
+        self.channel[index] = channel_config(index, self.laser_list) #Create the new channel
         functions_ui.save_channel_from_interface(self.list_channel_interface,
                                                  self.channel[self.comboBox_channel_name.currentText()]) #save the channel parameters
         self.comboBox_channel_name.addItem(index) # Add the new channel to the comboBox
@@ -724,7 +733,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.status_bar.showMessage("Default channel can not be removed", 5000)
             
             ### Functions called when changing the parameters of lasers
-            "These functions are triggered when the corresponding laser spin-box or check-box is changed."
+    "These functions are triggered when the corresponding laser spin-box or check-box is changed."
     def state_laser_405_changed(self):
         self.state_laser_changed('405')
             
@@ -739,15 +748,18 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def state_laser_changed(self, laser):
         "Updates the laser output signal via the DAQ if laser emission is active."
+        
+        power = self.spinBox_laser_power[laser].value()
+        
+        self.laser_controller.set_laser_power(laser, power) # Will only have an effect for digital modulated laser
+        
         if self.laser_emission:
-            if self.microscope.daq_channels[laser] is not None:
-                if self.checkBox_laser[laser].isChecked():
-                        # Sets the analog output voltage based on the laser power percentage (scaled to 5V max).
-                        functions_daq.analog_out(self.spinBox_laser_power[laser].value()*self.microscope.volts_per_laser_percent[laser],
-                                                 self.microscope.daq_channels[laser])
-                else:
-                    # Turns off the laser by setting the output to 0V.
-                    functions_daq.analog_out(0,self.microscope.daq_channels[laser])
+            if self.checkBox_laser[laser].isChecked():
+                # Sets the power based on the laser power percentage.
+                self.laser_controller.start_laser_emission(laser, power)
+            else:
+                # Turns off the laser
+                self.laser_controller.stop_laser_emission(laser)
         
     def pb_laser_emission_clicked(self):
         " Start or stop laser emission from actual channel after user click on pb_laser_emission"
@@ -756,7 +768,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.label_laser.setText("ON ")
             self.laser_emission = True
             functions_daq.digital_out(True, self.microscope.daq_channels['laser_blanking'])
-            for laser in self.lasers:
+            for laser in self.laser_list:
                 self.state_laser_changed(laser)
         else:
             self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
