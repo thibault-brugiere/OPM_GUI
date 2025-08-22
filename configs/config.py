@@ -93,7 +93,7 @@ class microscope(object):
                                         '640' : 5.0 / 100.0  # 5v max
                                         }
         self.laser_response_time = 2.0 # in ms
-        self.OxxiusCombiner_port = 'COM15'
+        self.OxxiusCombiner_port = None
         self.OxxiusCombiner_model = "L4Cc"
 
         # DAQ
@@ -115,14 +115,14 @@ class microscope(object):
         
         self.daq_channels_laser_analog_out = {"405" : "Dev1/ao1", # Régle la puissance du laser 405
                                               "488" : "Dev1/ao2",      # Régle la puissance du laser 488
-                                              "561" : "Dev1/ao3", # Régle la puissance du laser 561
-                                              "640" : None, # Régle la puissance du laser 640
+                                              "561" : None, # Régle la puissance du laser 561
+                                              "640" : "Dev1/ao3", # Régle la puissance du laser 640
                                               }
         
         self.daq_channels_laser_digital_out = {"405" : None, # Régle digital modulation (dm) du laser 405
                                                "488" : None, # Régle digital modulation (dm) du laser 488
-                                               "561" : None, # Régle digital modulation (dm) du laser 561
-                                               "640" : "Dev1/port0/Line3", # Régle digital modulation (dm) du laser 640
+                                               "561" : "Dev1/port0/Line3", # Régle digital modulation (dm) du laser 561
+                                               "640" : None, # Régle digital modulation (dm) du laser 640
                                                }
         
         ##############################

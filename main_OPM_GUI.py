@@ -39,10 +39,10 @@ from configs.config import channel_config, microscope, experiment #, camera
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
-# from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
+from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
 from hardware.Laser_Controller import LaserController
 from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
-from mock.DAQ import functions_daq
+# from mock.DAQ import functions_daq
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
@@ -347,9 +347,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             if self.is_preview:
                 # Stop acquisition if necessary
                 self.pb_stop_preview_clicked()
-                # Turn of lasers if necessary
-                self.pb_laser_emission.setChecked(False)
-                self.pb_laser_emission_clicked()
+            # Turn of lasers if necessary
+            self.pb_laser_emission.setChecked(False)
+            self.pb_laser_emission_clicked()
                 
             functions_camera.close_cameras(self.hcam)
             event.accept()
@@ -760,6 +760,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 # Turns off the laser
                 self.laser_controller.stop_laser_emission(laser)
+        else:
+            self.laser_controller.stop_laser_emission(laser)
         
     def pb_laser_emission_clicked(self):
         " Start or stop laser emission from actual channel after user click on pb_laser_emission"
@@ -775,9 +777,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.label_laser.setText("OFF")
             self.laser_emission = False
             functions_daq.digital_out(False, self.microscope.daq_channels['laser_blanking'])
-            for laser in self.checkBox_laser.keys():
-                if self.microscope.daq_channels[laser] is not None:
-                    functions_daq.analog_out(0,self.microscope.daq_channels[laser])
+            for laser in self.laser_list:
+                self.state_laser_changed(laser)
                     
     def sync_filter_interface(self):
         """

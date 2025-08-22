@@ -7,10 +7,10 @@ Created on Tue Aug 19 15:39:22 2025
 from collections import Counter
 import time
 
-#from hardware.functions_OxxiusCombiner import OxxiusCombiner
-# from hardware.functions_DAQ import functions_daq
-from mock.DAQ import functions_daq
-from mock.mock_OxxiusCombiner import MockOxxiusCombiner as OxxiusCombiner
+from hardware.functions_OxxiusCombiner import OxxiusCombiner
+from hardware.functions_DAQ import functions_daq
+# from mock.DAQ import functions_daq
+# from mock.mock_OxxiusCombiner import MockOxxiusCombiner as OxxiusCombiner
 
 class LaserController:
     """
@@ -63,6 +63,8 @@ class LaserController:
         if self.OxxiusCombiner_port != None:
             self.OxxiusCombiner = OxxiusCombiner(self.OxxiusCombiner_port, model=self.OxxiusCombiner_model)
             self._set_Oxxius_modulation()
+            
+            print(f'power:{self.OxxiusCombiner.read_power_mw(1)}')
             
         #
         # Check that the number of elements in the dictionnaries / channel_list / Oxiuss are the right ones
@@ -211,10 +213,11 @@ class LaserController:
         Oxxius gating is not used here.
         """
         self._check_channel(channel)
-        self.laser_on[channel] = False
         if self.analog_out[channel] is not None:
+            self.laser_on[channel] = False
             functions_daq.analog_out(0, self.analog_out[channel])
         if self.digital_out[channel] is not None :
+            self.laser_on[channel] = False
             functions_daq.digital_out(False, self.digital_out[channel])
     
     def read_power(self, channel:str):
