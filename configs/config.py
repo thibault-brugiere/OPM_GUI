@@ -93,8 +93,14 @@ class microscope(object):
                                         '640' : 5.0 / 100.0  # 5v max
                                         }
         self.laser_response_time = 2.0 # in ms
-        self.OxxiusCombiner_port = None
+        self.OxxiusCombiner_port = "COM5"
         self.OxxiusCombiner_model = "L4Cc"
+        
+        self.OxxiusCombiner_command = {"405" : None, # Régle digital modulation (dm) du laser 405
+                                       "488" : None, # Régle digital modulation (dm) du laser 488
+                                       "561" : "PPL2", # Régle digital modulation (dm) du laser 561
+                                       "640" : None, # Régle digital modulation (dm) du laser 640
+                                       } #Command send to the combiner to set laser power,
 
         # DAQ
         self.daq_channels = {"co_channel": "Dev1/ctr0", # ADD: trigger start of each volume
@@ -102,15 +108,15 @@ class microscope(object):
                              "galvo": "Dev1/ao0", # Fait bouger le galvo pour le scanning
                              "camera_0": "Dev1/port0/line0", # Trigger l'exposition de la camera
                              "camera_1": "Dev1/port0/line1", # Trigger l'exposition de la deuxieme camera (si presente)
-                             "405" : "Dev1/ao1", # Régle la puissance du laser 405
-                             "488" : "Dev1/ao2",      # Régle la puissance du laser 488
-                             "561" : "Dev1/ao3", # Régle la puissance du laser 561
+                             "405" : None, # Régle la puissance du laser 405
+                             "488" : None,      # Régle la puissance du laser 488
+                             "561" : None, # Régle la puissance du laser 561
                              "640" : None, # Régle la puissance du laser 640
                              "laser_blanking" : "Dev1/port0/line2", # Trigger le blanking de l'AOTF du banc laser
                              "dm 405" : None, # Régle digital modulation (dm) du laser 405
                              "dm 488" : None, # Régle digital modulation (dm) du laser 488
                              "dm 561" : None, # Régle digital modulation (dm) du laser 561
-                             "dm 640" : "Dev1/port0/Line3", # Régle digital modulation (dm) du laser 640
+                             "dm 640" : None, # Régle digital modulation (dm) du laser 640
                              }
         
         self.daq_channels_laser_analog_out = {"405" : "Dev1/ao1", # Régle la puissance du laser 405

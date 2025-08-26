@@ -138,11 +138,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.laser_list = ["405","488","561","640"] # = self.microscope.lasers, can not be modified
         
         self.laser_controller = LaserController(self.microscope.daq_channels_laser_analog_out,
-                                                 self.microscope.daq_channels_laser_digital_out,
-                                                 self.microscope.volts_per_laser_percent,
-                                                 self.laser_list,
-                                                 self.microscope.OxxiusCombiner_port,
-                                                 self.microscope.OxxiusCombiner_model)
+                                                self.microscope.daq_channels_laser_digital_out,
+                                                self.microscope.volts_per_laser_percent,
+                                                self.microscope.OxxiusCombiner_command,
+                                                self.laser_list,
+                                                self.microscope.OxxiusCombiner_port,
+                                                self.microscope.OxxiusCombiner_model)
         
         if self.loaded_channels == False: # If channels haven't been loaded, create default channels
         
@@ -662,7 +663,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         for laser in self.checkBox_laser.keys():
             self.channel = copy.deepcopy(self.default_channel)
             
-            if self.microscope.daq_channels[laser] is None and self.microscope.daq_channels[f'dm {laser}'] is None:
+            if self.microscope.daq_channels_laser_analog_out[laser] is None and self.microscope.daq_channels_laser_digital_out[laser] is None:
                 self.checkBox_laser[laser].setDisabled(True)
                 self.checkBox_laser[laser].setChecked(False)
                 self.spinBox_laser_power[laser].setDisabled(True)

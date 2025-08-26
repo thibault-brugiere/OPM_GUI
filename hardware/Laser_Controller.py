@@ -7,10 +7,9 @@ Created on Tue Aug 19 15:39:22 2025
 from collections import Counter
 import time
 
-from hardware.functions_OxxiusCombiner import OxxiusCombiner
+from hardware.functions_serial_ports import functions_serial_ports as serial
 from hardware.functions_DAQ import functions_daq
 # from mock.DAQ import functions_daq
-# from mock.mock_OxxiusCombiner import MockOxxiusCombiner as OxxiusCombiner
 
 class LaserController:
     """
@@ -19,9 +18,11 @@ class LaserController:
        if not, the Oxxius USB setpoint is used as a fallback.
      - Emission on/off is always gated by NI-DAQ digital outputs,
        so that the microscope timing stays fully hardware-synchronized.
+     TODO
     """
     def __init__(self, analog_out: dict, digital_out: dict, volts_per_laser_percent: dict,
-                 channel_list: list, OxxiusCombiner_port = None, OxxiusCombiner_model = "L4Cc"):
+                 OxxiusCombiner_command: dict, channel_list: list, OxxiusCombiner_port = None,
+                 OxxiusCombiner_model = "L4Cc"):
         """
         Unified controller for multiple lasers. It can drive:
           - Analog outputs (NI-DAQ) for power setpoint (V),
@@ -36,6 +37,9 @@ class LaserController:
             Mapping from channel label to NI-DAQ digital output line.
         volts_per_laser_percent : dict[channel -> float]
             Scale factor: volts_per_percent (V per % of desired power).
+        OxxiusCombiner_command: dict[channel -> str] or None
+            Command send to the combiner to set laser power,
+            can be None if OxxiusCombiner_port == None
         channel_list : list[str]
             Declared channels (labels).
         OxxiusCombiner_port : str | None
@@ -46,10 +50,10 @@ class LaserController:
         self.analog_out = analog_out
         self.digital_out = digital_out
         self.volts_per_laser_percent = volts_per_laser_percent
+        self.OxxiusCombiner_command = OxxiusCombiner_command
         self.channel_list = channel_list
         self.OxxiusCombiner_port = OxxiusCombiner_port
         self.OxxiusCombiner_model = OxxiusCombiner_model
-        self.OxxiusCombiner = None
         
         # Track emission state per channel (False at init).
         self.laser_on = {channel: False for channel in self.channel_list}
@@ -61,10 +65,9 @@ class LaserController:
         
         # If requested, initialize Oxxius combiner and configure modulation.
         if self.OxxiusCombiner_port != None:
-            self.OxxiusCombiner = OxxiusCombiner(self.OxxiusCombiner_port, model=self.OxxiusCombiner_model)
-            self._set_Oxxius_modulation()
-            
-            print(f'power:{self.OxxiusCombiner.read_power_mw(1)}')
+            serial.send_command("SH1 1", self.OxxiusCombiner_port) # To open main shutter of the oxxius combiner
+            power = serial.send_command_response("?PL2", "COM5")
+            print(f'power:{power}')
             
         #
         # Check that the number of elements in the dictionnaries / channel_list / Oxiuss are the right ones
@@ -78,6 +81,8 @@ class LaserController:
         keys_analog_out = list(self.analog_out.keys())
         keys_digital_out = list(self.digital_out.keys())
         keys_volts_per_laser_percent = list(self.volts_per_laser_percent.keys())
+        if self.OxxiusCombiner_port != None :
+            keys_OxxiusCombiner_command = list(self.OxxiusCombiner_command.keys())
         channel_list = self.channel_list
         
         errors = []
@@ -86,12 +91,12 @@ class LaserController:
         if len(channel_list) != len(set(channel_list)):
             errors.append("Duplicate entries found in 'channel_list'.")
         
-        # 2) Oxxius capacity (only if an Oxxius combiner is present)
-        if self.OxxiusCombiner is not None:
-            max_channels = self.OxxiusCombiner.max_channels
-            if max_channels < len(channel_list):
-                errors.append(f"Oxxius channel capacity exceeded: {len(channel_list)} configured, "
-                              f"but device supports at most {max_channels} channels.")
+        # # 2) Oxxius capacity (only if an Oxxius combiner is present)
+        # if self.OxxiusCombiner is not None:
+        #     max_channels = self.OxxiusCombiner.max_channels
+        #     if max_channels < len(channel_list):
+        #         errors.append(f"Oxxius channel capacity exceeded: {len(channel_list)} configured, "
+        #                       f"but device supports at most {max_channels} channels.")
         
         # 3) Cardinality vs analog/digital dicts
         if len(channel_list) != len(keys_analog_out) or len(channel_list) != len(keys_digital_out):
@@ -106,6 +111,9 @@ class LaserController:
             errors.append("Key set mismatch: 'digital_out' keys must match 'channel_list'.")
         if set(channel_list) != set(keys_volts_per_laser_percent):
             errors.append("Key set mismatch: 'volts_per_laser_percent' keys must match 'channel_list'.")
+        if self.OxxiusCombiner_port != None :
+            if set(channel_list) != set(keys_OxxiusCombiner_command):
+                errors.append("Key set mismatch: 'OxxiusCombiner_command' keys must match 'channel_list'.")
             
         # 5) Detect duplicate *values* in AO/DO mappings (same hardware line used twice)
         ao_vals = list(self.analog_out.values())
@@ -136,23 +144,6 @@ class LaserController:
         """Map channel label to Oxxius 1-based channel index."""
         # Oxxius API expects 1..N; list.index() is 0-based → add 1.
         return self.channel_list.index(channel) + 1
-        
-    def _set_Oxxius_modulation(self):
-        """
-        Configure Oxxius modulation inputs based on available NI-DAQ lines:
-          - If an analog line exists for a channel → enable Oxxius analog modulation.
-          - Else if a digital line exists → enable Oxxius digital (TTL) modulation.
-          - Else disable both (will use purely USB setpoint + shutter if needed later).
-        """
-        if self.OxxiusCombiner is not None:
-            for channel in self.channel_list:
-                idx = self._ch_to_oxxius_idx(channel)
-                self.OxxiusCombiner.set_analog_mod(idx, False)
-                self.OxxiusCombiner.set_digital_mod(idx, False)
-                if self.analog_out[channel] is not None:
-                    self.OxxiusCombiner.set_analog_mod(idx, True)
-                elif self.digital_out[channel] is not None:
-                    self.OxxiusCombiner.set_digital_mod(idx, True)
                     
     def set_laser_power(self, channel: str, power: float, force: bool = False):
         """
@@ -169,8 +160,8 @@ class LaserController:
         if self.digital_out[channel] is None :
             return
         
-        if self.OxxiusCombiner is None:
-            return
+        if self.OxxiusCombiner_command[channel] is None :
+            pass
         
         # Clamp percent to [0, 100] for safety (adjust if you allow >100%).
         power = max(0.0, min(100.0, float(power)))
@@ -182,9 +173,10 @@ class LaserController:
         
         if not force and too_soon:
             return
-
-        idx = self._ch_to_oxxius_idx(channel)
-        self.OxxiusCombiner.set_power_percent(idx, power)
+        
+        command = self.OxxiusCombiner_command[channel] + f' {power}'
+        serial.send_command(command, self.OxxiusCombiner_port)
+        print('send command')
         
         self._usb_throttle[channel] = now
                 
@@ -233,3 +225,16 @@ class LaserController:
         
         else:
             return(None)
+        
+        """
+        Note :
+            S'il n'est pas possible d'envoyer une commande au laser, vérifier 
+            via le Gui du que la comment ?CDC renvoie 1. sinon envoyer
+            la commande CDC = 1
+            
+            Voici la liste des fonctions utiles pour le laser oxxius.
+            PLn xx :  set the laser power of the line n to xx mw
+            ?PLn : return the laser power of the line n
+            PPLn xx :  set the laser power of the line n to xx %
+            ?PPLn : return the laser power of the line n
+        """
