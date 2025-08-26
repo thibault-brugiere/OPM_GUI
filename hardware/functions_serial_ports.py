@@ -4,7 +4,7 @@ Created on Wed Apr  9 14:28:45 2025
 
 @author: tbrugiere
 """
-
+import threading
 import serial
 import serial.tools.list_ports
 
@@ -62,3 +62,45 @@ class functions_serial_ports():
             print(f"Error opening serial port: {e}")
             
         return response
+
+class DebouncedSetter:
+    """
+    Calls a function (e.g., set_power) with a delay, canceling previous calls
+    if a new command is received before the delay expires.
+
+    Useful to avoid flooding slow hardware (e.g., serial ports) with rapid commands.
+    Note: this version does NOT return the result of the command (e.g., from send_command_response).
+    """
+
+    def __init__(self, delay_sec=0.1):
+        """
+        Parameters:
+        - delay_sec : Time to wait (in seconds) after the last command before executing it.
+        """
+        self.delay_sec = delay_sec
+        self._timers = {}  # Dictionary: {port -> active Timer}
+
+    def set_power(self, command, port, setter_func):
+        """
+        Schedules a command to be executed after a delay. If a new command is sent
+        to the same port before the delay expires, the previous one is canceled.
+
+        Parameters:
+        - command : The command to send (e.g., "PPL1 30")
+        - port : Target port (e.g., "COM5")
+        - setter_func : The function to execute → e.g., functions_serial_ports.send_command
+        """
+
+        # Cancel any pending timer for the same port
+        if port in self._timers:
+            self._timers[port].cancel()
+
+        # This inner function will be called after delay_sec
+        def _apply():
+            setter_func(command, port)   # Actual command execution
+            del self._timers[port]       # Clean up the timer entry
+
+        # Start a new timer for this port
+        timer = threading.Timer(self.delay_sec, _apply)
+        self._timers[port] = timer
+        timer.start()

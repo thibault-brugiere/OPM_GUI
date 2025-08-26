@@ -5,9 +5,10 @@ Created on Tue Aug 19 15:39:22 2025
 @author: tbrugiere
 """
 from collections import Counter
-import time
+import threading
 
 from hardware.functions_serial_ports import functions_serial_ports as serial
+from hardware.functions_serial_ports import DebouncedSetter as debouncer
 from hardware.functions_DAQ import functions_daq
 # from mock.DAQ import functions_daq
 
@@ -58,10 +59,8 @@ class LaserController:
         # Track emission state per channel (False at init).
         self.laser_on = {channel: False for channel in self.channel_list}
         
-        # Throttle state per channel (last time/value sent to Oxxius)
-        # to avoid to much message sending to laser combiner
-        self._usb_throttle = {ch: 0.0 for ch in self.channel_list}
-        self._usb_min_interval_s = 0.1   # 150 ms between USB writes
+        # Debouncer to avoid to much message sending to laser combiner
+        self.debouncer = debouncer()
         
         # If requested, initialize Oxxius combiner and configure modulation.
         if self.OxxiusCombiner_port != None:
@@ -165,20 +164,9 @@ class LaserController:
         
         # Clamp percent to [0, 100] for safety (adjust if you allow >100%).
         power = max(0.0, min(100.0, float(power)))
-        
-        # Throttle logic (par canal)
-        last_time = self._usb_throttle[channel]
-        now = time.monotonic()
-        too_soon = (now - last_time) < self._usb_min_interval_s
-        
-        if not force and too_soon:
-            return
-        
+                
         command = self.OxxiusCombiner_command[channel] + f' {power}'
-        serial.send_command(command, self.OxxiusCombiner_port)
-        print('send command')
-        
-        self._usb_throttle[channel] = now
+        self.debouncer.set_power(command, self.OxxiusCombiner_port, serial.send_command)
                 
     def start_laser_emission(self, channel: str, power: float):
         """
