@@ -22,8 +22,7 @@ class LaserController:
      TODO
     """
     def __init__(self, analog_out: dict, digital_out: dict, volts_per_laser_percent: dict,
-                 OxxiusCombiner_command: dict, channel_list: list, OxxiusCombiner_port = None,
-                 OxxiusCombiner_model = "L4Cc"):
+                 OxxiusCombiner_command: dict, channel_list: list, OxxiusCombiner_port = None):
         """
         Unified controller for multiple lasers. It can drive:
           - Analog outputs (NI-DAQ) for power setpoint (V),
@@ -45,8 +44,6 @@ class LaserController:
             Declared channels (labels).
         OxxiusCombiner_port : str | None
             Serial/USB port for Oxxius combiner. If None, USB control is disabled.
-        OxxiusCombiner_model : str
-            "L4Cc" or "L6Cc".
         """
         self.analog_out = analog_out
         self.digital_out = digital_out
@@ -54,24 +51,15 @@ class LaserController:
         self.OxxiusCombiner_command = OxxiusCombiner_command
         self.channel_list = channel_list
         self.OxxiusCombiner_port = OxxiusCombiner_port
-        self.OxxiusCombiner_model = OxxiusCombiner_model
+        self.OxxiusCombiner_lines = None # Will get the number of line in the combiner
+        self.laser_ok = False
         
         # Track emission state per channel (False at init).
         self.laser_on = {channel: False for channel in self.channel_list}
         
         # Debouncer to avoid to much message sending to laser combiner
         self.debouncer = debouncer()
-        
-        # If requested, initialize Oxxius combiner and configure modulation.
-        if self.OxxiusCombiner_port != None:
-            serial.send_command("SH1 1", self.OxxiusCombiner_port) # To open main shutter of the oxxius combiner
-            power = serial.send_command_response("?PL2", "COM5")
-            print(f'power:{power}')
-            
-        #
-        # Check that the number of elements in the dictionnaries / channel_list / Oxiuss are the right ones
-        #
-        
+                
         self._check_config()
                 
     def _check_config(self):
@@ -90,12 +78,35 @@ class LaserController:
         if len(channel_list) != len(set(channel_list)):
             errors.append("Duplicate entries found in 'channel_list'.")
         
-        # # 2) Oxxius capacity (only if an Oxxius combiner is present)
-        # if self.OxxiusCombiner is not None:
-        #     max_channels = self.OxxiusCombiner.max_channels
-        #     if max_channels < len(channel_list):
-        #         errors.append(f"Oxxius channel capacity exceeded: {len(channel_list)} configured, "
-        #                       f"but device supports at most {max_channels} channels.")
+        # 2) Oxxius capacity (only if an Oxxius combiner is present)
+        #  If failed, disables USB laser control but allows program to continue.
+        if self.OxxiusCombiner_port is not None:
+            try:
+                # Try opening the shutter to verify communication
+                serial.send_command("SH1 1", self.OxxiusCombiner_port)
+        
+                # Ask the power of channel 2
+                serial_number = serial.send_command_response("HID?", self.OxxiusCombiner_port)
+        
+                # Check that the response is a valid float
+                if serial_number is not None and len(serial_number) >= 4:
+                    model = serial_number[0:4]
+                    if model == "L4CC" or model == "L6CC":
+                        self.OxxiusCombiner_lines = int(model[1])
+                    else:
+                        model = None
+                else:
+                    model = None
+                            
+                if model is None:
+                    errors.append(f"Unexpected response from laser combiner: {serial_number}")
+        
+            except Exception as e:
+                errors.append(f"[WARNING] Could not communicate with Oxxius combiner on {self.OxxiusCombiner_port}: {e}")
+                self.OxxiusCombiner_port = None  # Disable Oxxius usage
+                
+            if self.OxxiusCombiner_lines < len(set(channel_list)):
+                errors.append(f"Too many channels defined ({len(channel_list)}) for Oxxius combiner capacity ({self.OxxiusCombiner_lines}).")
         
         # 3) Cardinality vs analog/digital dicts
         if len(channel_list) != len(keys_analog_out) or len(channel_list) != len(keys_digital_out):
@@ -127,9 +138,13 @@ class LaserController:
         
         # Raise the errors
         if errors:
-            raise ValueError("Invalid laser configuration:\n - " + "\n - ".join(errors))
-    
-        return True
+            # raise ValueError("Invalid laser configuration:\n - " + "\n - ".join(errors))
+            log_errors = "Invalid laser configuration:\n - " + "\n - ".join(errors)
+            print(log_errors)
+            self.laser_ok = False
+        else:
+            self.laser_ok = True
+            print("[OK] Laser initialisation")
             
 
     def _check_channel(self, channel: str) -> str:

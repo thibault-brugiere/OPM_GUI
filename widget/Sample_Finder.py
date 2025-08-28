@@ -24,6 +24,9 @@ from PySide6.QtWidgets import QApplication, QWidget
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from PySide6.QtGui import QPixmap, QImage
 
+import pylablib as pll
+pll.par['devices/dlls/thorlabs_tlcam'] = r"C:\Program Files\Thorlabs\ThorImageCAM\Bin\thorlabs_tsi_camera_sdk.dll"
+
 # Ajoutez le dossier parent au sys.path si le fichier est exécuté directement
 if __name__ == "__main__":
     current_dir = os.path.dirname(os.path.abspath(__file__))

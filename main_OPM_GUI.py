@@ -8,9 +8,11 @@ Convert file.ui to file.py
 
 pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
 
-# TODO : Present preview size should be limited by camera parameters
 # TODO : ouvrir laser_GUI depuis l'interface
+# TODO : Bloquer l'utilisation des lasers sur l'interface 'si leur initialisation n'est pas 
 # TODO : Widget pour modifier tous les paramétres du microscope
+
+# TODO : Present preview size should be limited by camera parameters
 # TODO : faire un dictionnaire.json dans config pour toute la description du microscope
         Pour qu'elle soit enregistrée lors de l'acquisition
 
@@ -23,7 +25,7 @@ import json
 import numpy as np
 import os
 import pickle
-# from pylablib.devices import DCAM # A remplacer aussi dans hardware functions_camera
+from pylablib.devices import DCAM # A remplacer aussi dans hardware functions_camera
 import sys
 import tifffile
 
@@ -41,7 +43,7 @@ from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
 from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
 from hardware.Laser_Controller import LaserController
-from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
+# from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
 # from mock.DAQ import functions_daq
 
 from ui_Control_Microscope_Main import Ui_MainWindow
@@ -137,13 +139,13 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.laser_list = ["405","488","561","640"] # = self.microscope.lasers, can not be modified
         
+        # TODO : Bloquer l'utilisation des lasers si leur initialisation n'est pas bonne
         self.laser_controller = LaserController(self.microscope.daq_channels_laser_analog_out,
                                                 self.microscope.daq_channels_laser_digital_out,
                                                 self.microscope.volts_per_laser_percent,
                                                 self.microscope.OxxiusCombiner_command,
                                                 self.laser_list,
-                                                self.microscope.OxxiusCombiner_port,
-                                                self.microscope.OxxiusCombiner_model)
+                                                self.microscope.OxxiusCombiner_port)
         
         if self.loaded_channels == False: # If channels haven't been loaded, create default channels
         
@@ -251,7 +253,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_hpos.editingFinished.connect(self.spinBox_hpos_value_changed)
         self.spinBox_vsize.editingFinished.connect(self.spinBox_vsize_value_changed)
         self.spinBox_vpos.editingFinished.connect(self.spinBox_vpos_value_changed)
-        self.comboBox_size_preset.currentIndexChanged.connect(self.comboBox_size_preset_index_changed)
+        # self.comboBox_size_preset.currentIndexChanged.connect(self.comboBox_size_preset_index_changed) #TODO supprimer la ligne
+        self.comboBox_size_preset.textActivated.connect(self.comboBox_size_preset_index_changed)
         self.pb_center_FOV.clicked.connect(self.pb_center_FOV_clicked)
         self.comboBox_binning.currentIndexChanged.connect(self.comboBox_binning_index_changed)
         
