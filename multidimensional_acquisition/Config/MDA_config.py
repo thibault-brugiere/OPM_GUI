@@ -138,8 +138,12 @@ class config():
         micro.filters = micro_data["filters"]
         micro.lasers = micro_data["lasers"]
         micro.volts_per_laser_percent = micro_data["volts_per_laser_percent"]
-        micro.laser_response_time = micro_data["laser_response_time"]
+        micro.laser_response_time = micro_data['laser_response_time']
+        micro.OxxiusCombiner_port = micro_data['OxxiusCombiner_port']
+        micro.OxxiusCombiner_command = micro_data['OxxiusCombiner_command']
         micro.daq_channels.update(micro_data["daq_channels"])
+        micro.daq_channels_laser_analog_out = micro_data['daq_channels_laser_analog_out'],
+        micro.daq_channels_laser_digital_out = micro_data['daq_channels_laser_digital_out']
     
         return cameras, channels, exp, micro
     

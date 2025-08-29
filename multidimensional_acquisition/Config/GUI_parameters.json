@@ -24,13 +24,13 @@
             "laser_is_active": {
                 "405": false,
                 "488": true,
-                "561": false,
+                "561": true,
                 "640": false
             },
             "laser_power": {
                 "405": 0,
                 "488": 5,
-                "561": 0,
+                "561": 21,
                 "640": 0
             },
             "filter": "GFP",
@@ -45,10 +45,10 @@
         "time_intervals": 1.0,
         "total_duration": 10.0,
         "scanner_position": 0,
-        "scan_range": 5.73136195490616,
-        "aspect_ratio": 6,
-        "n_steps": 5,
-        "step_size": 1.43284048872654,
+        "scan_range": 20.05976684217156,
+        "aspect_ratio": 3,
+        "n_steps": 29,
+        "step_size": 0.71642024436327,
         "slit_aperture": 800
     },
     "microscope": {
@@ -79,6 +79,13 @@
             "640": 0.05
         },
         "laser_response_time": 0.02,
+        "OxxiusCombiner_port": "COM5",
+        "OxxiusCombiner_command": {
+            "405": null,
+            "488": null,
+            "561": "PPL2",
+            "640": null
+        },
         "daq_channels": {
             "co_channel": "Dev1/ctr0",
             "co_terminal": "/Dev1/PFI0",
@@ -94,6 +101,18 @@
             "dm 488": null,
             "dm 561": null,
             "dm 640": null
+        },
+        "daq_channels_laser_analog_out": {
+            "405": "Dev1/ao1",
+            "488": "Dev1/ao2",
+            "561": null,
+            "640": "Dev1/ao3"
+        },
+        "daq_channels_laser_digital_out": {
+            "405": "Dev1/port0/Line8",
+            "488": "Dev1/port0/Line9",
+            "561": "Dev1/port0/Line10",
+            "640": "Dev1/port0/Line11"
         }
     }
 }

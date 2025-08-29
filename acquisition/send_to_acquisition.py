@@ -164,7 +164,11 @@ def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment,
                              'lasers': microscope.lasers,
                              'volts_per_laser_percent': microscope.volts_per_laser_percent,
                              'laser_response_time' : microscope.laser_response_time,
+                             'OxxiusCombiner_port' : microscope.OxxiusCombiner_port,
+                             'OxxiusCombiner_command' : microscope.OxxiusCombiner_command,
                              'daq_channels': microscope.daq_channels,
+                             'daq_channels_laser_analog_out' : microscope.daq_channels_laser_analog_out,
+                             'daq_channels_laser_digital_out' : microscope.daq_channels_laser_digital_out
                              }
     #
     # Final dictionnary
