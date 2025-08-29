@@ -12,6 +12,8 @@ import time
 from Config.MDA_config import config
 # from Hardware.daq_controller import NIDAQ_Acquisition
 # from Hardware.camera_controller import camera_acquisition
+# from Hardware.functions_serial_ports import functions_serial_ports
+from Hardware.mock import Mock_functions_serial_ports as functions_serial_ports
 from Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
 from Hardware.mock import MockCameraAcquisition as camera_acquisition
 from Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
@@ -19,7 +21,7 @@ from Tools.saving import prepare_saving_directory, save_metadata
 from Tools.signal_generators.single_channel import generate_single_channel_signals
 
 class MultidimensionalAcquisition:
-    def __init__(self, hcams=None, frequency=1e4):
+    def __init__(self, hcams=None, frequency=1e5):
         
         print('[Main MDA] Start multidimensionnal acquisition')
         
@@ -77,6 +79,26 @@ class MultidimensionalAcquisition:
         self.state['camera'] = 'ready'
         
         print("[Main MDA] camera initialized")
+        
+    def initialize_laser(self):
+        """
+        Note : si plusieurs cannaux utilisent le même laser contrôlé par une commande (chez nous le 561)
+        seul la puissance du dernier cannal l'utilisant sera prise en compte
+        """
+        for laser in self.config.microscope.lasers:
+            if self.config.microscope.OxxiusCombiner_port is not None:
+                port = self.config.microscope.OxxiusCombiner_port
+                for command in self.config.microscope.OxxiusCombiner_command[laser]:
+                    if command is not None:
+                        for channel in self.config.channels:
+                            if channel.laser_power[laser] > 0:
+                                power = min(100.0, float(channel.laser_power[laser]))
+                                command_to_send = command + " " + str(power)
+                                response = functions_serial_ports.send_command_response(command_to_send,port)
+                                if response == str(power):
+                                    print("[Main MDA] command laser power set")
+                                else:
+                                    print("[Main MDA] [ERROR] for command laser power setting")
 
     def initialize_acquisition_workers(self):
         for cam in self.cameras_acquisition:

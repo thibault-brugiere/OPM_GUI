@@ -5,12 +5,12 @@ Created on Tue Aug 19 15:39:22 2025
 @author: tbrugiere
 """
 from collections import Counter
-import threading
 
-from hardware.functions_serial_ports import functions_serial_ports as serial
+# from hardware.functions_serial_ports import functions_serial_ports as serial
+from mock.functions_serial_ports import functions_serial_ports as serial
 from hardware.functions_serial_ports import DebouncedSetter as debouncer
-from hardware.functions_DAQ import functions_daq
-# from mock.DAQ import functions_daq
+# from hardware.functions_DAQ import functions_daq
+from mock.DAQ import functions_daq
 
 class LaserController:
     """
@@ -105,7 +105,7 @@ class LaserController:
                 errors.append(f"[WARNING] Could not communicate with Oxxius combiner on {self.OxxiusCombiner_port}: {e}")
                 self.OxxiusCombiner_port = None  # Disable Oxxius usage
                 
-            if self.OxxiusCombiner_lines < len(set(channel_list)):
+            if self.OxxiusCombiner_lines is not None and self.OxxiusCombiner_lines < len(set(channel_list)):
                 errors.append(f"Too many channels defined ({len(channel_list)}) for Oxxius combiner capacity ({self.OxxiusCombiner_lines}).")
         
         # 3) Cardinality vs analog/digital dicts

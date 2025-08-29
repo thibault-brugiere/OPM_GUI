@@ -8,22 +8,7 @@
             "sample_pixel_size": 0.16886187098953057,
             "hsize": 4432,
             "hpos": 0,
-            "vsize": 2368,
-            "vpos": 0,
-            "exposure_time": 0.01,
-            "binning": 1,
-            "line_readout_time": 7.309e-06,
-            "image_readout_time": 0.008493058
-        },
-        "camera_1": {
-            "camera_id": 1,
-            "hchipsize": 4432,
-            "vchipsize": 2368,
-            "pixel_size": 5,
-            "sample_pixel_size": 0.16886187098953057,
-            "hsize": 4432,
-            "hpos": 0,
-            "vsize": 2368,
+            "vsize": 1368,
             "vpos": 0,
             "exposure_time": 0.01,
             "binning": 1,
@@ -54,23 +39,23 @@
         }
     },
     "experiment": {
-        "exp_name": "Image",
+        "exp_name": "Test",
         "data_path": "D:/Projets_Python/OPM_GUI/Images",
         "timepoints": 10,
         "time_intervals": 1.0,
         "total_duration": 10.0,
         "scanner_position": 0,
-        "scan_range": 20.24190797700885,
-        "aspect_ratio": 3,
-        "n_steps": 35,
-        "step_size": 0.5953502346179074,
+        "scan_range": 5.73136195490616,
+        "aspect_ratio": 6,
+        "n_steps": 5,
+        "step_size": 1.43284048872654,
         "slit_aperture": 800
     },
     "microscope": {
         "tilt_angle": 45.0,
         "mag_total": 29.61,
         "volts_per_um": 0.05,
-        "galvo_response_time": 2.0,
+        "galvo_response_time": 0.3,
         "galvo_flyback_time": 3.0,
         "stage_port": "COM10",
         "filters": [
@@ -93,7 +78,7 @@
             "561": 0.05,
             "640": 0.05
         },
-        "laser_response_time": 2.0,
+        "laser_response_time": 0.02,
         "daq_channels": {
             "co_channel": "Dev1/ctr0",
             "co_terminal": "/Dev1/PFI0",
@@ -102,9 +87,13 @@
             "camera_1": "Dev1/port0/line1",
             "405": "Dev1/ao1",
             "488": "Dev1/ao2",
-            "561": "Dev1/ao3",
-            "640": null,
-            "laser_blanking": "Dev1/port0/line3"
+            "561": null,
+            "640": "Dev1/ao3",
+            "laser_blanking": "Dev1/port0/line2",
+            "dm 405": null,
+            "dm 488": null,
+            "dm 561": null,
+            "dm 640": null
         }
     }
 }

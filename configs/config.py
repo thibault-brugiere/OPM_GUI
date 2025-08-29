@@ -76,7 +76,7 @@ class microscope(object):
         
         # scanning galvo
         self.volts_per_um = 0.05
-        self.galvo_response_time = 2.0  # A mesure in ms
+        self.galvo_response_time = 0.3  # A mesure in ms
         self.galvo_flyback_time = 3.0 # A mesurer in ms
         
         # stage
@@ -92,7 +92,7 @@ class microscope(object):
                                         '561' : 5.0 / 100.0, # 5v max
                                         '640' : 5.0 / 100.0  # 5v max
                                         }
-        self.laser_response_time = 2.0 # in ms
+        self.laser_response_time = 20e-3 # in ms
         self.OxxiusCombiner_port = "COM5"
         
         self.OxxiusCombiner_command = {"405" : None, # Régle digital modulation (dm) du laser 405
@@ -124,10 +124,10 @@ class microscope(object):
                                               "640" : "Dev1/ao3", # Régle la puissance du laser 640
                                               }
         
-        self.daq_channels_laser_digital_out = {"405" : None, # Régle digital modulation (dm) du laser 405
-                                               "488" : None, # Régle digital modulation (dm) du laser 488
-                                               "561" : "Dev1/port0/Line3", # Régle digital modulation (dm) du laser 561
-                                               "640" : None, # Régle digital modulation (dm) du laser 640
+        self.daq_channels_laser_digital_out = {"405" : "Dev1/port0/Line8", # Régle digital modulation (dm) du laser 405
+                                               "488" : "Dev1/port0/Line9", # Régle digital modulation (dm) du laser 488
+                                               "561" : "Dev1/port0/Line10", # Régle digital modulation (dm) du laser 561
+                                               "640" : "Dev1/port0/Line11", # Régle digital modulation (dm) du laser 640
                                                }
         
         ##############################

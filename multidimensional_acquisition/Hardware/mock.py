@@ -182,4 +182,41 @@ class MockDAQAcquisition:
         """
         
         self.state = "idle"
+        
+# =========================
+# MOCK SERIAL PORT CLASS
+# =========================        
+class Mock_functions_serial_ports():
+    
+    def list_serial_ports():
+        """
+        List all available serial ports.
+        """
+        
+        return ["COM"]
+    
+    def send_command(command, port = 'COM3'):
+        """
+        Send a command to the Controller.
+    
+        Parameters:
+        - port (str): The serial port to which the device is connected.
+        - command (str): The command to send to the device.
+        """
+        return f"send: {command}"
+    
+    def send_command_response(command, port = 'COM3'):
+        """
+        Send a command to the Controller and get response.
+    
+        Parameters:
+        - port (str): The serial port to which the device is connected.
+        - command (str): The command to send to the device.
+        """
+        message = None
+        try:
+            message = command[5:]
+        except:
+            message = "[error]"
+        return message
 

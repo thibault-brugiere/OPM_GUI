@@ -7,7 +7,7 @@ Created on Wed Mar 12 10:45:10 2025
 import numpy as np
 import matplotlib.pyplot as plt
  
-def generate_single_channel_signals(cameras, channels, experiment, microscope, frequency = 1e4):
+def generate_single_channel_signals(cameras, channels, experiment, microscope, frequency = 1e5):
     """
     Generate voltage and logic signals required to control a single-channel, single-camera
     volume acquisition with a microscope.
@@ -59,7 +59,7 @@ def generate_single_channel_signals(cameras, channels, experiment, microscope, f
         A dictionary of time-resolved signals for the volume acquisition:
             - 'tensions_galvo' (np.ndarray): analog signal for galvo control (in volts).
             - 'tensions_camera' (np.ndarray): digital signal to trigger camera exposure (boolean).
-            - 'tensions_laser_blanking' (np.ndarray): digital laser blanking signal (boolean).
+            - 'tensions_laser_blanking' (np.ndarray): digital laser blanking signal (boolean), shape (4, N), one per laser.
             - 'tensions_lasers' (np.ndarray): analog laser power signals, shape (4, N), one per laser.
 
     Notes
@@ -82,9 +82,12 @@ def generate_single_channel_signals(cameras, channels, experiment, microscope, f
         # ---- Channel parameters ----
     exposure_time_s = channels[0].exposure_time / 1000 # To get exposure_time in seconds
     
-        # Get laser powers in % for each laser channel (405, 488, 561, 640)
+        # Get laser powers in % for each laser channel (405, 488, 561, 640), and laser active
     laser_power = [channels[0].laser_power['405'],channels[0].laser_power['488'],
                    channels[0].laser_power['561'],channels[0].laser_power['640']] # Get all laser power in percent
+    
+    laser_active = [channels[0].laser_is_active['405'],channels[0].laser_is_active['488'],
+                    channels[0].laser_is_active['561'],channels[0].laser_is_active['640']]
     
         # Get laser calibration factors (V per % of power)
     volts_per_laser_percent = [microscope.volts_per_laser_percent['405'],
@@ -119,7 +122,8 @@ def generate_single_channel_signals(cameras, channels, experiment, microscope, f
     exposure_time = int(np.ceil(exposure_time_s * frequency)) # en unité de temps
     
         # Duration of a single step = galvo settle + exposure + readout
-    step_duration = exposure_time + image_readout_time + galvo_response_time
+    step_duration = exposure_time + max(image_readout_time, galvo_response_time)
+    print(image_readout_time)
     
         # Total number of timepoints in the signal
     total_duration = int(pre_post_volume_wait * 2 + n_steps * step_duration)
@@ -132,7 +136,7 @@ def generate_single_channel_signals(cameras, channels, experiment, microscope, f
         # --- Preallocate output arrays ---
     tensions_galvo = np.zeros(total_duration)
     tensions_camera = np.zeros(total_duration , dtype='bool')
-    tensions_laser_blanking = np.full(total_duration, True) # Laser is On for all volume
+    tensions_laser_blanking = np.zeros([4,total_duration], dtype='bool') # Laser is On for all volume
     tensions_lasers = np.zeros([4,total_duration])
     
         # Apply laser voltages during the entire volume acquisition
@@ -161,7 +165,12 @@ def generate_single_channel_signals(cameras, channels, experiment, microscope, f
 
         # Set galvo position
         tensions_galvo[start_index : start_index + step_duration] = galvo_positions[step]
-               
+        
+        # Turn laser on during exposure time if it is on
+        for i in range(4):
+            if laser_active[i]:
+                tensions_laser_blanking[i,start_index : start_index + exposure_time] = True
+        
         # Trigger camera during exposure window
         tensions_camera[start_index : start_index + exposure_time] = True
 
@@ -173,9 +182,6 @@ def generate_single_channel_signals(cameras, channels, experiment, microscope, f
     
         # Return galvo to neutral (0V), stop lasers and blank them
     tensions_galvo[pre_post_volume_wait + n_steps * step_duration:] = 0
-    
-        # Turn off laser blanking
-    tensions_laser_blanking[pre_post_volume_wait + n_steps * step_duration:] = False
     
         # Turn off all lasers
     for i in range(4):
@@ -213,11 +219,11 @@ def plot_tension_vectors(tensions_library):
 
     # Plot each vector
     for i, (key, value) in enumerate(tensions_library.items()):
-        if key == 'tensions_camera' or key == 'tensions_laser_blanking':
+        if key == 'tensions_camera'or key == 'tensions_laser_blanking':
             # Convert boolean values to integers for plotting
             value = value.astype(int)
 
-        if key == 'tensions_lasers':
+        if key == 'tensions_lasers' or key == 'tensions_laser_blanking':
             # Plot each laser channel separately
             for j in range(value.shape[0]):
                 axs[i].plot(value[j], label=f'Laser {j+1}')
@@ -252,11 +258,9 @@ if __name__ == '__main__':
     start_time = time.time()
         
     microscope_config = config()
-    
-    print(microscope_config.experiment.n_steps)
         
-    frequency = 1e4
-        
+    frequency = 1e5
+    print(microscope_config.experiment.exp_name)
     tension_library = generate_single_channel_signals(microscope_config.cameras,
                                                    microscope_config.channels,
                                                    microscope_config.experiment,

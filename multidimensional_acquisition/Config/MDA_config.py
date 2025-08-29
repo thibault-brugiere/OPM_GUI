@@ -59,6 +59,7 @@ class config():
         
         with open(file_path, 'r') as json_file:
             parameters = json.load(json_file)
+            print(parameters["experiment"]["exp_name"])
         return parameters
     
     def GUI_parameters_to_config(self):
@@ -92,7 +93,7 @@ class config():
             cam.exposure_time = cam_data["exposure_time"]
             cam.binning = cam_data["binning"]
             cam.line_readout_time = cam_data["line_readout_time"]
-            # image_readout_time is not used in the camera object, but could be stored if needed
+            cam.calculate_image_readout_time()
             cameras.append(cam)
     
         # 2. Create channel objects with laser configuration

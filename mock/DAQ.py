@@ -7,6 +7,7 @@ Created on Tue Mar 11 11:34:21 2025
 
 class functions_daq:
     def get_connected_daq_devices():
+        print("[OK] Ni-DAQ connected")
         return ['Dev1']
 
     def analog_out(tension=0, output_channel='Dev1/ao0'):
