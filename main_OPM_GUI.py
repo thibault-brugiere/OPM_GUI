@@ -9,7 +9,6 @@ Convert file.ui to file.py
 pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
 
 # TODO : ouvrir laser_GUI depuis l'interface
-# TODO : Bloquer l'utilisation des lasers sur l'interface 'si leur initialisation n'est pas 
 # TODO : Widget pour modifier tous les paramétres du microscope
 
 # TODO : Present preview size should be limited by camera parameters
