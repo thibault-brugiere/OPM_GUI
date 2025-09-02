@@ -136,7 +136,10 @@ class MockDAQAcquisition:
         self.state = "idle"
 
     def send_signals_to_daq_single_channel(self, tensions_library, timepoints, time_intervals,
-                                           daq_channels, frequency=1e4):
+                                           daq_channels,
+                                           daq_channels_laser_analog_out,
+                                           daq_channels_laser_digital_out,
+                                           frequency=1e5):
         """
         Configure the mock DAQ with acquisition parameters.
         """

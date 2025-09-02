@@ -122,6 +122,8 @@ class MultidimensionalAcquisition:
             self.config.experiment.timepoints,
             self.config.experiment.time_intervals,
             self.config.microscope.daq_channels,
+            self.config.microscope.daq_channels_laser_analog_out,
+            self.config.microscope.daq_channels_laser_digital_out,
             self.frequency)
         
         self.state['daq'] = 'ready'

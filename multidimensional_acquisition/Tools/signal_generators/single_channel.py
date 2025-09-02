@@ -137,6 +137,7 @@ def generate_single_channel_signals(cameras, channels, experiment, microscope, f
     tensions_camera = np.zeros(total_duration , dtype='bool')
     tensions_laser_blanking = np.zeros([4,total_duration], dtype='bool') # Laser is On for all volume
     tensions_lasers = np.zeros([4,total_duration])
+    tensions_filters = np.zeros([2,total_duration], dtype='bool')
     
         # Apply laser voltages during the entire volume acquisition
     for i in range(4):
@@ -194,7 +195,7 @@ def generate_single_channel_signals(cameras, channels, experiment, microscope, f
                        'tensions_camera' : tensions_camera,
                        'tensions_laser_blanking' : tensions_laser_blanking,
                        'tensions_lasers' : tensions_lasers,
-    
+                       'tensions_filters' : tensions_filters,
                        }
 
     return tensions_library
@@ -218,7 +219,7 @@ def plot_tension_vectors(tensions_library):
 
     # Plot each vector
     for i, (key, value) in enumerate(tensions_library.items()):
-        if key == 'tensions_camera'or key == 'tensions_laser_blanking':
+        if key == 'tensions_camera'or key == 'tensions_laser_blanking' or key == 'tensions_filters':
             # Convert boolean values to integers for plotting
             value = value.astype(int)
 
@@ -226,6 +227,11 @@ def plot_tension_vectors(tensions_library):
             # Plot each laser channel separately
             for j in range(value.shape[0]):
                 axs[i].plot(value[j], label=f'Laser {j+1}')
+            axs[i].legend()
+            
+        elif key == "tensions_filters":
+            for j in range(value.shape[0]):
+                axs[i].plot(value[j], label=f'Filter trig {j+1}')
             axs[i].legend()
         else:
             axs[i].plot(value)

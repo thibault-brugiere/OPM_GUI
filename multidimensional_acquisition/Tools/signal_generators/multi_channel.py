@@ -13,12 +13,12 @@ def generate_single_channel_signals(cameras, channels, experiment, microscope, f
     volume acquisition with a microscope.
 
     The function simulates one volumetric acquisition, which includes:
-        1) Laser activation
-        2) Galvo positioning (with response time and flyback delay)
+        1) Galvo positioning (with response time and flyback delay)
+        2) Laser activation
         3) Camera exposure
         4) Camera readout
-        5) Step repetition for each plane
-        6) Galvo return to 0 and laser deactivation
+        5) Filter changing
+        6) Step repetition for each plane
 
     Signals are returned as time-resolved arrays sampled at the given frequency. These signals
     control galvanometer motion, laser modulation, camera triggering, and blanking.
@@ -48,6 +48,7 @@ def generate_single_channel_signals(cameras, channels, experiment, microscope, f
             - galvo_response_time (float): in milliseconds.
             - galvo_flyback_time (float): in milliseconds.
             - laser_response_time (float): in milliseconds.
+            - filter_changing_time (float): in milliseconds.
             - volts_per_laser_percent (dict): scaling from % to volts for each laser.
 
     frequency : float, optional
@@ -59,14 +60,15 @@ def generate_single_channel_signals(cameras, channels, experiment, microscope, f
         A dictionary of time-resolved signals for the volume acquisition:
             - 'tensions_galvo' (np.ndarray): analog signal for galvo control (in volts).
             - 'tensions_camera' (np.ndarray): digital signal to trigger camera exposure (boolean).
-            - 'tensions_laser_blanking' (np.ndarray): digital laser blanking signal (boolean), shape (4, N), one per laser.
+            - 'tensions_laser_blanking' (np.ndarray): digital laser blanking signal (boolean), shape (4, N),
+                                                        one per laser.
             - 'tensions_lasers' (np.ndarray): analog laser power signals, shape (4, N), one per laser.
+            - 'tensions_filters' (np.ndarray): digital signal to trigger the filter well, shape = (2, N),
+                                                one per trigering 
 
     Notes
     -----
     - All durations are internally converted to time units based on the sampling frequency.
-    - Laser power is set constant across the entire volume acquisition.
-    - Only one channel and one camera are used.
     """
     
     #
@@ -213,9 +215,9 @@ def generate_single_channel_signals(cameras, channels, experiment, microscope, f
     
     tensions_library = {'tensions_galvo' : tensions_galvo,
                        'tensions_camera' : tensions_camera,
-                       'tensions_laser_blanking' : tensions_laser_blanking,
-                       'tensions_lasers' : tensions_lasers,
                        'tensions_filters' : tensions_filters,
+                       'tensions_lasers' : tensions_lasers,
+                       'tensions_laser_blanking' : tensions_laser_blanking,
                        }
 
     return tensions_library
@@ -248,6 +250,7 @@ def plot_tension_vectors(tensions_library):
             for j in range(value.shape[0]):
                 axs[i].plot(value[j], label=f'Laser {j+1}')
             axs[i].legend()
+            
         elif key == "tensions_filters":
             for j in range(value.shape[0]):
                 axs[i].plot(value[j], label=f'Filter trig {j+1}')
@@ -281,7 +284,7 @@ if __name__ == '__main__':
     
     start_time = time.time()
         
-    microscope_config = config(filename = 'GUI_parameters.json')
+    microscope_config = config(filename = 'GUI_parameters_double.json')
         
     frequency = 1e5
     print(microscope_config.experiment.exp_name)

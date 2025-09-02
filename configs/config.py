@@ -108,8 +108,8 @@ class microscope(object):
                              "galvo": "Dev1/ao0", # Fait bouger le galvo pour le scanning
                              "camera_0": "Dev1/port0/line0", # Trigger l'exposition de la camera
                              "camera_1": "Dev1/port0/line1", # Trigger l'exposition de la deuxieme camera (si presente)
-                             "filter_weel_1": "Dev1/port0/line2", # Trigger de la roue de filtres
-                             "filter_weel_2": "Dev1/port0/line3", # Trigger de la roue de filtres
+                             "filter_wheel_1": "Dev1/port0/line2", # Trigger de la roue de filtres
+                             "filter_wheel_2": "Dev1/port0/line3", # Trigger de la roue de filtres
                              "405" : "Dev1/ao1", # Régle la puissance du laser 405
                              "488" : "Dev1/ao2",      # Régle la puissance du laser 488
                              "561" : None, # Régle la puissance du laser 561
