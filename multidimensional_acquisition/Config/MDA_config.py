@@ -19,7 +19,7 @@ class config():
     experiment and microscope settings.
     """
     
-    def __init__(self, dirname = ""):
+    def __init__(self, dirname = "", filename = 'GUI_parameters.json'):
         """
         Initialize the config object.
         
@@ -36,7 +36,8 @@ class config():
         """
         
         self.dirname = dirname
-        self.GUI_parameters = self.load_parameters_from_GUI()
+        self.filename = filename
+        self.GUI_parameters = self.load_parameters_from_GUI(self.filename)
         
         self.cameras, self.channels, self.experiment, self.microscope = self.GUI_parameters_to_config()
     
@@ -59,7 +60,6 @@ class config():
         
         with open(file_path, 'r') as json_file:
             parameters = json.load(json_file)
-            print(parameters["experiment"]["exp_name"])
         return parameters
     
     def GUI_parameters_to_config(self):
@@ -135,6 +135,7 @@ class config():
         micro.galvo_response_time = micro_data["galvo_response_time"]
         micro.galvo_flyback_time = micro_data["galvo_flyback_time"]
         micro.stage_port = micro_data["stage_port"]
+        micro.filter_changing_time = micro_data["filter_changing_time"]
         micro.filters = micro_data["filters"]
         micro.lasers = micro_data["lasers"]
         micro.volts_per_laser_percent = micro_data["volts_per_laser_percent"]

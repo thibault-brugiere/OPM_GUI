@@ -24,13 +24,13 @@
             "laser_is_active": {
                 "405": false,
                 "488": true,
-                "561": true,
+                "561": false,
                 "640": false
             },
             "laser_power": {
                 "405": 0,
                 "488": 5,
-                "561": 21,
+                "561": 0,
                 "640": 0
             },
             "filter": "GFP",
@@ -58,6 +58,7 @@
         "galvo_response_time": 0.3,
         "galvo_flyback_time": 3.0,
         "stage_port": "COM10",
+        "filter_changing_time": 60,
         "filters": [
             "BFP",
             "GFP",

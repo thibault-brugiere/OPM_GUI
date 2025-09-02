@@ -113,12 +113,13 @@ class NIDAQ_Acquisition:
         # Create AO channels: galvo + 3 laser channels (405, 488, 561)
         # NOTE: Limited to 3 lasers due to available DAQ channels
         # TODO : find a solution to use 4 lasers
+        # TODO : ajouter le blanking numérique des lasers
         
             # Create all the analog channels
         self.task_ao.ao_channels.add_ao_voltage_chan(self.daq_channels["galvo"], min_val=-5.0, max_val=5.0)
         self.task_ao.ao_channels.add_ao_voltage_chan(self.daq_channels["405"], min_val=-5.0, max_val=5.0)
         self.task_ao.ao_channels.add_ao_voltage_chan(self.daq_channels["488"], min_val=-5.0, max_val=5.0)
-        self.task_ao.ao_channels.add_ao_voltage_chan(self.daq_channels["561"], min_val=-5.0, max_val=5.0)
+        self.task_ao.ao_channels.add_ao_voltage_chan(self.daq_channels["640"], min_val=-5.0, max_val=5.0)
         # self.task_ao.ao_channels.add_ao_voltage_chan(self.daq_channels["561"], min_val=-5.0, max_val=5.0)
         
         
