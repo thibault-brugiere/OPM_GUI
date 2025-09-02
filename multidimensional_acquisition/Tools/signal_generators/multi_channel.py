@@ -7,7 +7,7 @@ Created on Wed Mar 12 10:45:10 2025
 import numpy as np
 import matplotlib.pyplot as plt
  
-def generate_single_channel_signals(cameras, channels, experiment, microscope, frequency = 1e5):
+def generate_channel_signals(cameras, channels, experiment, microscope, frequency = 1e5):
     """
     Generate voltage and logic signals required to control a single-channel, single-camera
     volume acquisition with a microscope.

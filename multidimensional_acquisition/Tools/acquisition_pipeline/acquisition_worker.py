@@ -21,7 +21,7 @@ class ImageFrame:
 class AcquisitionWorker(QObject):
     new_volume_ready = Signal(np.ndarray, dict)  # signal Qt émis avec buffer + metadata
     
-    def __init__(self, camera_worker, save_dir, n_steps, timepoints,
+    def __init__(self, camera_worker, save_dir, n_steps, timepoints, n_channels,
              channel_names=None, max_volume_queue=6, save_type="TIFF"):
         """
         Initialize the acquisition pipeline with multithreaded image reading, buffering, and saving.
@@ -89,7 +89,7 @@ class AcquisitionWorker(QObject):
         # Initialize tqdm bars
         self.frame_bar = tqdm(total=self.n_steps * self.timepoints * len(self.channel_names),
                               desc="Frames Acquired", position=0)
-        self.volume_bar = tqdm(total=self.timepoints, desc="Volumes Saved   ", position=1)
+        self.volume_bar = tqdm(total=self.timepoints * len(self.channel_names), desc="Volumes Saved   ", position=1)
         
         self.stop_event.clear()
         self.start_time = time.time()
@@ -126,7 +126,7 @@ class AcquisitionWorker(QObject):
                     self.frame_bar.update(1)
                 
                 if slice_idx == self.n_steps:
-                    # 🔁 EMIT the volume as soon as it's filled
+                    # EMIT the volume as soon as it's filled
                     if self.preview_callback:
                         preview_data = {
                             "volume_id": volume_id,

@@ -10,7 +10,7 @@
             "hpos": 0,
             "vsize": 2368,
             "vpos": 0,
-            "exposure_time": 0.01,
+            "exposure_time": 0.012,
             "binning": 1,
             "line_readout_time": 7.309e-06,
             "image_readout_time": 0.008493058
@@ -36,6 +36,26 @@
             "filter": "GFP",
             "camera": 0,
             "exposure_time": 10.0
+        },
+        "channel_CY3.5": {
+            "channel_id": "CY3.5",
+            "is_active": true,
+            "channel_order": null,
+            "laser_is_active": {
+                "405": false,
+                "488": false,
+                "561": true,
+                "640": false
+            },
+            "laser_power": {
+                "405": 0,
+                "488": 0,
+                "561": 5,
+                "640": 0
+            },
+            "filter": "CY3.5",
+            "camera": 0,
+            "exposure_time": 12.0
         }
     },
     "experiment": {
@@ -45,10 +65,10 @@
         "time_intervals": 1.0,
         "total_duration": 10.0,
         "scanner_position": 0,
-        "scan_range": 20.05976684217156,
-        "aspect_ratio": 3,
-        "n_steps": 29,
-        "step_size": 0.71642024436327,
+        "scan_range": 8.59704293235924,
+        "aspect_ratio": 6,
+        "n_steps": 7,
+        "step_size": 1.43284048872654,
         "slit_aperture": 800
     },
     "microscope": {
@@ -93,11 +113,13 @@
             "galvo": "Dev1/ao0",
             "camera_0": "Dev1/port0/line0",
             "camera_1": "Dev1/port0/line1",
+            "filter_wheel_1": "Dev1/port0/line2",
+            "filter_wheel_2": "Dev1/port0/line3",
             "405": "Dev1/ao1",
             "488": "Dev1/ao2",
             "561": null,
             "640": "Dev1/ao3",
-            "laser_blanking": "Dev1/port0/line2",
+            "laser_blanking": "Dev1/port0/line4",
             "dm 405": null,
             "dm 488": null,
             "dm 561": null,

@@ -27,4 +27,9 @@ Created on Tue Sep  2 09:03:43 2025
     # daq_controller
     
 # TODO send_signals_to_daq_single_channel ajouter le blanking numérique des lasers
+
+    #-------------
+    # Tools
+    #-------------
+# TODO supprimer le single_channels
 """

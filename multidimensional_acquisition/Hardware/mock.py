@@ -45,7 +45,7 @@ class MockCameraAcquisition:
         self.frames_per_volume = experiment.n_steps if experiment else 10
         self.volume_interval = experiment.time_intervals if experiment else 1.0
         self.timepoints = self.experiment.timepoints
-        self.total_frames =  self.timepoints * self.frames_per_volume
+        self.total_frames =  self.timepoints * self.frames_per_volume * len(self.channels)
         self.generated_frames = 0
 
     def initialize_camera(self):
@@ -165,7 +165,7 @@ class MockDAQAcquisition:
         self.state = "running"
 
         # Simulate periodic triggering
-        for i in range(self.timepoints):
+        for i in range(self.timepoints*2):
             time.sleep(self.time_intervals)
 
         self.state = "complete"

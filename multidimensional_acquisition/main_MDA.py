@@ -18,7 +18,7 @@ from Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
 from Hardware.mock import MockCameraAcquisition as camera_acquisition
 from Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
 from Tools.saving import prepare_saving_directory, save_metadata
-from Tools.signal_generators.single_channel import generate_single_channel_signals
+from Tools.signal_generators.multi_channel import generate_channel_signals
 
 class MultidimensionalAcquisition:
     def __init__(self, hcams=None, frequency=1e5):
@@ -33,21 +33,17 @@ class MultidimensionalAcquisition:
         self.config = config(dirname=config_path)
 
         self.n_channels = len(self.config.channels)
-        if self.n_channels == 1:
-            self.volume_tensions_library = generate_single_channel_signals(
-                self.config.cameras,
-                self.config.channels,
-                self.config.experiment,
-                self.config.microscope,
-                self.frequency)
-
-            volume_duration = len(self.volume_tensions_library['tensions_galvo']) / self.frequency
-            print(f'[Main MDA] volume duration : {volume_duration} s')
-            if volume_duration > self.config.experiment.time_intervals + 0.001:
-                self.config.experiment.time_intervals = volume_duration + 0.001
-                print(f"[INFO] Time interval too short. Adjusted to : {volume_duration + 0.001} s to match volume duration.")
-        else:
-            raise NotImplementedError("Only single-channel acquisition is currently supported.")
+            
+        self.volume_tensions_library = generate_channel_signals(self.config.cameras,
+                                                                self.config.channels,
+                                                                self.config.experiment,
+                                                                self.config.microscope,
+                                                                frequency = 1e5)
+        volume_duration = len(self.volume_tensions_library['tensions_galvo']) / self.frequency
+        print(f'[Main MDA] volume duration : {volume_duration} s')
+        if volume_duration > self.config.experiment.time_intervals + 0.001:
+            self.config.experiment.time_intervals = volume_duration + 0.001
+            print(f"[INFO] Time interval too short. Adjusted to : {volume_duration + 0.001} s to match volume duration.")
         
         # Prepare saving directory and metadata
         self.save_dir = prepare_saving_directory(self.config.experiment.data_path,
@@ -107,6 +103,7 @@ class MultidimensionalAcquisition:
                 save_dir=self.save_dir,
                 n_steps=self.config.experiment.n_steps,
                 timepoints=self.config.experiment.timepoints,
+                n_channels = self.n_channels,
                 channel_names=[ch.channel_id for ch in self.config.channels],
             )
             self.acquisition_workers.append(worker)
@@ -152,7 +149,7 @@ class MultidimensionalAcquisition:
         self.daq.trigger_acquisition()
         
         # Wait until all volumes are acquired
-        expected_images = self.config.experiment.timepoints * self.config.experiment.n_steps
+        expected_images = self.config.experiment.timepoints * self.n_channels * self.config.experiment.n_steps
         try:
             while True:
                 images = [w.total_images for w in self.acquisition_workers]
