@@ -37,7 +37,7 @@ class mda_mannager(QWidget, Ui_Form):
     """
     Show the window to follow rhe multidimensionnal acquisition.
     """
-    volume_received = Signal(np.ndarray)
+    channel_received = Signal(tuple)
     
     def __init__(self, mda, parent=None):
         
@@ -64,11 +64,16 @@ class mda_mannager(QWidget, Ui_Form):
         
         self.total_timepoints = self.mda.config.experiment.timepoints
         self.total_images = self.total_timepoints * self.mda.config.experiment.n_steps * len(self.mda.config.channels)
+        self.total_channels = len(self.mda.config.channels)
+        self.channel_names = [ch.channel_id for ch in self.mda.config.channels]
+        self.channel_display = self.channel_names[0]
+        
+        self._cb_image_channel_set()
         
         self.images_acquired = 0
         self.frames_acquired = 0
         self.frames_dropped = 0
-        self.volumes_saved = 0
+        self.channel_saved = 0
         self.volumes_recived = 0
         
             # Pixel shift between two images of the volume for deskewing
@@ -82,12 +87,19 @@ class mda_mannager(QWidget, Ui_Form):
         # Images to display
         #
         
-        self.project_max_front = None
-        self.project_max_side  = None
-        self.project_mean_front = None
-        self.project_mean_side  = None
-        self.strip_max = None
-        self.strip_mean = None
+        self.project_max_front = {key: None for key in self.channel_names}
+        self.project_max_side  = {key: None for key in self.channel_names}
+        self.project_mean_front = {key: None for key in self.channel_names}
+        self.project_mean_side  = {key: None for key in self.channel_names}
+        self.strip_max = {key: None for key in self.channel_names}
+        self.strip_mean = {key: None for key in self.channel_names}
+        
+        # self.project_max_front = None
+        # self.project_max_side  = None
+        # self.project_mean_front = None
+        # self.project_mean_side  = None
+        # self.strip_max = None
+        # self.strip_mean = None
         
         #
         # Values for the interface
@@ -113,11 +125,11 @@ class mda_mannager(QWidget, Ui_Form):
         #
         
         self.processor_thread = QThread()
-        self.volume_processor = VolumeProcessor(self.pixel_shift)
-        self.volume_processor.moveToThread(self.processor_thread)
-        self.volume_processor.processed.connect(self.receive_projections)
+        self.channel_processor = ChannelProcessor(self.pixel_shift)
+        self.channel_processor.moveToThread(self.processor_thread)
+        self.channel_processor.processed.connect(self.receive_projections)
         self.processor_thread.start()
-        self.volume_received.connect(self.volume_processor.process)
+        self.channel_received.connect(self.channel_processor.process)
         
         ##############################################
         ## Connection between functions and buttons ##
@@ -125,6 +137,7 @@ class mda_mannager(QWidget, Ui_Form):
         
         self.cb_projection.currentIndexChanged.connect(self.cb_projection_index_changed)
         self.cb_lut.currentIndexChanged.connect(self.cb_lut_index_changed)
+        self.cb_image_channel.currentIndexChanged.connect(self.cb_image_channel_index_changed)
         
         self.pb_grayscale_min_max.clicked.connect(self.pb_grayscale_min_max_clicked)
         self.pb_grayscale_auto.clicked.connect(self.pb_grayscale_auto_clicked)
@@ -138,6 +151,12 @@ class mda_mannager(QWidget, Ui_Form):
         ## Functions called by the buttons ##
         #####################################
         
+    def _cb_image_channel_set(self):
+        self.cb_image_channel.clear()
+        self.cb_image_channel.addItems(self.channel_names)
+        self.cb_image_channel.setCurrentIndex(0)
+        self.channel_display = self.cb_image_channel.currentText()
+        
     def cb_projection_index_changed(self):
         if self.cb_projection.currentText() == "Mean":
             self.projection = "mean"
@@ -148,24 +167,28 @@ class mda_mannager(QWidget, Ui_Form):
         
     def cb_lut_index_changed(self): # TODO : definir la fonction
         self.update_preview()
+        
+    def cb_image_channel_index_changed(self):
+        self.channel_display = self.cb_image_channel.currentText()
+        self.update_preview()
 
     def pb_grayscale_min_max_clicked(self):
-        if self.project_mean_front is not None and self.project_max_front is not None :
+        if self.project_mean_front[self.channel_display] is not None and self.project_max_front[self.channel_display] is not None :
             if self.projection == "mean" :
-                self.slider_grayscale_min.setValue(np.min(self.project_mean_front))
-                self.slider_grayscale_max.setValue(np.max(self.project_mean_front))
+                self.slider_grayscale_min.setValue(np.min(self.project_mean_front[self.channel_display]))
+                self.slider_grayscale_max.setValue(np.max(self.project_mean_front[self.channel_display]))
                 
             elif self.projection == "max" :
-                self.slider_grayscale_min.setValue(np.min(self.project_max_front))
-                self.slider_grayscale_max.setValue(np.max(self.project_max_front))
+                self.slider_grayscale_min.setValue(np.min(self.project_max_front[self.channel_display]))
+                self.slider_grayscale_max.setValue(np.max(self.project_max_front[self.channel_display]))
                 
     def pb_grayscale_auto_clicked(self):
-        if self.project_mean_front is not None and self.project_max_front is not None :
+        if self.project_mean_front[self.channel_display] is not None and self.project_max_front[self.channel_display] is not None :
             if self.projection == "mean" :
-                min_gray, max_gray = auto_contrast(self.project_mean_front)
+                min_gray, max_gray = auto_contrast(self.project_mean_front[self.channel_display])
                 
             elif self.projection == "max" :
-                min_gray, max_gray = auto_contrast(self.project_max_front)
+                min_gray, max_gray = auto_contrast(self.project_max_front[self.channel_display])
                 
             self.slider_grayscale_min.setValue(min_gray)
             self.slider_grayscale_max.setValue(max_gray)
@@ -206,10 +229,10 @@ class mda_mannager(QWidget, Ui_Form):
         self.timeline_position = self.sb_timeline.value()
         
         if self.projection == "max":
-            self.display_timelapse_strip(self.strip_max, self.label_timeline)
+            self.display_timelapse_strip(self.strip_max[self.channel_display], self.label_timeline)
             
         elif self.projection == "mean":
-            self.display_timelapse_strip(self.strip_mean, self.label_timeline)
+            self.display_timelapse_strip(self.strip_mean[self.channel_display], self.label_timeline)
         
         
         ###########################################
@@ -242,12 +265,12 @@ class mda_mannager(QWidget, Ui_Form):
         self.images_acquired = self.mda.acquisition_workers[0].total_images
         self.frames_acquired = self.mda.acquisition_workers[0].total_frames
         self.frames_dropped = self.mda.acquisition_workers[0].total_dropped
-        self.volumes_saved = self.mda.acquisition_workers[0].total_volumes
+        self.channels_saved = self.mda.acquisition_workers[0].total_volumes
         self.label_informations.setText(f"""
 Camera : {self.mda.state["camera"]}, DAQ : {self.mda.state["daq"]}
 Frames Acquired: {self.frames_acquired}/{self.total_images}
 Frames Dropped: {self.frames_dropped}/{self.total_images}
-Volumes Saved: {self.volumes_saved}/{self.total_timepoints}
+Channels Saved: {self.channels_saved}/{self.total_timepoints * self.total_channels}
 Volumes Recived: {self.volumes_recived}
 Time Ellapsed: {self.format_time(self.ellapsed_time)} s
                                         """)
@@ -255,11 +278,11 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
                                         
     def _set_progress_bar(self):
         self.progressBar_acquisition.setMaximum(self.total_images)
-        self.progressBar_saving.setMaximum(self.total_timepoints)
+        self.progressBar_saving.setMaximum(self.total_timepoints * self.total_channels)
     
     def update_progress_bar(self):
         self.progressBar_acquisition.setValue(int(self.images_acquired))
-        self.progressBar_saving.setValue(int(self.volumes_saved))
+        self.progressBar_saving.setValue(int(self.channels_saved))
         
         
         ####################################################
@@ -274,29 +297,30 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
     
         # Pour l’instant, une seule caméra => worker(0)
         worker = self.mda.acquisition_workers[0]
-        worker.new_volume_ready.connect(self.handle_new_volume)
+        worker.new_volume_ready.connect(self.handle_new_channel)
         worker.set_preview_callback()
         
-    def handle_new_volume(self, volume: np.ndarray, metadata: dict):
-        self.volumes_recived += 1
+    def handle_new_channel(self, channel: np.ndarray, metadata: dict):
+        self.volumes_recived = metadata["volume_id"]
         self.update_infos()
         
         # Senf the new volume recievend to the volume_processor thread
-        self.volume_received.emit(volume)
+        self.channel_received.emit((channel, metadata))
     
     def receive_projections(self, data):
         # Get the four projections
-        self.project_max_front = data["max_front"]
-        self.project_max_side  = data["max_side"]
-        self.project_mean_front = data["mean_front"]
-        self.project_mean_side  = data["mean_side"]
+        channel = data["metadata"]["channel"]
+        self.project_max_front[channel] = data["max_front"]
+        self.project_max_side[channel]  = data["max_side"]
+        self.project_mean_front[channel] = data["mean_front"]
+        self.project_mean_side[channel]  = data["mean_side"]
         
         if self.volumes_recived == 1:
-            self.timeline_frame_width = get_timeline_frame_width(self.project_max_front) + 2
+            self.timeline_frame_width = get_timeline_frame_width(self.project_max_front[channel]) + 2
         
-        # Calculate tje timelaps strip
-        self.strip_max = update_timelapse_strip(self.strip_max, self.project_max_front)
-        self.strip_mean = update_timelapse_strip(self.strip_mean, self.project_mean_front)
+        # Calculate the timelaps strip
+        self.strip_max[channel] = update_timelapse_strip(self.strip_max[channel], self.project_max_front[channel])
+        self.strip_mean[channel] = update_timelapse_strip(self.strip_mean[channel], self.project_mean_front[channel])
         
         # Mets à jour les réglages de la timeline
             
@@ -310,14 +334,14 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
         
     def update_preview(self):
         if self.projection == "max":
-            self.display_image(self.project_max_front)
-            self.display_side_view(self.project_max_side)
-            self.display_timelapse_strip(self.strip_max, self.label_timeline)
+            self.display_image(self.project_max_front[self.channel_display])
+            self.display_side_view(self.project_max_side[self.channel_display])
+            self.display_timelapse_strip(self.strip_max[self.channel_display], self.label_timeline)
             
         elif self.projection == "mean":
-            self.display_image(self.project_mean_front)
-            self.display_side_view(self.project_mean_side)
-            self.display_timelapse_strip(self.strip_mean, self.label_timeline)
+            self.display_image(self.project_mean_front[self.channel_display])
+            self.display_side_view(self.project_mean_side[self.channel_display])
+            self.display_timelapse_strip(self.strip_mean[self.channel_display], self.label_timeline)
         
         
     def display_image(self, img: np.ndarray):
@@ -340,20 +364,29 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
             return
     
         max_display_width = self.label_timeline.width()
+        
         h, w = strip.shape
     
-        # Calcule la position en pixels du bord droit de la fenêtre d'affichage
+        # Taille d'une "image" dans la frise (en px)
         image_width = self.timeline_frame_width  # ou fixe à 10 par exemple
-        right_px = self.timeline_position * image_width
+        
+        # Position du bord droit en px (clampée)
+        right_px = int(round(self.timeline_position * image_width))
+        right_px = max(0, min(right_px, w))
+        
+        # Position du bord gauche en px (clampée)
         left_px = max(0, right_px - max_display_width)
+        left_px = min(left_px, w)  # si right_px==w et max_display_width> w
     
         # Tronque la frise à la fenêtre visible
         visible_strip = strip[:, left_px:right_px]
+        vis_w = visible_strip.shape[1]
     
         # Si la bande est trop petite, on complète à gauche avec du noir
-        if visible_strip.shape[1] < max_display_width:
+        if vis_w < max_display_width:
             padded = np.zeros((h, max_display_width), dtype=strip.dtype)
-            padded[:, -visible_strip.shape[1]:] = visible_strip
+            if vis_w > 0 :
+                padded[:, -visible_strip.shape[1]:] = visible_strip
             visible_strip = padded
     
         visible_strip = np.ascontiguousarray(visible_strip)
@@ -365,8 +398,8 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
         
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        if self.strip_mean is not None:
-            self.display_timelapse_strip(self.strip_mean)
+        if self.strip_mean[self.channel_display] is not None:
+            self.display_timelapse_strip(self.strip_mean[self.channel_display])
     
         #################################
         ## Functions for the interface ##
@@ -407,7 +440,7 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
         return qt_image
     
     
-class VolumeProcessor(QObject):
+class ChannelProcessor(QObject):
     processed = Signal(dict)  # front, side
 
     def __init__(self, pixel_shift):
@@ -415,19 +448,20 @@ class VolumeProcessor(QObject):
         self.pixel_shift = pixel_shift
 
     @Slot(np.ndarray)
-    def process(self, volume):
-        
-        deskewed_volume = deskew_numpy(volume, px_shift_y=self.pixel_shift)
-        data = {"max_front" : np.max(deskewed_volume, axis = 0),
-            "max_side" : np.max(deskewed_volume, axis = 2),
-            "mean_front" : mean_projection_ignore_zeros(deskewed_volume, axis=0),
-            "mean_side" : mean_projection_ignore_zeros(deskewed_volume, axis=2),
+    def process(self, images):
+        channel, metadata = images
+        deskewed_channel = deskew_numpy(channel, px_shift_y=self.pixel_shift)
+        data = {"max_front" : np.max(deskewed_channel, axis = 0),
+            "max_side" : np.max(deskewed_channel, axis = 2),
+            "mean_front" : mean_projection_ignore_zeros(deskewed_channel, axis=0),
+            "mean_side" : mean_projection_ignore_zeros(deskewed_channel, axis=2),
+            "metadata" : metadata,
         }
         
         self.processed.emit(data)
         
         
-#################################################################
+###############################################################################
         
 if __name__ == '__main__':
     "To test the window"
