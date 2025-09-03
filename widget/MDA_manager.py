@@ -25,11 +25,9 @@ if __name__ == "__main__":
 
 from image_analysis.Deskew_Numpy import deskew_numpy, compute_px_shift, mean_projection_ignore_zeros
 from multidimensional_acquisition.Live_Viewer.mda_manager_functions import update_timelapse_strip
-from multidimensional_acquisition.Live_Viewer.mda_manager_functions import debug_display_ndarray
 from multidimensional_acquisition.Live_Viewer.mda_manager_functions import auto_contrast
 from multidimensional_acquisition.Live_Viewer.mda_manager_functions import get_timeline_frame_width
-
-# TODO : mettre tout cela dans la même classe, ailleurs ?
+from multidimensional_acquisition.Live_Viewer.mda_manager_functions import LookUpTables
 
 from widget.ui_mda import Ui_Form
 
@@ -94,31 +92,26 @@ class mda_mannager(QWidget, Ui_Form):
         self.strip_max = {key: None for key in self.channel_names}
         self.strip_mean = {key: None for key in self.channel_names}
         
-        # self.project_max_front = None
-        # self.project_max_side  = None
-        # self.project_mean_front = None
-        # self.project_mean_side  = None
-        # self.strip_max = None
-        # self.strip_mean = None
-        
         #
         # Values for the interface
         #
         
-        self.projection = "max"
-        self.LUT = "grayscale"
-        self.zoom = 1
-        self.min_grayscale = 0
-        self.max_grayscale = 65535
-        self.timeline_position = 1
+        self.LUT = {key : "Grayscale" for key in self.channel_names}
+        self.min_grayscale = {key : 0 for key in self.channel_names}
+        self.max_grayscale = {key : 65535 for key in self.channel_names}
         
-        self.timeline_frame_width = 128 # width of an image for the 
+        self.zoom = 1
+        self.projection = "max"
+        self.timeline_position = 1
+        self.timeline_frame_width = 128 # width of an image for the
+        self.palettes = LookUpTables().palettes
         
         #
         # Set different parts of the interface
         #
         
         self._set_progress_bar()
+        self._cb_lut_set()
         
         #
         # Connect to the parallel thread that calculate projections
@@ -157,6 +150,29 @@ class mda_mannager(QWidget, Ui_Form):
         self.cb_image_channel.setCurrentIndex(0)
         self.channel_display = self.cb_image_channel.currentText()
         
+    def _cb_lut_set(self):
+        self.cb_lut.clear()
+        self.cb_lut.addItems(list(self.palettes.keys()))
+        self.cb_lut.setCurrentIndex(0)
+        self.LUT[self.channel_display] = self.cb_lut.currentText()
+        
+    def _set_interface_channel(self):
+        self.slider_grayscale_max.blockSignals(True)
+        self.slider_grayscale_max.setValue(self.max_grayscale[self.channel_display])
+        self.slider_grayscale_max.blockSignals(False)
+        self.sb_grayscale_max.blockSignals(True)
+        self.sb_grayscale_max.setValue(self.max_grayscale[self.channel_display])
+        self.sb_grayscale_max.blockSignals(False)
+        self.slider_grayscale_min.blockSignals(True)
+        self.slider_grayscale_min.setValue(self.min_grayscale[self.channel_display])
+        self.slider_grayscale_min.blockSignals(False)
+        self.sb_grayscale_min.blockSignals(True)
+        self.sb_grayscale_min.setValue(self.min_grayscale[self.channel_display])
+        self.sb_grayscale_min.blockSignals(False)
+        self.cb_lut.blockSignals(True)
+        self.cb_lut.setCurrentText(self.LUT[self.channel_display])
+        self.cb_lut.blockSignals(False)
+        
     def cb_projection_index_changed(self):
         if self.cb_projection.currentText() == "Mean":
             self.projection = "mean"
@@ -165,11 +181,13 @@ class mda_mannager(QWidget, Ui_Form):
             
         self.update_preview()
         
-    def cb_lut_index_changed(self): # TODO : definir la fonction
+    def cb_lut_index_changed(self):
+        self.LUT[self.channel_display] = self.cb_lut.currentText()
         self.update_preview()
         
     def cb_image_channel_index_changed(self):
         self.channel_display = self.cb_image_channel.currentText()
+        self._set_interface_channel()
         self.update_preview()
 
     def pb_grayscale_min_max_clicked(self):
@@ -206,21 +224,21 @@ class mda_mannager(QWidget, Ui_Form):
         """
         
         # Retrieve the current values from the spin boxes
-        self.min_grayscale = self.sb_grayscale_min.value()
-        self.max_grayscale = self.sb_grayscale_max.value()
+        self.min_grayscale[self.channel_display] = self.sb_grayscale_min.value()
+        self.max_grayscale[self.channel_display] = self.sb_grayscale_max.value()
         
         # Ensure that min_grayscale is always strictly less than max_grayscale
-        if self.min_grayscale >= self.max_grayscale:
-            self.min_grayscale = self.max_grayscale - 1 # Adjust min_grayscale
+        if self.min_grayscale[self.channel_display] >= self.max_grayscale[self.channel_display]:
+            self.min_grayscale[self.channel_display] = self.max_grayscale[self.channel_display] - 1 # Adjust min_grayscale
             
             # Update the spin box value while blocking signals to avoid infinite loops
             self.sb_grayscale_min.blockSignals(True)
-            self.sb_grayscale_min.setValue(self.min_grayscale)
+            self.sb_grayscale_min.setValue(self.min_grayscale[self.channel_display])
             self.sb_grayscale_min.blockSignals(False)
             
             # Update the slider value similarly
             self.slider_grayscale_min.blockSignals(True)
-            self.slider_grayscale_min.setValue(self.min_grayscale)
+            self.slider_grayscale_min.setValue(self.min_grayscale[self.channel_display])
             self.slider_grayscale_min.blockSignals(False)
             
         self.update_preview()
@@ -353,7 +371,6 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
         self.label_Image_side.setPixmap(QPixmap.fromImage(qimg))
     
     def display_timelapse_strip(self, strip: np.ndarray, max_display_width: int = 800):
-        # TODO mieux comprendre cette fenêtre
         """
         Affiche une portion de la frise temporelle centrée autour de self.timeline_position.
     
@@ -424,18 +441,23 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
         h , w = frame.shape # get dimensions of the image
         
         #Remove grey value bellow and above a certain value
-        frame = np.clip(frame,self.min_grayscale , self.max_grayscale )
+        frame = np.clip(frame,self.min_grayscale[self.channel_display] , self.max_grayscale[self.channel_display] )
         #Change values between 0 and 255 for displaying
-        frame = ((frame - self.min_grayscale ) * (255/(self.max_grayscale - self.min_grayscale)) ).astype(np.uint8)
+        frame = ((frame - self.min_grayscale[self.channel_display] )* (255/(self.max_grayscale[self.channel_display] - self.min_grayscale[self.channel_display])) ).astype(np.uint8)
         
         h , w = int(h * zoom ) , int (w * zoom)
         
         frame = cv2.resize(frame, (w, h), interpolation=cv2.INTER_LINEAR)
         
-        if self.LUT == "grayscale" :
+        LUT = self.LUT[self.channel_display]
+        if LUT == "Grayscale" :
             qt_image = QImage(frame.data, w, h, w, QImage.Format_Grayscale8)
         else:
-            qt_image = QImage(frame.data, w, h, w, QImage.Format_Grayscale8)
+            try :
+                qt_image = QImage(frame.data, w, h, w, QImage.Format_Indexed8)
+                qt_image.setColorTable(self.palettes[LUT])
+            except:
+                qt_image = QImage(frame.data, w, h, w, QImage.Format_Grayscale8)   
         
         return qt_image
     
