@@ -388,12 +388,8 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
         image_width = self.timeline_frame_width  # ou fixe à 10 par exemple
         
         # Position du bord droit en px (clampée)
-        right_px = int(round(self.timeline_position * image_width))
-        right_px = max(0, min(right_px, w))
-        
-        # Position du bord gauche en px (clampée)
-        left_px = max(0, right_px - max_display_width)
-        left_px = min(left_px, w)  # si right_px==w et max_display_width> w
+        right_px = min(w, (int(self.timeline_position) + 1) * image_width)
+        left_px  = max(0, right_px - max_display_width)
     
         # Tronque la frise à la fenêtre visible
         visible_strip = strip[:, left_px:right_px]

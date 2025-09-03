@@ -61,7 +61,7 @@
     "experiment": {
         "exp_name": "Image",
         "data_path": "D:/Projets_Python/OPM_GUI/Images",
-        "timepoints": 2,
+        "timepoints": 4,
         "time_intervals": 1.0,
         "total_duration": 2.0,
         "scanner_position": 0,
