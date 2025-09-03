@@ -46,7 +46,7 @@ class mda_mannager(QWidget, Ui_Form):
         
     def on_init(self):
         self.setWindowTitle('Multidimensionnal Acquisition')
-        
+        self.setWindowFlag(Qt.Window) 
         
         ###############################
         ## Creation of the Variables ##
@@ -448,17 +448,9 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
         h , w = int(h * zoom ) , int (w * zoom)
         
         frame = cv2.resize(frame, (w, h), interpolation=cv2.INTER_LINEAR)
-        
-        LUT = self.LUT[self.channel_display]
-        if LUT == "Grayscale" :
-            qt_image = QImage(frame.data, w, h, w, QImage.Format_Grayscale8)
-        else:
-            try :
-                qt_image = QImage(frame.data, w, h, w, QImage.Format_Indexed8)
-                qt_image.setColorTable(self.palettes[LUT])
-            except:
-                qt_image = QImage(frame.data, w, h, w, QImage.Format_Grayscale8)   
-        
+
+        qt_image = QImage(frame.data, w, h, w, QImage.Format_Indexed8)
+        qt_image.setColorTable(self.palettes[self.LUT[self.channel_display]])
         return qt_image
     
     

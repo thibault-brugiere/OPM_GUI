@@ -431,15 +431,15 @@ class functions_ui():
         return channel_acquisition
 
     def start_multidimensional_acquisition(hcam):
-        print("[OPM] start multidimensional acquisition")
+        # print("[OPM] start multidimensional acquisition")
         MDA = MultidimensionalAcquisition(hcam)
-        print("[OPM] camera initialization")
+        # print("[OPM] camera initialization")
         MDA.initialize_cameras()
-        print("[OPM] acquisition workers initialization")
+        # print("[OPM] acquisition workers initialization")
         MDA.initialize_acquisition_workers()
-        print("[OPM] DAQ configuration")
+        # print("[OPM] DAQ configuration")
         MDA.configure_daq()
-        print("[OPM] MDA RUN")
+        # print("[OPM] MDA RUN")
         MDA.run()
     
     #

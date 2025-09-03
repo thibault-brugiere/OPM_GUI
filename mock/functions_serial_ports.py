@@ -38,7 +38,12 @@ class functions_serial_ports():
         - port (str): The serial port to which the device is connected.
         - command (str): The command to send to the device.
         """
-        return f"send: {command} - response: ok"
+        if command == "HID?":
+            response = "L4CC"
+        else :
+            response = f"send: {command} - response: ok"
+            
+        return response
 
 class DebouncedSetter:
     """

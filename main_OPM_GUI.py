@@ -44,11 +44,13 @@ from hardware.functions_camera import CameraThread, functions_camera
 from hardware.Laser_Controller import LaserController
 from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
 from mock.DAQ import functions_daq
+from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
 from widget.Alignement_O2_O3_Window import alignement_O2_O3_Window
 from widget.Channel_Editor_Window import ChannelEditorWindow
+from widget.MDA_manager import mda_mannager
 from widget.Microscope_Settings_Window import microscope_settings_window
 from widget.Preset_ROI_Window import PresetROIWindow
 from widget.Sample_Finder import sample_finder_Window
@@ -1151,7 +1153,13 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                                       filename = 'GUI_parameters.json')
                 
                 self.status_bar.showMessage("start multidimensional acquisition")
-                functions_ui.start_multidimensional_acquisition(self.hcam)
+                
+                MDA = MultidimensionalAcquisition(self.hcam)
+                self.MDA_manager = mda_mannager(MDA, self)
+                self.MDA_manager.show()
+                self.MDA_manager.start_acquisition()
+                
+                # functions_ui.start_multidimensional_acquisition(self.hcam)
             except:
                 self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
         else:
