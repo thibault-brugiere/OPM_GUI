@@ -7,9 +7,6 @@ This widget connects to a Thorlabs camera (TLCamera via pylablib) and allows:
 - Snapshots saved to TIFF files
 - Real-time histogram visualization of the current frame
 - Basic control buttons (mirror, fluorescence, transmission light)
-  TODO : Save positions for multi-position acquisition
-  TODO : apply selected LUT
-  TODO : controll illuminators using DAQ
 """
 
 import numpy as np

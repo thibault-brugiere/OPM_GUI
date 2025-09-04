@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Thu Jan 30 14:00:36 2025
 
@@ -8,14 +7,8 @@ Convert file.ui to file.py
 
 pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
 
-# TODO : ouvrir laser_GUI depuis l'interface
-# TODO : Widget pour modifier tous les paramétres du microscope
-
-# TODO : Present preview size should be limited by camera parameters
-# TODO : faire un dictionnaire.json dans config pour toute la description du microscope
-        Pour qu'elle soit enregistrée lors de l'acquisition
-
 Resolved FTDI DLL issue by copying ftd2xx64.dll from Thorlabs software to C:\Windows\System32 and renaming it to ftd2xx.dll
+NOTE : les mocks sont en rempacer dans : * main_OPM_GUI * hardware.Laser_Controller * functions_camera * main_MDA
 """
 # Branche laser
 
@@ -42,7 +35,7 @@ from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
 from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
 from hardware.Laser_Controller import LaserController
-# from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et et main_MDA
+# from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
 # from mock.DAQ import functions_daq
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
 
@@ -140,7 +133,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.laser_list = ["405","488","561","640"] # = self.microscope.lasers, can not be modified
         
-        # TODO : Bloquer l'utilisation des lasers si leur initialisation n'est pas bonne
         self.laser_controller = LaserController(self.microscope.daq_channels_laser_analog_out,
                                                 self.microscope.daq_channels_laser_digital_out,
                                                 self.microscope.volts_per_laser_percent,
@@ -254,7 +246,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_hpos.editingFinished.connect(self.spinBox_hpos_value_changed)
         self.spinBox_vsize.editingFinished.connect(self.spinBox_vsize_value_changed)
         self.spinBox_vpos.editingFinished.connect(self.spinBox_vpos_value_changed)
-        # self.comboBox_size_preset.currentIndexChanged.connect(self.comboBox_size_preset_index_changed) #TODO supprimer la ligne
         self.comboBox_size_preset.textActivated.connect(self.comboBox_size_preset_index_changed)
         self.pb_center_FOV.clicked.connect(self.pb_center_FOV_clicked)
         self.comboBox_binning.currentIndexChanged.connect(self.comboBox_binning_index_changed)
@@ -663,6 +654,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         This ensures that the user interface accurately reflects the current
         state of the laser connections.
         """
+        # TODO : Bloquer l'utilisation des lasers concerné si le banc Oxxius n'est pas bien intialisé
         
         for laser in self.checkBox_laser.keys():
             self.channel = copy.deepcopy(self.default_channel)
