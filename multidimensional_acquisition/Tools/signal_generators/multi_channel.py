@@ -174,7 +174,7 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
         laser_volts = []
         
         for k in range(len(laser_power)) :
-            laser_volts.append(laser_power[k]/volts_per_laser_percent[k]) # Get all laser power in volts
+            laser_volts.append(laser_power[k] * volts_per_laser_percent[k]) # Get all laser power in volts
             tensions_lasers_channel[k,:channel_duration - post_volume_wait] = laser_volts[k] # set laser power for all volume
         
         tensions_galvo_channel[0:pre_volume_wait] = galvo_positions[0]
@@ -288,7 +288,7 @@ if __name__ == '__main__':
         
     frequency = 1e5
     print(microscope_config.experiment.exp_name)
-    tension_library = generate_single_channel_signals(microscope_config.cameras,
+    tension_library = generate_channel_signals(microscope_config.cameras,
                                                    microscope_config.channels,
                                                    microscope_config.experiment,
                                                    microscope_config.microscope,

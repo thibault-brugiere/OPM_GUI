@@ -272,13 +272,16 @@ class mda_mannager(QWidget, Ui_Form):
         #
         
     def update_infos(self):
-        if self.mda.acquisition_workers[0].camera.start_time is not None :
+        # try:
+        if self.mda.acquisition_workers[0].start_time is not None :
             if self.mda.state["daq"] == "idle":
                 pass
             else:
-                self.ellapsed_time = time.time() - self.mda.acquisition_workers[0].camera.start_time
+                self.ellapsed_time = time.time() - self.mda.acquisition_workers[0].start_time
         else:
             self.ellapsed_time = 0
+        # except:
+        #     return
             
         self.images_acquired = self.mda.acquisition_workers[0].total_images
         self.frames_acquired = self.mda.acquisition_workers[0].total_frames
@@ -364,13 +367,15 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
         
     def display_image(self, img: np.ndarray):
         qimg = self.create_preview(img)
-        self.label_mainImage.setPixmap(QPixmap.fromImage(qimg))
+        scaled_qimg = qimg.scaled(self.label_mainImage.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.label_mainImage.setPixmap(QPixmap.fromImage(scaled_qimg))
 
     def display_side_view(self, img: np.ndarray):
         qimg = self.create_preview(img)
-        self.label_Image_side.setPixmap(QPixmap.fromImage(qimg))
+        scaled_qimg = qimg.scaled(self.label_Image_side.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.label_Image_side.setPixmap(QPixmap.fromImage(scaled_qimg))
     
-    def display_timelapse_strip(self, strip: np.ndarray, max_display_width: int = 800):
+    def display_timelapse_strip(self, strip: np.ndarray,label: QObject):
         """
         Affiche une portion de la frise temporelle centrée autour de self.timeline_position.
     
@@ -411,8 +416,18 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
         
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        if self.strip_mean[self.channel_display] is not None:
-            self.display_timelapse_strip(self.strip_mean[self.channel_display])
+        # if self.strip_mean[self.channel_display] is not None:
+        #     self.display_timelapse_strip(self.strip_mean[self.channel_display], self.label_timeline)
+        if self.projection == "max":
+            if (self.project_max_front[self.channel_display] is not None
+                and self.project_max_side[self.channel_display] is not None
+                and self.strip_max[self.channel_display] is not None ):
+                    self.update_preview()
+        if self.projection == "mean":
+            if (self.project_mean_front[self.channel_display] is not None
+                and self.project_mean_side[self.channel_display] is not None
+                and self.strip_mean[self.channel_display] is not None ):
+                    self.update_preview()
     
         #################################
         ## Functions for the interface ##

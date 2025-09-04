@@ -143,9 +143,9 @@ class config():
         micro.OxxiusCombiner_port = micro_data['OxxiusCombiner_port']
         micro.OxxiusCombiner_command = micro_data['OxxiusCombiner_command']
         micro.daq_channels.update(micro_data["daq_channels"])
-        micro.daq_channels_laser_analog_out = micro_data['daq_channels_laser_analog_out'],
+        micro.daq_channels_laser_analog_out = micro_data['daq_channels_laser_analog_out']
         micro.daq_channels_laser_digital_out = micro_data['daq_channels_laser_digital_out']
-    
+        
         return cameras, channels, exp, micro
     
 

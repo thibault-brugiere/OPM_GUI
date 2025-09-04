@@ -24,7 +24,7 @@ import json
 import numpy as np
 import os
 import pickle
-# from pylablib.devices import DCAM # A remplacer aussi dans hardware functions_camera
+from pylablib.devices import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
 import sys
 import tifffile
 
@@ -40,10 +40,10 @@ from configs.config import channel_config, microscope, experiment #, camera
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
-# from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
+from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
 from hardware.Laser_Controller import LaserController
-from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
-from mock.DAQ import functions_daq
+# from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et et main_MDA
+# from mock.DAQ import functions_daq
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
 
 from ui_Control_Microscope_Main import Ui_MainWindow

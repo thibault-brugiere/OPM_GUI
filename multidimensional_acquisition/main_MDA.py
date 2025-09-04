@@ -10,12 +10,12 @@ import os
 import time
 
 from Config.MDA_config import config
-# from Hardware.daq_controller import NIDAQ_Acquisition
-# from Hardware.camera_controller import camera_acquisition
-# from Hardware.functions_serial_ports import functions_serial_ports
-from Hardware.mock import Mock_functions_serial_ports as functions_serial_ports
-from Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
-from Hardware.mock import MockCameraAcquisition as camera_acquisition
+from Hardware.daq_controller import NIDAQ_Acquisition
+from Hardware.camera_controller import camera_acquisition
+from Hardware.functions_serial_ports import functions_serial_ports
+# from Hardware.mock import Mock_functions_serial_ports as functions_serial_ports
+# from Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
+# from Hardware.mock import MockCameraAcquisition as camera_acquisition
 from Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
 from Tools.saving import prepare_saving_directory, save_metadata
 from Tools.signal_generators.multi_channel import generate_channel_signals
@@ -31,7 +31,6 @@ class MultidimensionalAcquisition:
         # Load configuration
         config_path = os.path.join(os.path.dirname(__file__), "Config")
         self.config = config(dirname=config_path)
-
         self.n_channels = len(self.config.channels)
             
         self.volume_tensions_library = generate_channel_signals(self.config.cameras,

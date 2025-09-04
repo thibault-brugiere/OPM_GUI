@@ -44,11 +44,13 @@ class NIDAQ_Acquisition:
         self.task_do = None
         self.task_co = None
     
-    def send_signals_to_daq_single_channel(self, tensions_library, timepoints, time_intervals,
-                                                    daq_channels,
-                                                    daq_channels_laser_analog_out,
-                                                    daq_channels_laser_digital_out,
-                                                    frequency = 1e5):
+    def send_signals_to_daq_single_channel(self, tensions_library,
+                                           timepoints,
+                                           time_intervals,
+                                           daq_channels,
+                                           daq_channels_laser_analog_out,
+                                           daq_channels_laser_digital_out,
+                                           frequency = 1e5):
         """
         Prepares and sends analog and digital control signals to the NI-DAQ for a 
         single-channel volumetric acquisition.
@@ -123,7 +125,6 @@ class NIDAQ_Acquisition:
         
         # Create AO channels: galvo + 3 laser channels (405, 488, 561)
         # NOTE: Limited to 3 lasers due to available DAQ channels
-        # TODO : ajouter le blanking numérique des lasers
         
             # Create all the analog channels
         self.task_ao.ao_channels.add_ao_voltage_chan(self.daq_channels["galvo"], min_val=-5.0, max_val=5.0)
@@ -136,8 +137,8 @@ class NIDAQ_Acquisition:
                 if self.tensions_lasers is None :
                     self.tensions_lasers = self.tensions_library['tensions_lasers'][idx]
                 else:
-                    self.tensions_lasers = np.vstack(self.tensions_lasers,
-                                                      self.tensions_library['tensions_lasers'][idx])
+                    self.tensions_lasers = np.vstack((self.tensions_lasers,
+                                                      self.tensions_library['tensions_lasers'][idx]))
             idx +=1
 
             # Set timing (sample clock) for AO output
@@ -158,7 +159,7 @@ class NIDAQ_Acquisition:
             # Create DO channels: camera trigger + laser blanking
         self.task_do.do_channels.add_do_chan(self.daq_channels["camera_0"])
         self.task_do.do_channels.add_do_chan(self.daq_channels["filter_wheel_1"])
-        self.task_do.do_channels.add_do_chan(self.daq_channels["filter_wheel_1"])
+        self.task_do.do_channels.add_do_chan(self.daq_channels["filter_wheel_2"])
         for laser, out in self.daq_channels_laser_digital_out.items() :
             self.task_do.do_channels.add_do_chan(out)
         
