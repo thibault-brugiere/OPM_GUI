@@ -7,9 +7,7 @@ Created on Tue Jun  3 08:41:13 2025
 import math
 import numpy as np
 import os
-from scipy.sparse import csc_array, dia_array, lil_array
 import tifffile
-
 
 class functions_tiff():
     
@@ -38,24 +36,14 @@ class deskew_volume(object):
 
         """
         self.images = images
+        self.deskewed_image = None
         self.aspect_ratio = aspect_ratio
         self.angle = angle
         
         self.angle = angle if angle_unit == "rad" else np.deg2rad(angle)
-            
-        self.planes , self.height, self.width = self.images.shape
         
         self.px_shift_calculation()
-        self.image_translation()
-    
-    def image_translation(self):
-        """
-        Translate each image in the volume according to the calculated pixel shift.
-        """
-        self.shifted_images = list()
-        for image_index in range(0,self.planes) :
-            self.shifted_images.append(self.create_shifted_image(image_index))
-            
+
     def px_shift_calculation(self):
         """
         Calculate the pixel translation between two frames.
@@ -73,44 +61,22 @@ class deskew_volume(object):
             raise ValueError(f'Aspect ratio is not legal, pixel shift = {px_shift}')
             
         self.px_shift =int(int_px_shift)
-        
-    def create_shifted_image(self, image_index):
-        """
-        Create a shifted sparse matrix for the given image index.
-        """
-        # Create a sparce matrix LIL (easier for indexation)
-        image = self.images[image_index]
-        total_rows = self.height + self.planes*self.px_shift
-        sparse_matrix = lil_array((total_rows, self.width), dtype=image.dtype)
-        
-        # Calculate position for the insertion
-        start_row = self.px_shift * image_index
-        end_row = start_row + image.shape[0]
-
-        # Insert image in the matrix
-        sparse_matrix[start_row:end_row, 0:self.width] = image
     
-        # Convert LIL matrix into CSC matrix for space saving
-        shifted_image = sparse_matrix.tocsc()
-    
-        return shifted_image
+    def deskew_volume(self):
+        self.deskewed_image = self.deskew_numpy(volume = self.images, px_shift_y = self.px_shift)
 
-    def save_shifted_image(self, name='Beads_deskew', path=''):
+    def save_numpy_image(self, name = "numpy_deskewed", path=''):
         """
         Save the shifted images as a TIFF stack.
 
         """
-        # Convert each CSC matric into en tableau dense et les empiler
-        image = [shifted_image.toarray() for shifted_image in self.shifted_images]
-        stacked_images = np.stack(image, axis=0)
-        
-        # Chemin vers le fichier TIFF de sortie
-        output_file_path = f'{path}{name}.tiff'
-        
-        # Enregistrer le tableau empilé en tant que fichier TIFF compressé
-        tifffile.imwrite(output_file_path, stacked_images, compression='zlib')
-        
-        print(f"Volume TIFF enregistré sous {output_file_path}")
+        if self.deskewed_image is not None :
+            output_file_path = f'{path}{name}.tiff'
+            tifffile.imwrite(output_file_path, self.deskewed_image, compression='zlib')
+            
+            print(f"Volume TIFF enregistré sous {output_file_path}")
+        else:
+            raise ValueError("No deskewed image")
     
     def legalize_voxel_aspect_ratio(aspect_ratio, angle):
         """
@@ -122,24 +88,51 @@ class deskew_volume(object):
         """
         return max(int(round(aspect_ratio / math.tan(angle))), 1) * math.tan(angle)
     
+    def deskew_numpy(self, volume: np.ndarray, px_shift_y: int = 0, px_shift_x: int = 0) -> np.ndarray:
+        """
+        Deskew a 3D volume (Z, Y, X) by shifting each Z-slice along Y and/or X
+        by a fixed number of pixels per slice.
+
+        Parameters:
+        - volume: np.ndarray of shape (Z, Y, X)
+        - px_shift_y: int, shift in Y per Z-plane
+        - px_shift_x: int, shift in X per Z-plane
+
+        Returns:
+        - np.ndarray of shape (Z, Y + Z*shift_y, X + Z*shift_x)
+        """
+        Z, Y, X = volume.shape
+        new_Y = Y + Z * abs(px_shift_y)
+        new_X = X + Z * abs(px_shift_x)
+
+        deskewed = np.zeros((Z, new_Y, new_X), dtype=volume.dtype)
+
+        for z in range(Z):
+            y_start = z * px_shift_y if px_shift_y >= 0 else new_Y - Y - z * abs(px_shift_y)
+            y_end = y_start + Y
+
+            x_start = z * px_shift_x if px_shift_x >= 0 else new_X - X - z * abs(px_shift_x)
+            x_end = x_start + X
+
+            deskewed[z, y_start:y_end, x_start:x_end] = volume[z]
+
+        return deskewed
+    
 ###############################################################################
 
 if __name__ == '__main__':
     
-    name = "volume_561_t0000"
+    name = "Beads_01"
     
-    path = "D:/EqSibarita/Images/OPM/250707_Continuous-Plane_Acquisition/2025-07-07_15-35-02_Beads_1um_AR6_plane_Acquisition/561"
+    path = "D:\Projets_Python\OPM_GUI\image_analysis"
     
     file_path = os.path.join(path, f'{name}.tif')
     
     image = tifffile.imread(file_path)
     
-    volume = deskew_volume(image, aspect_ratio = 5.959, angle = 50, angle_unit = "deg")
+    volume = deskew_volume(image, aspect_ratio = 0.8390996311772799, angle = 40, angle_unit = "deg")
     
-    volume.save_shifted_image(f'deskew_{name}',f'{path}/')
-    
-#     image = tifffile.imread("Beads.tif")
-    
-#     volume = deskew_volume(image, aspect_ratio = 3, angle = 45, angle_unit = "deg")
-    
+    volume.deskew_volume()
+
+    volume.save_numpy_image(f'deskew_{name}',f'{path}/')
     

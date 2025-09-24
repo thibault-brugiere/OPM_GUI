@@ -17,6 +17,7 @@ Created on Tue Sep  2 09:03:43 2025
 # TODO : Ajuster la taille du preview pour avoir le champ entier (auto ?)
 # TODO : Avoir plusieurs LUT (Fire ?)
 # TODO :  Ajuster le contraste en auto
+# TODO : Bloquer l'utilisation des lasers si leur initialisation n'est pas bonne
         
     #################################
     # Multidimensionnal acquisition #
@@ -30,13 +31,15 @@ Created on Tue Sep  2 09:03:43 2025
     
 # TODO Ajouter un bouton pour abandonner l'expérience
     
+# TODO : Faire le contrôle de la roue :
+    - placement + trigger en ammont pour le dual channel
+    - trigger à chaque volume pour le multi-channel
+    
     # ---------
     # Hardware
     # --------
     
     # daq_controller
-    
-# TODO send_signals_to_daq_single_channel ajouter le blanking numérique des lasers
 
     #-------------
     # Tools
