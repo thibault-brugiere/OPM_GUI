@@ -6,55 +6,55 @@
             "vchipsize": 2368,
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
-            "hsize": 2048,
-            "hpos": 1192,
-            "vsize": 2048,
-            "vpos": 160,
+            "hsize": 1024,
+            "hpos": 1704,
+            "vsize": 1024,
+            "vpos": 672,
             "exposure_time": 0.01,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
-            "image_readout_time": 0.007542981818181819
+            "image_readout_time": 0.003800727272727273
         }
     },
     "channels": {
-        "channel_GFP": {
-            "channel_id": "GFP",
+        "channel_BFP": {
+            "channel_id": "BFP",
             "is_active": true,
             "channel_order": null,
             "laser_is_active": {
-                "405": false,
-                "488": true,
+                "405": true,
+                "488": false,
                 "561": false,
                 "640": false
             },
             "laser_power": {
-                "405": 0,
-                "488": 16,
+                "405": 11,
+                "488": 0,
                 "561": 0,
                 "640": 0
             },
-            "filter": "GFP",
+            "filter": "BFP",
             "camera": 0,
             "exposure_time": 10.0
         }
     },
     "experiment": {
-        "exp_name": "20250916_1umTetra_40deg",
-        "data_path": "D:/Projets_Python/OPM_GUI/Images",
-        "timepoints": 1,
+        "exp_name": "Image",
+        "data_path": "",
+        "timepoints": 10,
         "time_intervals": 1.0,
-        "total_duration": 1.0,
+        "total_duration": 10.0,
         "scanner_position": 0,
-        "scan_range": 50.09210348587985,
-        "aspect_ratio": 3,
-        "n_steps": 77,
-        "step_size": 0.6591066248142086,
+        "scan_range": 20.279883589761845,
+        "aspect_ratio": 3.3563985247091197,
+        "n_steps": 26,
+        "step_size": 0.8111953435904738,
         "slit_aperture": 800
     },
     "microscope": {
-        "tilt_angle": 45.0,
+        "tilt_angle": 40.0,
         "mag_total": 29.61,
-        "volts_per_um": 0.05,
+        "volts_per_um": 0.01024,
         "galvo_response_time": 0.3,
         "galvo_flyback_time": 3.0,
         "stage_port": "COM10",

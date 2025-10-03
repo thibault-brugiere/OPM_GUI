@@ -34,9 +34,9 @@ Created on Tue Sep  2 09:03:43 2025
     # Hardware
     # --------
     
+    
     # daq_controller
     
-# TODO send_signals_to_daq_single_channel ajouter le blanking numérique des lasers
 
     #-------------
     # Tools
@@ -51,4 +51,10 @@ Created on Tue Sep  2 09:03:43 2025
 # TODO : Save positions for multi-position acquisition
 # TODO : apply selected LUT
 # TODO : controll illuminators using DAQ
+
+    #############
+    # Deskewing #
+    #############
+# TODO : Add a deskewing interface from the main
+# TODO : Read the aspect ratio from 
 """
