@@ -6,14 +6,14 @@
             "vchipsize": 2368,
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
-            "hsize": 4432,
-            "hpos": 0,
-            "vsize": 2368,
-            "vpos": 0,
+            "hsize": 1024,
+            "hpos": 1704,
+            "vsize": 1024,
+            "vpos": 672,
             "exposure_time": 0.01,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
-            "image_readout_time": 0.008493058
+            "image_readout_time": 0.003800727272727273
         }
     },
     "channels": {
@@ -40,7 +40,7 @@
     },
     "experiment": {
         "exp_name": "Image",
-        "data_path": "D:/Projets_Python/OPM_GUI/Images",
+        "data_path": "",
         "timepoints": 10,
         "time_intervals": 1.0,
         "total_duration": 10.0,
