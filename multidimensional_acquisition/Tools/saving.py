@@ -48,6 +48,7 @@ def save_metadata(config, save_path):
         f.write(f"Scan Range: {config.experiment.scan_range:.2f} µm\n")
         f.write(f"Step Size: {config.experiment.step_size:.3f} µm\n")
         f.write(f"Slit Aperture: {config.experiment.slit_aperture}\n")
+        f.write(f"Aspect Ratio: {config.experiment.aspect_ratio}\n")
         f.write("\n")
         f.write("# Additional metadata can be added below:\n")
         f.write("\n")

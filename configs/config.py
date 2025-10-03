@@ -71,11 +71,11 @@ class experiment(object):
 class microscope(object):
     def __init__(self):
         
-        self.tilt_angle = 45.0 #in degrees
+        self.tilt_angle = 40.0 #in degrees
         self.mag_total = 29.61
         
         # scanning galvo
-        self.volts_per_um = 0.05
+        self.volts_per_um = 0.01024
         self.galvo_response_time = 0.3  # A mesure in ms
         self.galvo_flyback_time = 3.0 # A mesurer in ms
         
