@@ -30,6 +30,7 @@ from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
 from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
 from acquisition.z_stack import z_stack
 from configs.config import channel_config, microscope, experiment #, camera
+from configs.config_saving import microscope_settings_to_dict, dict_to_microscope_settings
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
@@ -231,6 +232,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
         
         self.spinBox_aspect_ratio.setValue(self.experiment.aspect_ratio)
+        
+            # Desactivate tools # TODO supprimer le bouton
+        self.pb_snoutscope_acquisition.setDisabled(True)
         
         ##############################################
         ## Connection between functions and buttons ##
@@ -1061,7 +1065,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.histogram_greyvalue_thread.start()
         
     def display_gray_histogram(self, image_data, w, h):
-        " display the latest generated gray histogram"
+        "display the latest generated gray histogram"
         qimage = QImage(image_data, w, h, w * 4, QImage.Format_RGBA8888)
         self.label_histogram_greyvalue.setPixmap(QPixmap.fromImage(qimage))
             
@@ -1327,30 +1331,28 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     
     def load_microscope_settings(self):
         config_dir = 'configs'
-        file_path = os.path.join(config_dir, 'microscope_settings.pkl')
         
+        file_path = os.path.join(config_dir, 'microscope_settings.json')
         self.loaded_microscope_settings = False
         
         if os.path.exists(file_path):
-            with open(file_path, 'rb') as file:
-                data = pickle.load(file)
-                self.microscope = data
-                
-            self.loaded_microscope_settings = True
-        
-        return self.loaded_microscope_settings
+            with open(file_path, 'r') as file:
+                microscope_dict = json.load(file)
+                self.microscope = microscope()
+                self.microscope = dict_to_microscope_settings(self.microscope, microscope_dict)
+                self.loaded_microscope_settings = True
     
     def save_microscope_settings(self):
         config_dir = 'configs'
         os.makedirs(config_dir, exist_ok=True)  # Crée le dossier s'il n'existe pas
-        file_path = os.path.join(config_dir, 'microscope_settings.pkl')
+            
+        file_path = os.path.join(config_dir, 'microscope_settings.json')
         
-        microscope_settings_data = self.microscope
+        microscope_dict = microscope_settings_to_dict(self.microscope)
         
-        with open(file_path, 'wb') as file:
-            pickle.dump(microscope_settings_data, file)
-    
-    
+        with open(file_path, 'w') as file:
+            json.dump(microscope_dict, file, indent = 4)
+        
     #
     # Channels
     #

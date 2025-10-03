@@ -95,15 +95,7 @@
             "camera_1": "Dev1/port0/line1",
             "filter_wheel_1": "Dev1/port0/line2",
             "filter_wheel_2": "Dev1/port0/line3",
-            "405": "Dev1/ao1",
-            "488": "Dev1/ao2",
-            "561": null,
-            "640": "Dev1/ao3",
-            "laser_blanking": "Dev1/port0/line4",
-            "dm 405": null,
-            "dm 488": null,
-            "dm 561": null,
-            "dm 640": null
+            "laser_blanking": "Dev1/port0/line4"
         },
         "daq_channels_laser_analog_out": {
             "405": "Dev1/ao1",
