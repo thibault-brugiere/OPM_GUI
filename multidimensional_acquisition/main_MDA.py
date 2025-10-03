@@ -173,8 +173,8 @@ class MultidimensionalAcquisition:
             worker.stop()
             
         for cam in self.cameras_acquisition :
-            cam.stop_acquisition
-            cam.release_camera
+            cam.stop_acquisition()
+            cam.release_camera()
 
         if self.daq:
             self.daq.stop()

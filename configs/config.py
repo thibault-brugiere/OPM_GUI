@@ -71,11 +71,11 @@ class experiment(object):
 class microscope(object):
     def __init__(self):
         
-        self.tilt_angle = 45.0 #in degrees
+        self.tilt_angle = 40.0 #in degrees
         self.mag_total = 29.61
         
         # scanning galvo
-        self.volts_per_um = 0.05
+        self.volts_per_um = 0.01024
         self.galvo_response_time = 0.3  # A mesure in ms
         self.galvo_flyback_time = 3.0 # A mesurer in ms
         
@@ -110,15 +110,15 @@ class microscope(object):
                              "camera_1": "Dev1/port0/line1", # Trigger l'exposition de la deuxieme camera (si presente)
                              "filter_wheel_1": "Dev1/port0/line2", # Trigger de la roue de filtres
                              "filter_wheel_2": "Dev1/port0/line3", # Trigger de la roue de filtres
-                             "405" : "Dev1/ao1", # Régle la puissance du laser 405
-                             "488" : "Dev1/ao2",      # Régle la puissance du laser 488
-                             "561" : None, # Régle la puissance du laser 561
-                             "640" : "Dev1/ao3", # Régle la puissance du laser 640
+                             # "405" : "Dev1/ao1", # Régle la puissance du laser 405
+                             # "488" : "Dev1/ao2",      # Régle la puissance du laser 488
+                             # "561" : None, # Régle la puissance du laser 561
+                             # "640" : "Dev1/ao3", # Régle la puissance du laser 640
                              "laser_blanking" : "Dev1/port0/line4", # Trigger le blanking de l'AOTF du banc laser
-                             "dm 405" : None, # Régle digital modulation (dm) du laser 405
-                             "dm 488" : None, # Régle digital modulation (dm) du laser 488
-                             "dm 561" : None, # Régle digital modulation (dm) du laser 561
-                             "dm 640" : None, # Régle digital modulation (dm) du laser 640
+                             # "dm 405" : None, # Régle digital modulation (dm) du laser 405
+                             # "dm 488" : None, # Régle digital modulation (dm) du laser 488
+                             # "dm 561" : None, # Régle digital modulation (dm) du laser 561
+                             # "dm 640" : None, # Régle digital modulation (dm) du laser 640
                              }
         
         self.daq_channels_laser_analog_out = {"405" : "Dev1/ao1", # Régle la puissance du laser 405
