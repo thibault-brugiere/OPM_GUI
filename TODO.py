@@ -18,12 +18,14 @@ Created on Tue Sep  2 09:03:43 2025
 # TODO : Avoir plusieurs LUT (Fire ?)
 # TODO :  Ajuster le contraste en auto
 # TODO : supprimer le bouton snoutscope acquisition
+# TODO : mettre les fonctions config_saving, from dict et todict directement dans la classe config
         
     #################################
     # Multidimensionnal acquisition #
     #################################
     
 # TODO : accélérer le lancement du MDA ~5s (pourquoi si je le lance une deuxiéme fois c'est presque instantané ?)
+
 
     #-----------
     #MDA_manager

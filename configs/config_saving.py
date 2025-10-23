@@ -19,6 +19,7 @@ def microscope_settings_to_dict(microscope):
         "stage_port" : microscope.stage_port,
         
         # Filters
+        "filter_port" : microscope.filter_port,
         "filter_changing_time" : microscope.filter_changing_time, # in ms
         "filters" : microscope.filters, #should be 6 options
         
@@ -45,6 +46,7 @@ def dict_to_microscope_settings(microscope, microscope_dict):
     microscope.galvo_response_time = microscope_dict["galvo_response_time"]
     microscope.galvo_flyback_time = microscope_dict["galvo_flyback_time"]
     microscope.stage_port = microscope_dict["stage_port"]
+    microscope.filter_port = microscope_dict["filter_port"]
     microscope.filter_changing_time = microscope_dict["filter_changing_time"]
     microscope.filters = microscope_dict["filters"]
     microscope.lasers = microscope_dict["lasers"]

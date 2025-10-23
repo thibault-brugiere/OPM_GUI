@@ -1190,7 +1190,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def openDAQEditor(self):
         "display window to eddit DAC channels"
-        self.DAQ_editor = setDAQWindow(self.microscope.daq_channels,self)
+        self.DAQ_editor = setDAQWindow(self.microscope.daq_channels,
+                                       self.microscope.daq_channels_laser_analog_out,
+                                       self.microscope.daq_channels_laser_digital_out,
+                                       self)
         self.DAQ_editor.show()
     
     def openFiltersEditor(self):

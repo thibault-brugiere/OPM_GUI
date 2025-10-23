@@ -47,22 +47,63 @@ class microscope_settings_window(QWidget, Ui_Form):
         #
         # Dictionnary creation
         #
+        
+        self.lineEdit_filters = [self.lineEdit_Filter1, self.lineEdit_Filter2, self.lineEdit_Filter3,
+                                 self.lineEdit_Filter4, self.label_Filter5, self.lineEdit_Filter6]
        
         self.lineEdits = {'tilt_angle' : self.lineEdit_tilt_angle,
                      'mag_total' : self.lineEdit_mag_total,
+                     'stage_port' : self.lineEdit_stage_port,
                      'volts_per_um' : self.lineEdit_volts_per_um,
                      'galvo_response_time' : self.lineEdit_galvo_response_time,
                      'galvo_flyback_time' : self.lineEdit_galvo_flyback_time,
-                     'laser_response_time' : self.lineEdit_laser_response_time,    
+                     'laser_response_time' : self.lineEdit_laser_response_time,   
+                     'Oxius_port' : self.lineEdit_OxxiusCombiner_port,
+                     'filter_port' : self.lineEdit_Filter_port,
+                     'filter_changing_time' : self.lineEdit_filter_changing_time,
+                     'filter1' : self.lineEdit_Filter1,
+                     'filter2' : self.lineEdit_Filter2,
+                     'filter3' : self.lineEdit_Filter3,
+                     'filter4' : self.lineEdit_Filter4,
+                     'filter5' : self.lineEdit_Filter5,
+                     'filter6' : self.lineEdit_Filter6
                      }
         
         self.microscope_params = {'tilt_angle' : self.microscope.tilt_angle,
                              'mag_total' : self.microscope.mag_total,
+                             'stage_port' : self.microscope.stage_port,
                              'volts_per_um' : self.microscope.volts_per_um,
                              'galvo_response_time' : self.microscope.galvo_response_time,
                              'galvo_flyback_time' : self.microscope.galvo_flyback_time,
-                             'laser_response_time' : self.microscope.laser_response_time,    
+                             'laser_response_time' : self.microscope.laser_response_time,
+                             'Oxius_port' : self.microscope.OxxiusCombiner_port,
+                             'filter_port' : self.microscope.filter_port,
+                             'filter_changing_time' : self.microscope.filter_changing_time,
+                             'filter1' : self.microscope.filters[0],
+                             'filter2' : self.microscope.filters[1],
+                             'filter3' : self.microscope.filters[2],
+                             'filter4' : self.microscope.filters[3],
+                             'filter5' : self.microscope.filters[4],
+                             'filter6' : self.microscope.filters[5],
                              }
+        
+        self.param_type = {'tilt_angle' : 'float',
+                           'mag_total' : 'float',
+                           'stage_port' : 'str',
+                           'volts_per_um' : 'float',
+                           'galvo_response_time' : 'float',
+                           'galvo_flyback_time' : 'float',
+                           'laser_response_time' : 'float',
+                           'Oxius_port' : 'str',
+                           'filter_port' : 'str',
+                           'filter_changing_time' : 'float',
+                           'filter1' : 'str',
+                           'filter2' : 'str',
+                           'filter3' : 'str',
+                           'filter4' : 'str',
+                           'filter5' : 'str',
+                           'filter6' : 'str',
+                           }
         
         #
         # Initialisation of the lineEdits
@@ -87,7 +128,7 @@ class microscope_settings_window(QWidget, Ui_Form):
         for key in self.lineEdits.keys():
             if self.lineEdits[key].text() == str(self.microscope_params[key]):
                 pass
-            else:
+            elif self.param_type[key] == 'float':
                 try:
                     value = float(self.lineEdits[key].text())
                     self.microscope_params[key] = value
