@@ -11,14 +11,12 @@ Created on Tue Sep  2 09:03:43 2025
     ########
 
 # TODO : ouvrir laser_GUI depuis l'interface (et autres GUI)
-# TODO : Widget pour modifier tous les paramétres du microscope
 # TODO : faire un dictionnaire.json dans config pour toute la description du microscope
         Pour qu'elle soit enregistrée lors de l'acquisition
 # TODO : Ajuster la taille du preview pour avoir le champ entier (auto ?)
 # TODO : Avoir plusieurs LUT (Fire ?)
 # TODO : Ajuster le contraste en auto
 # TODO : supprimer le bouton snoutscope acquisition
-# TODO : mettre les fonctions config_saving, from dict et todict directement dans la classe config
         
     #################################
     # Multidimensionnal acquisition #

@@ -196,3 +196,56 @@ class microscope(object):
             ## Filters
             
             ## Dichroic
+            
+    def to_dict(self):
+        
+        microscope_dict = {
+            "tilt_angle" : self.tilt_angle,
+            "mag_total" : self.mag_total,
+            # scanning galvo
+            "volts_per_um" : self.volts_per_um,
+            "galvo_response_time" : self.galvo_response_time,  # A mesure in ms
+            "galvo_flyback_time" : self.galvo_flyback_time, # A mesurer in ms
+            
+            # stage
+            "stage_port" : self.stage_port,
+            
+            # Filters
+            "filter_port" : self.filter_port,
+            "filter_changing_time" : self.filter_changing_time, # in ms
+            "filters" : self.filters, #should be 6 options
+            
+            # Lasers
+            "lasers" : self.lasers, # ["405","488","561","640"]
+            "volts_per_laser_percent" : self.volts_per_laser_percent, # 5v max
+            "laser_response_time" : self.laser_response_time, # in ms
+            "OxxiusCombiner_port" : self.OxxiusCombiner_port,
+            "OxxiusCombiner_command" : self.OxxiusCombiner_command,
+            
+            # NiDAQ
+            "daq_channels" : self.daq_channels,
+            "daq_channels_laser_analog_out" : self.daq_channels_laser_analog_out,
+            "daq_channels_laser_digital_out" : self.daq_channels_laser_digital_out
+            }
+        
+        return microscope_dict
+        
+    def from_dict(self, microscope_dict):
+
+        self.tilt_angle = microscope_dict["tilt_angle"]
+        self.mag_total = microscope_dict["mag_total"]
+        self.volts_per_um = microscope_dict["volts_per_um"]
+        self.galvo_response_time = microscope_dict["galvo_response_time"]
+        self.galvo_flyback_time = microscope_dict["galvo_flyback_time"]
+        self.stage_port = microscope_dict["stage_port"]
+        self.filter_port = microscope_dict["filter_port"]
+        self.filter_changing_time = microscope_dict["filter_changing_time"]
+        self.filters = microscope_dict["filters"]
+        self.lasers = microscope_dict["lasers"]
+        self.volts_per_laser_percent = microscope_dict["volts_per_laser_percent"]
+        self.laser_response_time = microscope_dict["laser_response_time"]
+        self.OxxiusCombiner_port = microscope_dict["OxxiusCombiner_port"]
+        self.OxxiusCombiner_command = microscope_dict["OxxiusCombiner_command"]
+        self.daq_channels = microscope_dict["daq_channels"]
+        self.daq_channels_laser_analog_out = microscope_dict["daq_channels_laser_analog_out"]
+        self.daq_channels_laser_digital_out = microscope_dict["daq_channels_laser_digital_out"]

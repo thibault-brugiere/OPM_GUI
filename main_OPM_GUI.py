@@ -1312,7 +1312,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             with open(file_path, 'r') as file:
                 microscope_dict = json.load(file)
                 self.microscope = microscope()
-                self.microscope = dict_to_microscope_settings(self.microscope, microscope_dict)
+                self.microscope.from_dict(microscope_dict)
                 self.loaded_microscope_settings = True
     
     def save_microscope_settings(self):
@@ -1321,7 +1321,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
         file_path = os.path.join(config_dir, 'microscope_settings.json')
         
-        microscope_dict = microscope_settings_to_dict(self.microscope)
+        microscope_dict = self.microscope.to_dict()
         
         with open(file_path, 'w') as file:
             json.dump(microscope_dict, file, indent = 4)
