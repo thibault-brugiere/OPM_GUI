@@ -30,7 +30,6 @@ from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
 from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
 from acquisition.z_stack import z_stack
 from configs.config import channel_config, microscope, experiment #, camera
-from configs.config_saving import microscope_settings_to_dict, dict_to_microscope_settings
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
@@ -296,6 +295,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.checkBox_show_saturation.stateChanged.connect(self.checkBox_show_saturation_value_changed)
         self.spinBox_min_grayscale.valueChanged.connect(self.spinBox_grayscale_value_changed)
         self.spinBox_max_grayscale.valueChanged.connect(self.spinBox_grayscale_value_changed)
+        self.pb_MinMax_grayscale.clicked.connect(self.pb_MinMax_grayscale_clicked_connect)
         self.pb_auto_grayscale.clicked.connect(self.pb_auto_grayscale_clicked_connect)
         self.pb_reset_grayscale.clicked.connect(self.pb_reset_grayscale_clicked_connect)
         self.pb_preview.clicked.connect(self.pb_preview_clicked)
@@ -895,8 +895,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.slider_min_grayscale.blockSignals(True)
             self.slider_min_grayscale.setValue(self.min_grayscale)
             self.slider_min_grayscale.blockSignals(False)
-        
-    def pb_auto_grayscale_clicked_connect(self):
+            
+    def pb_MinMax_grayscale_clicked_connect(self):
         """"
         Sets the grayscale min and max values based on the current preview frame,
         or assigns default values if no frame is available.
@@ -905,6 +905,20 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             frame = self.preview_frame
             self.spinBox_min_grayscale.setValue(np.min(frame))
             self.spinBox_max_grayscale.setValue(np.max(frame))
+        else:
+            pass
+    
+    def pb_auto_grayscale_clicked_connect(self):
+        """"
+        Sets the grayscale min and max values based on the current preview frame,
+        or assigns default values if no frame is available.
+        """
+        if self.preview_frame is not None:
+            frame = self.preview_frame
+            min_grayscale, max_grayscale = functions_ui.auto_contrast(frame)
+            
+            self.spinBox_min_grayscale.setValue(min_grayscale)
+            self.spinBox_max_grayscale.setValue(max_grayscale)
         else:
             pass
         

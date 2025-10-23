@@ -401,24 +401,25 @@ class functions_ui():
     # Acquisition
     #
     
-    def start_snoutscope_acquisition(file_path, working_directory) :
-        """
-        Lance un fichier Python en utilisant subprocess.
+    # TODO: A supprimer
+    # def start_snoutscope_acquisition(file_path, working_directory) :
+    #     """
+    #     Lance un fichier Python en utilisant subprocess.
         
-        Parameters:
-        - file_path (str): Le chemin vers le fichier Python à exécuter.
-        """
-        try:
-            # Exécuter le fichier Python
-            subprocess.run(["python", file_path],
-                           check=True, text=True,
-                           capture_output=True,
-                           cwd=working_directory)
-        except subprocess.CalledProcessError as e:
-            print(f"Erreur lors de l'exécution du fichier : {e}")
-            print("Return code:", e.returncode)
-            print("Output:", e.stdout)
-            print("Error:", e.stderr)
+    #     Parameters:
+    #     - file_path (str): Le chemin vers le fichier Python à exécuter.
+    #     """
+    #     try:
+    #         # Exécuter le fichier Python
+    #         subprocess.run(["python", file_path],
+    #                        check=True, text=True,
+    #                        capture_output=True,
+    #                        cwd=working_directory)
+    #     except subprocess.CalledProcessError as e:
+    #         print(f"Erreur lors de l'exécution du fichier : {e}")
+    #         print("Return code:", e.returncode)
+    #         print("Output:", e.stdout)
+    #         print("Error:", e.stderr)
 
     def get_active_channel(active_channels, channel):
         channel_acquisition = []

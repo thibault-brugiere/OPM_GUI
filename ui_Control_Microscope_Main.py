@@ -1026,6 +1026,11 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_23 = QHBoxLayout()
         self.horizontalLayout_23.setObjectName(u"horizontalLayout_23")
+        self.pb_MinMax_grayscale = QPushButton(self.centralwidget)
+        self.pb_MinMax_grayscale.setObjectName(u"pb_MinMax_grayscale")
+
+        self.horizontalLayout_23.addWidget(self.pb_MinMax_grayscale)
+
         self.pb_auto_grayscale = QPushButton(self.centralwidget)
         self.pb_auto_grayscale.setObjectName(u"pb_auto_grayscale")
 
@@ -1442,6 +1447,7 @@ class Ui_MainWindow(object):
 "Pixels above this value will appear white.", None))
 #endif // QT_CONFIG(tooltip)
         self.label_max_grayscale.setText(QCoreApplication.translate("MainWindow", u"Max", None))
+        self.pb_MinMax_grayscale.setText(QCoreApplication.translate("MainWindow", u"PushButton", None))
 #if QT_CONFIG(tooltip)
         self.pb_auto_grayscale.setToolTip(QCoreApplication.translate("MainWindow", u"Automatically adjust the minimum and maximum grey values based on the image histogram.", None))
 #endif // QT_CONFIG(tooltip)

@@ -15,15 +15,13 @@ Created on Tue Sep  2 09:03:43 2025
         Pour qu'elle soit enregistrée lors de l'acquisition
 # TODO : Ajuster la taille du preview pour avoir le champ entier (auto ?)
 # TODO : Avoir plusieurs LUT (Fire ?)
-# TODO : Ajuster le contraste en auto
 # TODO : supprimer le bouton snoutscope acquisition
         
     #################################
     # Multidimensionnal acquisition #
     #################################
     
-# TODO : accélérer le lancement du MDA ~5s (pourquoi si je le lance une deuxiéme fois c'est presque instantané ?)
-
+# TODO : Faire un protocole d'acquisition ultra rapide (mouvement galvo continu)
 
     #-----------
     #MDA_manager
@@ -34,6 +32,8 @@ Created on Tue Sep  2 09:03:43 2025
 # TODO : Faire le contrôle de la roue :
     - placement + trigger en ammont pour le dual channel
     - trigger à chaque volume pour le multi-channel
+    
+    
     
     # ---------
     # Hardware

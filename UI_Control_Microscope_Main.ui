@@ -2110,6 +2110,13 @@ Pixels above this value will appear white.</string>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_23">
             <item>
+             <widget class="QPushButton" name="pb_MinMax_grayscale">
+              <property name="text">
+               <string>PushButton</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="pb_auto_grayscale">
               <property name="toolTip">
                <string>Automatically adjust the minimum and maximum grey values based on the image histogram.</string>
