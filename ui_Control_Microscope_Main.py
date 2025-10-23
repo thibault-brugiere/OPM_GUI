@@ -1167,7 +1167,6 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuParameters.menuAction())
         self.menuFichier.addAction(self.action_SaveConfig)
         self.menuConfig.addAction(self.action_DAQ)
-        self.menuConfig.addAction(self.action_Filters)
         self.menuConfig.addAction(self.action_Microscope)
         self.menuAlign.addAction(self.action_Align_O2_O3)
         self.menuAlign.addAction(self.menuShortcuts.menuAction())

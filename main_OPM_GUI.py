@@ -317,7 +317,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
             ## Config
         self.action_DAQ.triggered.connect(self.openDAQEditor)
-        self.action_Filters.triggered.connect(self.openFiltersEditor)
         self.action_Microscope.triggered.connect(self.openMicroscopeEditor)
         
             ## Tools
@@ -1103,32 +1102,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         
     def pb_snoutscope_acquisition_clicked_connect(self):
-        """Start acquisition with the Snoutscope protocole from Armin"""
-        self.status_bar.showMessage("start Snoutscope acquisition", 10000)
-        print("start Snoutscope acquisition")
-        if self.is_preview:
-            # Eteint l'acquisition si nécessaire
-            self.pb_stop_preview_clicked()
-            # Eteint les lasers si nécessaire
-            self.pb_laser_emission.setChecked(False)
-            self.pb_laser_emission_clicked()
-            
-        functions_camera.close_cameras(self.hcam)
-        
-        if self.active_channels and self.active_channels[0] != 'None' :
-            try:
-                send_to_snoutscope_acquisition(self.camera[0],
-                                               self.channel[self.active_channels[0]],
-                                               self.experiment, self.microscope)
-                # Enregistre les données, ne prendra en compre que le premier channel choisi
-                functions_ui.start_snoutscope_acquisition(file_path = 'D:/Projets_Python/OPM_GUI/snoutscopev3/Snoutscope.py',
-                                                          working_directory = 'D:/Projets_Python/OPM_GUI/snoutscopev3')
-            except:
-                self.status_bar.showMessage("parameters saving didn't worked!", 5000)
-        else:
-            self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
-            
-        self.hcam , self.cameras = functions_camera.initialize_cameras(self.n_camera, self.microscope.mag_total)
+        pass
             
     def pb_multidimensional_acquisition_clicked_connect(self):
         """Start acquisition with the Multi Dimentionnal Acquisition protocole from Thibault"""
@@ -1195,10 +1169,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                        self.microscope.daq_channels_laser_digital_out,
                                        self)
         self.DAQ_editor.show()
-    
-    def openFiltersEditor(self):
-        self.filters_editor = filtersEditionWindow(self.microscope.filters,self)
-        self.filters_editor.show()
         
     def openMicroscopeEditor(self):
         self.microscope_settings_editor = microscope_settings_window(self.microscope, self)

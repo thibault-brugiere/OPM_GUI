@@ -2430,7 +2430,6 @@ Acquisition</string>
      <string>Config</string>
     </property>
     <addaction name="action_DAQ"/>
-    <addaction name="action_Filters"/>
     <addaction name="action_Microscope"/>
    </widget>
    <widget class="QMenu" name="menuAlign">

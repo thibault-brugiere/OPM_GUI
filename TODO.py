@@ -16,7 +16,7 @@ Created on Tue Sep  2 09:03:43 2025
         Pour qu'elle soit enregistrée lors de l'acquisition
 # TODO : Ajuster la taille du preview pour avoir le champ entier (auto ?)
 # TODO : Avoir plusieurs LUT (Fire ?)
-# TODO :  Ajuster le contraste en auto
+# TODO : Ajuster le contraste en auto
 # TODO : supprimer le bouton snoutscope acquisition
 # TODO : mettre les fonctions config_saving, from dict et todict directement dans la classe config
         
