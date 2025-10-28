@@ -16,6 +16,8 @@ Created on Tue Sep  2 09:03:43 2025
 # TODO : Ajuster la taille du preview pour avoir le champ entier (auto ?)
 # TODO : Avoir plusieurs LUT (Fire ?)
 # TODO : supprimer le bouton snoutscope acquisition
+
+# TODO : si on modifie la liste des filtres depuis l'interface, il faut la modifier dans la classe filter_wheel
         
     #################################
     # Multidimensionnal acquisition #

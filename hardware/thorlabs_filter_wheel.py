@@ -134,6 +134,7 @@ class ThorlabsFW103():
             
             self.connected = True
             self.angle = self.getAngle()
+            print("[OK] FW103 connected")
         except:
             print('[FW103]: Connection failed, check not connected from another program (Kinesis GUI)')    
         

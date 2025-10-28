@@ -26,7 +26,7 @@ from PySide6.QtCore import QTimer #, QCoreApplication, QEventLoop
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
 
-from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
+#from acquisition.send_to_acquisition import send_to_snoutscope_acquisition #TODO a supprimer
 from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
 from acquisition.z_stack import z_stack
 from configs.config import channel_config, microscope, experiment #, camera
@@ -34,6 +34,7 @@ from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
 from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
+from hardware.filter_wheel import FilterWheel
 from hardware.Laser_Controller import LaserController
 # from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
 # from mock.DAQ import functions_daq
@@ -48,7 +49,7 @@ from widget.Microscope_Settings_Window import microscope_settings_window
 from widget.Preset_ROI_Window import PresetROIWindow
 from widget.Sample_Finder import sample_finder_Window
 from widget.set_DAQ_Window import setDAQWindow
-from widget.Set_Filters_Window import filtersEditionWindow
+# from widget.Set_Filters_Window import filtersEditionWindow #TODO a supprimer
 
 class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     """
@@ -126,6 +127,14 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.label_daq_detected.setText(f'{len(self.connected_daq)} ni-DAQ detected : {self.connected_daq[0]}')
         else :
             self.label_daq_detected.setText('WARNING: No ni-DAQ detected ! Please restart the interface.')
+            
+        #
+        # Connect to the filter wheel
+        #
+        
+        self.filterWheel = FilterWheel(filterList = self.microscope.filters)
+        self.filterWheel.connect()
+        self.filterWheel.home()
         
         #
         # creation of the channels / lasers
@@ -231,6 +240,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
         
         self.spinBox_aspect_ratio.setValue(self.experiment.aspect_ratio)
+        
+        self.comboBox_channel_filter_index_changed()
         
             # Desactivate tools # TODO supprimer le bouton
         self.pb_snoutscope_acquisition.setDisabled(True)
@@ -349,6 +360,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             # Turn of lasers if necessary
             self.pb_laser_emission.setChecked(False)
             self.pb_laser_emission_clicked()
+            
+            # Close hardware thar needs to be closed
+            self.filterWheel.close()
                 
             functions_camera.close_cameras(self.hcam)
             event.accept()
@@ -820,7 +834,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         This function will allow user to chancge the filter in live when filter weel will be avaliable
         """
-        pass
+        filterName = self.comboBox_channel_filter.currentText()
+        self.filterWheel.moveToFilter(filterName)
     
     def spinBox_number_channels_value_changed(self):
         """
