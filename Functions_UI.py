@@ -173,6 +173,9 @@ class functions_ui():
         channel.filter = channel_list_interface['filter'].currentText()
         channel.camera = channel_list_interface['camera'].currentIndex()
         channel.exposure_time = channel_list_interface['exposure_time'].value()
+        
+    def change_filter(position):
+        pass
     
     #
     # Timelaps settings
