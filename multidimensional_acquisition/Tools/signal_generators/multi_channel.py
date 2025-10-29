@@ -118,6 +118,7 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
     tensions_laser_blanking = np.zeros([4,0], dtype='bool') # Laser is On for all volume
     tensions_lasers = np.zeros([4,0])
     tensions_filters = np.zeros([2,0], dtype='bool')
+    tensions_channel_finished = np.zeros(0, dtype='bool')
     
     #
     # Values that will be use to calculate vectors
@@ -165,6 +166,7 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
         tensions_laser_blanking_channel = np.zeros([4,channel_duration], dtype='bool') # Laser is On for all volume
         tensions_lasers_channel = np.zeros([4,channel_duration])
         tensions_filters_channel = np.zeros([2,channel_duration], dtype='bool')
+        tensions_channel_finished = np.zeros(0, dtype='bool')
         
         #
         # fill vectors
@@ -206,6 +208,9 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
             first_channel = False
     
             tensions_filters_channel[wheel_trigger,channel_duration - post_volume_wait : channel_duration - post_volume_wait + filter_triger_duration] = True
+        
+        else:  # Est- utilisé pour le comptage des channels depuis l'ordinateur
+            tensions_filters_channel[wheel_trigger,channel_duration - post_volume_wait : channel_duration -1 ] = True 
         
         tensions_galvo = np.append(tensions_galvo, tensions_galvo_channel)
         tensions_camera = np.append(tensions_camera, tensions_camera_channel)

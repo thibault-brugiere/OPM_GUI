@@ -186,6 +186,29 @@ class Ui_Form(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_12)
 
+        self.horizontalLayout_19 = QHBoxLayout()
+        self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
+        self.label_filter_ChannelFinished = QLabel(Form)
+        self.label_filter_ChannelFinished.setObjectName(u"label_filter_ChannelFinished")
+        self.label_filter_ChannelFinished.setMinimumSize(QSize(100, 0))
+        self.label_filter_ChannelFinished.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_19.addWidget(self.label_filter_ChannelFinished)
+
+        self.lineEdit_ChannelFinished = QLineEdit(Form)
+        self.lineEdit_ChannelFinished.setObjectName(u"lineEdit_ChannelFinished")
+
+        self.horizontalLayout_19.addWidget(self.lineEdit_ChannelFinished)
+
+        self.label_camera2_out_4 = QLabel(Form)
+        self.label_camera2_out_4.setObjectName(u"label_camera2_out_4")
+        self.label_camera2_out_4.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_19.addWidget(self.label_camera2_out_4)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_19)
+
         self.horizontalLayout_8 = QHBoxLayout()
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.label_laser_blanking = QLabel(Form)
@@ -459,9 +482,11 @@ class Ui_Form(object):
         self.label_camera2.setText(QCoreApplication.translate("Form", u"Camera 2", None))
         self.label_camera2_out.setText(QCoreApplication.translate("Form", u"digital out (optionnal)", None))
         self.label_filter_wheel_1.setText(QCoreApplication.translate("Form", u"Filter wheel 1", None))
-        self.label_camera2_out_2.setText(QCoreApplication.translate("Form", u"digital out (optionnal)", None))
+        self.label_camera2_out_2.setText(QCoreApplication.translate("Form", u"digital out", None))
         self.label_filter_wheel_2.setText(QCoreApplication.translate("Form", u"Filter wheel 2", None))
         self.label_camera2_out_3.setText(QCoreApplication.translate("Form", u"digital out (optionnal)", None))
+        self.label_filter_ChannelFinished.setText(QCoreApplication.translate("Form", u"Channel finished", None))
+        self.label_camera2_out_4.setText(QCoreApplication.translate("Form", u"PFI", None))
         self.label_laser_blanking.setText(QCoreApplication.translate("Form", u"laser blanking", None))
         self.label_laser_blanking_out.setText(QCoreApplication.translate("Form", u"digital out", None))
         self.label_lasers_analog.setText(QCoreApplication.translate("Form", u"Lasers analog out", None))

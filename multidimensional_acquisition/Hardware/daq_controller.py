@@ -5,6 +5,7 @@ Created on Fri Mar 14 14:19:15 2025
 @author: tbrugiere
 """
 import nidaqmx
+from nidaqmx.constants import Edge, CountDirection
 import numpy as np
 
 class NIDAQ_Acquisition:
@@ -115,6 +116,7 @@ class NIDAQ_Acquisition:
         #
         self.task_ao = nidaqmx.Task() # galvo
         self.task_do = nidaqmx.Task() # Camera + lasers
+        self.task_di = nidaqmx.Task() # Signal à la fin de chaque volume
         self.task_co = nidaqmx.Task() # trigger start of each volume
         
         self.volume_duration = len(self.tensions_library['tensions_galvo'])
@@ -177,6 +179,28 @@ class NIDAQ_Acquisition:
                                       self.tensions_library['tensions_laser_blanking']]))
         
         #
+        # Digital input for volume measurement
+        #
+        
+        self.task_di.ci_channels.add_ci_count_edges_chan(
+                                                         counter='Dev1/ctr1', 
+                                                         edge = Edge.RISING,
+                                                         initial_count = 0,
+                                                         count_direction=CountDirection.COUNT_UP
+                                                         )
+        
+        ch =  self.task_di.ci_channels[0]
+        
+        ch.ci_count_edges_term = self.daq_channels["channel_finished"]
+        
+        try:
+            ch.ci_count_edges_dig_fltr_enable = True
+            ch.ci_count_edges_dig_fltr_min_pulse_width = 5e-6  # 5 µs (ajuste si besoin: 10–50 µs)
+            # ch.ci_count_edges_dig_sync_enable = True  # parfois utile si dispo
+        except AttributeError:
+            print("⚠️ Filtre numérique non disponible via ces propriétés (ou non supporté par le device).")
+        
+        #
         # Number of volumes counter
         #
         
@@ -199,6 +223,13 @@ class NIDAQ_Acquisition:
         
         self.state = "ready"
         
+        self._last_count = 0
+        
+    def read_count(self):
+        val = self.task_di.read()
+        return val
+        
+        
     def arm_task(self):
         """Prepare AO and DO tasks. They will wait for a trigger to begin output."""
         if self.state != "ready":
@@ -206,6 +237,7 @@ class NIDAQ_Acquisition:
             
         self.task_ao.start()
         self.task_do.start()
+        self.task_di.start()
         
         self.state = "armed"
         
@@ -229,6 +261,7 @@ class NIDAQ_Acquisition:
         self.task_ao.stop()
         self.task_do.stop()
         self.task_co.stop()
+        self.task_di.stop()
 
         self.state = "ready"
 

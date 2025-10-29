@@ -6,44 +6,44 @@
             "vchipsize": 2368,
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
-            "hsize": 1024,
-            "hpos": 1704,
-            "vsize": 1024,
-            "vpos": 672,
+            "hsize": 4432,
+            "hpos": 0,
+            "vsize": 2368,
+            "vpos": 0,
             "exposure_time": 0.01,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
-            "image_readout_time": 0.003800727272727273
+            "image_readout_time": 0.008493058
         }
     },
     "channels": {
-        "channel_BFP": {
-            "channel_id": "BFP",
+        "channel_GFP": {
+            "channel_id": "GFP",
             "is_active": true,
             "channel_order": null,
             "laser_is_active": {
-                "405": true,
+                "405": false,
                 "488": false,
                 "561": false,
                 "640": false
             },
             "laser_power": {
-                "405": 11,
-                "488": 0,
-                "561": 0,
-                "640": 0
+                "405": 0,
+                "488": 67,
+                "561": 68,
+                "640": 65
             },
-            "filter": "BFP",
+            "filter": "GFP",
             "camera": 0,
             "exposure_time": 10.0
         }
     },
     "experiment": {
         "exp_name": "Image",
-        "data_path": "",
-        "timepoints": 10,
+        "data_path": "D:/Projets_Python/OPM_GUI/Images",
+        "timepoints": 4,
         "time_intervals": 1.0,
-        "total_duration": 10.0,
+        "total_duration": 2.0,
         "scanner_position": 0,
         "scan_range": 20.279883589761845,
         "aspect_ratio": 3.3563985247091197,
@@ -95,6 +95,7 @@
             "camera_1": "Dev1/port0/line1",
             "filter_wheel_1": "Dev1/port0/line2",
             "filter_wheel_2": "Dev1/port0/line3",
+            "channel_finished": "/Dev1/PFI1",
             "laser_blanking": "Dev1/port0/line4"
         },
         "daq_channels_laser_analog_out": {

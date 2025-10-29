@@ -62,7 +62,8 @@ class setDAQWindow(QWidget, Ui_Form):
                         "camera_0": self.lineEdit_camera1,
                         "camera_1": self.lineEdit_camera2,
                         "filter_wheel_1" : self.lineEdit_filter_wheel_1,
-                        "filter_wheel_2" : self.lineEdit_filter_wheel_1,
+                        "filter_wheel_2" : self.lineEdit_filter_wheel_2,
+                        "channel_finished": self.lineEdit_ChannelFinished,
                         "laser_blanking" : self.lineEdit_laser_blanking,
                         }
         
@@ -146,6 +147,7 @@ if __name__ == '__main__':
                     "camera_1": "Dev1/port0/line1", # Trigger l'exposition de la deuxieme camera (si presente)
                     "filter_wheel_1": "Dev1/port0/line2", # Trigger de la roue de filtres
                     "filter_wheel_2": "Dev1/port0/line3", # Trigger de la roue de filtres
+                    "channel_finished": "/Dev1/PFI1",
                     "laser_blanking" : "Dev1/port0/line4", # Trigger le blanking de l'AOTF du banc laser
                     }
     

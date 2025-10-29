@@ -228,7 +228,7 @@
         </size>
        </property>
        <property name="text">
-        <string>digital out (optionnal)</string>
+        <string>digital out</string>
        </property>
       </widget>
      </item>
@@ -265,6 +265,42 @@
        </property>
        <property name="text">
         <string>digital out (optionnal)</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_19">
+     <item>
+      <widget class="QLabel" name="label_filter_ChannelFinished">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Channel finished</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_ChannelFinished"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_camera2_out_4">
+       <property name="minimumSize">
+        <size>
+         <width>180</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>PFI</string>
        </property>
       </widget>
      </item>

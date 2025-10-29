@@ -43,6 +43,7 @@
         "camera_1": "Dev1/port0/line1",
         "filter_wheel_1": "Dev1/port0/line2",
         "filter_wheel_2": "Dev1/port0/line3",
+        "channel_finished" : "/Dev1/PFI1",
         "laser_blanking": "Dev1/port0/line4"
     },
     "daq_channels_laser_analog_out": {

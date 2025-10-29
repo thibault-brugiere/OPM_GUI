@@ -7,16 +7,19 @@ Pour l'instant la partie qui a été faite est dans : Tools.signal_generators
 @author: tbrugiere
 """
 import os
+from PySide6.QtCore import QThread
 import time
 
 from Config.MDA_config import config
 from Hardware.daq_controller import NIDAQ_Acquisition
 from Hardware.camera_controller import camera_acquisition
+from Hardware.filter_wheel_controller import FilterWheel
 from Hardware.functions_serial_ports import functions_serial_ports
 # from Hardware.mock import Mock_functions_serial_ports as functions_serial_ports
 # from Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
 # from Hardware.mock import MockCameraAcquisition as camera_acquisition
 from Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
+from Tools.acquisition_pipeline.count_worker import CountWorker
 from Tools.saving import prepare_saving_directory, save_metadata
 from Tools.signal_generators.multi_channel import generate_channel_signals
 
@@ -58,6 +61,8 @@ class MultidimensionalAcquisition:
                       'acquisition_workers' : 'idle',
                       'daq': 'idle'
                       }
+        
+        self.cw = False # Vérifie sur le countworker existe
 
     def initialize_cameras(self):
         for i, cam_cfg in enumerate(self.config.cameras):
@@ -109,7 +114,14 @@ class MultidimensionalAcquisition:
             
         self.state['acquisition_workers'] = 'ready'
         
-        print("[Main MDA] acquisition workers initialized") 
+        print("[Main MDA] acquisition workers initialized")
+        
+    def initialize_filterwheel(self): # TODO voir comment on initialize la filter wheel ici
+        self.filterwheel = FilterWheel()
+        self.filterwheel.connect()
+        print("[Main MDA] filter wheel connected")
+        self.filterwheel.moveToFilter('BFP')
+        self.filterwheel.setTrigFilter('GFP')
 
     def configure_daq(self):
         self.daq = NIDAQ_Acquisition()
@@ -125,6 +137,22 @@ class MultidimensionalAcquisition:
         self.state['daq'] = 'ready'
         
         print("[Main MDA] DAQ ready")
+        
+    def initialize_count_worker(self):
+        self.count_worker = CountWorker(self.daq)
+        self.count_thread = QThread()
+        self.count_worker.moveToThread(self.count_thread)
+        self.count_thread.started.connect(self.count_worker.start)
+        self.count_worker.trigger_received.connect(self.on_trigger_detected)
+        self.count_thread.start()
+        
+        self.cw = True
+        
+        
+    def on_trigger_detected(self, count):
+        # print(f"Trigger reçu : {count}")
+        pass
+        
 
     def run(self):    
         if not self._all_ready():
@@ -199,5 +227,7 @@ if __name__ == "__main__":
     MDA = MultidimensionalAcquisition()
     MDA.initialize_cameras()
     MDA.initialize_acquisition_workers()
+    MDA.initialize_filterwheel()
     MDA.configure_daq()
+    MDA.initialize_count_worker()
     MDA.run()

@@ -111,6 +111,7 @@ class microscope(object):
                              "camera_1": "Dev1/port0/line1", # Trigger l'exposition de la deuxieme camera (si presente)
                              "filter_wheel_1": "Dev1/port0/line2", # Trigger de la roue de filtres
                              "filter_wheel_2": "Dev1/port0/line3", # Trigger de la roue de filtres
+                             "channel_finished" : "/Dev1/PFI1", # Trigger at the end of each channel for the computer (not used yet)
                              "laser_blanking" : "Dev1/port0/line4", # Trigger le blanking de l'AOTF du banc laser
                              }
         
