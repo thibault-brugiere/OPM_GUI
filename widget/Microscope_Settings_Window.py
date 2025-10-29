@@ -44,6 +44,8 @@ class microscope_settings_window(QWidget, Ui_Form):
         self.setWindowTitle('microscope parameters')
         self.setWindowFlag(Qt.Window)  # Assure que la fenêtre est indépendante
         
+        self.message_filters = ''
+        
         #
         # Dictionnary creation
         #
@@ -105,6 +107,8 @@ class microscope_settings_window(QWidget, Ui_Form):
                            'filter6' : 'str',
                            }
         
+        self.param_filters = ['filter1','filter2','filter3','filter4','filter5','filter6']
+        
         #
         # Initialisation of the lineEdits
         #
@@ -136,26 +140,46 @@ class microscope_settings_window(QWidget, Ui_Form):
                     self.lineEdits[key].blockSignals(True)
                     self.lineEdits[key].setText(str(self.microscope_params[key]))
                     self.lineEdits[key].blockSignals(False)
+            else:
+                self.microscope_params[key] = self.lineEdits[key].text()
+                if key in self.param_filters :
+                    self.message_filters = """\n[WARNING]Changes has been made in filters,
+you have to set changes in channels too"""
                     
     def set_values(self):
         self.microscope.tilt_angle = self.microscope_params['tilt_angle']
         self.microscope.mag_total = self.microscope_params['mag_total']
+        self.microscope.stage_port = self.microscope_params['stage_port']
         self.microscope.volts_per_um = self.microscope_params['volts_per_um']
         self.microscope.galvo_response_time = self.microscope_params['galvo_response_time']
         self.microscope.galvo_flyback_time = self.microscope_params['galvo_flyback_time']
         self.microscope.laser_response_time = self.microscope_params['laser_response_time']
+        self.microscope.OxxiusCombiner_port = self.microscope_params['Oxius_port']
+        self.microscope.filter_port = self.microscope_params['filter_port']
+        self.microscope.filter_changing_time = self.microscope_params['filter_changing_time']
+        self.microscope.filters = [self.microscope_params['filter1'],
+                                   self.microscope_params['filter2'],
+                                   self.microscope_params['filter3'],
+                                   self.microscope_params['filter4'],
+                                   self.microscope_params['filter5'],
+                                   self.microscope_params['filter6'],
+                                   ]
                     
     def closeEvent(self, event):
         reply = QMessageBox.question(
             self, 'Confirmer changes',
-            "Are you sure you want to quit?",
+            f""""Are you sure you want to quit?\n{self.message_filters}""",
             QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
             QMessageBox.Cancel
         )
 
         if reply == QMessageBox.Yes:
             self.set_values()
-            self.parent().microscope = self.microscope
+            try:
+                self.parent().microscope = self.microscope
+                self.parent().sync_filter_interface()
+            except:
+                pass
             event.accept()
         elif reply == QMessageBox.No:
             event.ignore()
