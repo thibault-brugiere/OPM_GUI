@@ -259,6 +259,7 @@ class mda_mannager(QWidget, Ui_Form):
         
     def start_acquisition(self):
         self.mda.initialize_cameras()
+        self.mda.initialize_laser()
         self.mda.initialize_acquisition_workers()
         self.mda.initialize_filterwheel()
         self.set_controller()

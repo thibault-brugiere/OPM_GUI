@@ -25,6 +25,8 @@ Created on Tue Sep  2 09:03:43 2025
     #################################
     
 # TODO : Faire un protocole d'acquisition ultra rapide (mouvement galvo continu)
+# TODO : Prendre en compte le temps de changement de filtres entre 1, 2 ou 3 filtres de décalage
+# TODO : pourquoi les lasers ne s'allument pas si je lance directement le main_MDA ?
 
     #-----------
     #MDA_manager

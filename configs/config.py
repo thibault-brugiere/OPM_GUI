@@ -84,7 +84,7 @@ class microscope(object):
         
         # Filters
         self.filter_port = "COM?"
-        self.filter_changing_time = 55 # in ms
+        self.filter_changing_time = 85 # in ms
         self.filters = ['BFP','GFP','CY3.5','TexRed','empty5', 'empty6'] #should be 6 options
         
         # Lasers

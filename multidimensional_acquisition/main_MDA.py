@@ -96,17 +96,18 @@ class MultidimensionalAcquisition:
         for laser in self.config.microscope.lasers:
             if self.config.microscope.OxxiusCombiner_port is not None:
                 port = self.config.microscope.OxxiusCombiner_port
-                for command in self.config.microscope.OxxiusCombiner_command[laser]:
-                    if command is not None:
-                        for channel in self.config.channels:
-                            if channel.laser_power[laser] > 0:
-                                power = min(100.0, float(channel.laser_power[laser]))
-                                command_to_send = command + " " + str(power)
-                                response = functions_serial_ports.send_command_response(command_to_send,port)
-                                if response == str(power):
-                                    print("[Main MDA] command laser power set")
-                                else:
-                                    print("[Main MDA] [ERROR] for command laser power setting")
+                command = self.config.microscope.OxxiusCombiner_command[laser]
+                if command is not None:
+                    for channel in self.config.channels:
+                        if channel.laser_power[laser] > 0:
+                            power = min(100.0, float(channel.laser_power[laser]))
+                            command_to_send = command + " " + str(power)
+                            response = functions_serial_ports.send_command_response(command_to_send,port)
+                            print(f"[Main MDA] laser {laser} power set to {power}")
+                            if response == str(power):
+                                print("[Main MDA] command laser power set")
+                            else:
+                                print("[Main MDA] [ERROR] for command laser power setting")
 
     def initialize_acquisition_workers(self):
         for cam in self.cameras_acquisition:
@@ -145,7 +146,6 @@ class MultidimensionalAcquisition:
             self.filterwheel.setTrigMove(self.filters_mouve[0])
 
     def configure_daq(self):
-        print('cad qconfiguration')
         self.daq = NIDAQ_Acquisition()
         self.daq.send_signals_to_daq_single_channel(
             self.volume_tensions_library,
@@ -258,6 +258,7 @@ class MultidimensionalAcquisition:
 if __name__ == "__main__":
     MDA = MultidimensionalAcquisition()
     MDA.initialize_cameras()
+    MDA.initialize_laser()
     MDA.initialize_acquisition_workers()
     MDA.initialize_filterwheel()
     MDA.configure_daq()
