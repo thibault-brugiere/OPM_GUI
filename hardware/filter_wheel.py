@@ -50,6 +50,8 @@ class FilterWheel():
             
         self.filterList = filterList
         
+        self.connected = False
+        
         self.on_init()
         
     def on_init(self):
@@ -82,6 +84,7 @@ class FilterWheel():
         self.fw.connect()
         self._setMaximumVelocity()
         self._setTrigering()
+        self.connected = True
         
     def close(self):
         """
@@ -93,6 +96,7 @@ class FilterWheel():
         - Safe to call multiple times.
         """
         self.fw.close()
+        self.connected = False
         
     def home(self):
         """
@@ -170,6 +174,24 @@ class FilterWheel():
         """
         slot = self._getFilterSlot(filterName)
         self.fw.setTrigSlot(slot)
+        
+    def setTrigMove(self, movement):
+        """
+        Preload the relative move to reach a ne filter.
+
+        Parameters
+        ----------
+        movement : int
+            number of filter to move
+
+        Behavior
+        --------
+        - Computes the target slot and programs the backend so that a single
+          TRIG1 RelativeMove pulse will rotate the wheel to that slot.
+        - Does not move immediately; only prepares the next hardware-triggered move.
+        """
+        angle = movement * 360 / 6
+        self.fw.setRelativeStep(angle)
         
     def getPosition(self):
         """

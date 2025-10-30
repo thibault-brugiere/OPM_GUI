@@ -9,6 +9,7 @@ Created on Tue Sep  2 09:03:43 2025
     ########
     # Main #
     ########
+#♦ TODO : allumer quand-même l'interface si la roue n'est pas connectée
 
 # TODO : ouvrir laser_GUI depuis l'interface (et autres GUI)
 # TODO : faire un dictionnaire.json dans config pour toute la description du microscope

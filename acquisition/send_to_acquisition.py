@@ -71,13 +71,14 @@ def send_to_snoutscope_acquisition(camera, channel, experiment, microscope, file
     with open(file_path, 'w') as json_file:
         json.dump(parameters, json_file, indent = 4)
 
-def send_to_multidimensionnal_acquisition(camera_list, channel_list, experiment, microscope,
+def send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list, experiment, microscope,
                                           dirname = 'acquisition', filename = 'GUI_parameters.json'):
     """
     Save parameters in a fichier JSON file.
 
     Parameters:
     - camera_list : parameters of the first camera of the system, as define in config.py, modified from UI
+    - filterwheel : FilterWheel object as defined in the filter_wheel.py
     - channel_list : paremeters of the fisrt active channel in the interface, as define in config.py, modified from UI
     - experiment: parameters of the experiment, as define in config.py, modified from UI
     - microscope : parameters of the microscope, as define in config.py, modified from UI

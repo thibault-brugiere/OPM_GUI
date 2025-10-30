@@ -363,8 +363,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
             # Close hardware thar needs to be closed
             self.filterWheel.close()
-                
             functions_camera.close_cameras(self.hcam)
+            
             event.accept()
         else:
             event.ignore()
@@ -1145,6 +1145,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             try:
                 channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
                 send_to_multidimensionnal_acquisition(self.camera,
+                                                      self.filterWheel,
                                                       channel_acquisition,
                                                       self.experiment,
                                                       self.microscope,
@@ -1153,7 +1154,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 
                 self.status_bar.showMessage("start multidimensional acquisition")
                 
-                MDA = MultidimensionalAcquisition(self.hcam)
+                MDA = MultidimensionalAcquisition(self.hcam, self.filterWheel)
                 self.MDA_manager = mda_mannager(MDA, self)
                 self.MDA_manager.show()
                 self.MDA_manager.start_acquisition()

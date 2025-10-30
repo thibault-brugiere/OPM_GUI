@@ -19,22 +19,30 @@ from Hardware.functions_serial_ports import functions_serial_ports
 # from Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
 # from Hardware.mock import MockCameraAcquisition as camera_acquisition
 from Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
-from Tools.acquisition_pipeline.count_worker import CountWorker
+from Tools.acquisition_pipeline.count_worker import CountWorker, mouvement_sequence
 from Tools.saving import prepare_saving_directory, save_metadata
 from Tools.signal_generators.multi_channel import generate_channel_signals
 
 class MultidimensionalAcquisition:
-    def __init__(self, hcams=None, frequency=1e5):
+    def __init__(self, hcams=None, filterwheel = None, frequency=1e5):
         
         print('[Main MDA] Start multidimensionnal acquisition')
         
         self.hcams = hcams
+        self.filterwheel = filterwheel
+        self.fw_None = True
         self.frequency = frequency
         
         # Load configuration
         config_path = os.path.join(os.path.dirname(__file__), "Config")
         self.config = config(dirname=config_path)
         self.n_channels = len(self.config.channels)
+        
+        self.filterseq = [] # Liste des filtres dans l'ordre utilisé
+        for n in range(self.n_channels):
+            self.filterseq.append(self.config.channels[n].filter)
+            
+        self.filters_mouve = mouvement_sequence(self.config.microscope.filters , self.filterseq)
             
         self.volume_tensions_library = generate_channel_signals(self.config.cameras,
                                                                 self.config.channels,
@@ -116,14 +124,28 @@ class MultidimensionalAcquisition:
         
         print("[Main MDA] acquisition workers initialized")
         
-    def initialize_filterwheel(self): # TODO voir comment on initialize la filter wheel ici
-        self.filterwheel = FilterWheel()
-        self.filterwheel.connect()
-        print("[Main MDA] filter wheel connected")
-        self.filterwheel.moveToFilter('BFP')
-        self.filterwheel.setTrigFilter('GFP')
+    def initialize_filterwheel(self):
+        if self.filterwheel is None :
+            self.filterwheel = FilterWheel()
+            self.filterwheel.connect()
+            self.filterwheel.home()
+            print("[Main MDA] filter wheel initialized")
+        else:
+            self.fw_None = False
+            if not self.filterwheel.connected :
+                self.filterwheel.connect()
+                self.filterwheel.home()
+                
+            print("[Main MDA] filter wheel initialized")
+                
+        self.filterwheel.moveToFilter(self.filterseq[0])
+        if self.n_channels == 1 :
+            self.filterwheel.setTrigMove(0)
+        else:
+            self.filterwheel.setTrigMove(self.filters_mouve[0])
 
     def configure_daq(self):
+        print('cad qconfiguration')
         self.daq = NIDAQ_Acquisition()
         self.daq.send_signals_to_daq_single_channel(
             self.volume_tensions_library,
@@ -139,7 +161,7 @@ class MultidimensionalAcquisition:
         print("[Main MDA] DAQ ready")
         
     def initialize_count_worker(self):
-        self.count_worker = CountWorker(self.daq)
+        self.count_worker = CountWorker(self.daq, self.filterwheel, self.filters_mouve)
         self.count_thread = QThread()
         self.count_worker.moveToThread(self.count_thread)
         self.count_thread.started.connect(self.count_worker.start)
@@ -147,6 +169,8 @@ class MultidimensionalAcquisition:
         self.count_thread.start()
         
         self.cw = True
+        
+        print("[Main MDA] count workers initialized")
         
         
     def on_trigger_detected(self, count):
@@ -203,6 +227,14 @@ class MultidimensionalAcquisition:
         for cam in self.cameras_acquisition :
             cam.stop_acquisition()
             cam.release_camera()
+        
+        self.count_worker.stop()
+        
+        self.count_thread.quit()
+        self.count_thread.wait()
+        
+        if self.fw_None :
+            self.filterwheel.close()
 
         if self.daq:
             self.daq.stop()

@@ -83,6 +83,8 @@ class ThorlabsFW103():
         self.changing_time = [55,70,85] # Time to change 1, 2 or 3 position in ms
         
         self.on_init()
+        
+        self.move = 1
     
     def on_init(self):
         """
@@ -323,7 +325,6 @@ class ThorlabsFW103():
             Relative distance in degrees (e.g. 60, 120, 180). Some DLLs ignore TRIG
             'RelativeMoveDistance' and use this device-wide value instead.
         """
-
         self.device.SetMoveRelativeDistance(Decimal(degrees))
         
     def setAbsoluteStep(self, pos: float):
@@ -380,6 +381,16 @@ class ThorlabsFW103():
             Target absolute angle in degrees (0..360). Values outside will be wrapped.
         """
         angle = self._getStepTo(pos)
+        # if self.move == 1 :
+        #     angle = 60
+        #     self.move = 2
+        # elif self.move == 2 :
+        #     angle = 60
+        #     self.move = 3
+        # elif self.move == 3 :
+        #     angle = -120
+        #     self.move = 1
+        
         self.setRelativeStep(angle)
         
     def setTrigSlot(self, slot):
@@ -484,3 +495,38 @@ class ThorlabsFW103():
         self.setRelativeStep(degrees)
         self.device.MoveRelative(timeout_ms)
         self.angle = self.getAngle()
+
+
+# C'est ici pour des tests de vitesse
+
+def mesure_temps_lecture_position(device, n=10):
+    """
+    Mesure le temps moyen et max pour lire la position de la roue `device` sur n essais.
+    """
+    temps = []
+    for i in range(n):
+        t0 = time.perf_counter()
+        angle = device.getAngle()  # ou .GetPosition() selon ton SDK
+        t1 = time.perf_counter()
+        temps.append(t1 - t0)
+        print(f"Essai {i+1}: angle = {angle:.2f}°, temps = {1000*(t1-t0):.2f} ms")
+    print(f"Temps moyen lecture : {1000*sum(temps)/n:.2f} ms")
+    print(f"Temps max   lecture : {1000*max(temps):.2f} ms")
+    print(f"Temps min   lecture : {1000*min(temps):.2f} ms")
+    return temps
+
+def mesure_temps_setStepTo(device, n=10):
+    """
+    Mesure le temps moyen et max pour lire la position de la roue `device` sur n essais.
+    """
+    temps = []
+    for i in range(n):
+        t0 = time.perf_counter()
+        device.setStepTo(120)  # ou .GetPosition() selon ton SDK
+        t1 = time.perf_counter()
+        temps.append(t1 - t0)
+        print(f"Essai {i+1}: temps = {1000*(t1-t0):.2f} ms")
+    print(f"Temps moyen lecture : {1000*sum(temps)/n:.2f} ms")
+    print(f"Temps max   lecture : {1000*max(temps):.2f} ms")
+    print(f"Temps min   lecture : {1000*min(temps):.2f} ms")
+    return temps

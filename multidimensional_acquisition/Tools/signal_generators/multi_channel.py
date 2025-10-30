@@ -201,11 +201,6 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
         wheel_trigger = 0
         
         if len(channels) != 1 :
-            if len(channels) == 2:
-                if not first_channel:
-                    wheel_trigger = 1
-                    
-            first_channel = False
     
             tensions_filters_channel[wheel_trigger,channel_duration - post_volume_wait : channel_duration - post_volume_wait + filter_triger_duration] = True
         
@@ -289,7 +284,7 @@ if __name__ == '__main__':
     
     start_time = time.time()
         
-    microscope_config = config(filename = 'GUI_parameters_double.json')
+    microscope_config = config(filename = 'GUI_parameters1.json')
         
     frequency = 1e5
     print(microscope_config.experiment.exp_name)

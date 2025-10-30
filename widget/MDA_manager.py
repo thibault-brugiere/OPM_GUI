@@ -260,8 +260,10 @@ class mda_mannager(QWidget, Ui_Form):
     def start_acquisition(self):
         self.mda.initialize_cameras()
         self.mda.initialize_acquisition_workers()
+        self.mda.initialize_filterwheel()
         self.set_controller()
         self.mda.configure_daq()
+        self.mda.initialize_count_worker()
         
         # Lancer l'acquisition dans un thread à part
         threading.Thread(target=self.mda.run, daemon=True).start()

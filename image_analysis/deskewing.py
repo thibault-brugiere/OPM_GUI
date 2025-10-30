@@ -125,9 +125,10 @@ if __name__ == '__main__':
     # for k in range(9) :
     # name = 'GFP_volume_0000'
     
-    name = 'CY3.5_volume_0000'
+    # name = 'GFP_volume_0000'
+    name = 'TexRed_volume_0000'
     
-    path = "D:/Projets_Python/OPM_GUI/Images/20251001_110307_Gel2"
+    path = "D:/Projets_Python/OPM_GUI/Images/20251021_BrainSlices/20251021_162838_20251021_BraineSlice_06_01_Atto643"
     
     file_path = os.path.join(path, f'{name}.tiff')
     
