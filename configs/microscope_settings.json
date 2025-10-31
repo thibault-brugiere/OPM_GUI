@@ -6,7 +6,7 @@
     "galvo_flyback_time": 3.0,
     "stage_port": "COM10",
     "filter_port": "COM?",
-    "filter_changing_time": 60,
+    "filter_changing_time": [55,70,85],
     "filters": [
         "BFP",
         "GFP",

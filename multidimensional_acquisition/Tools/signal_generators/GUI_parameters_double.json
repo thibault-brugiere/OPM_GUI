@@ -56,26 +56,6 @@
             "filter": "CY3.5",
             "camera": 0,
             "exposure_time": 10.0
-        },
-        "channel_test": {
-            "channel_id": "test",
-            "is_active": true,
-            "channel_order": null,
-            "laser_is_active": {
-                "405": false,
-                "488": false,
-                "561": false,
-                "640": true
-            },
-            "laser_power": {
-                "405": 0,
-                "488": 0,
-                "561": 0,
-                "640": 7
-            },
-            "filter": "CY3.5",
-            "camera": 0,
-            "exposure_time": 10.0
         }
     },
     "experiment": {
@@ -98,7 +78,7 @@
         "galvo_response_time": 0.3,
         "galvo_flyback_time": 3.0,
         "stage_port": "COM10",
-        "filter_changing_time": 60,
+        "filter_changing_time": [55,70,85],
         "filters": [
             "BFP",
             "GFP",

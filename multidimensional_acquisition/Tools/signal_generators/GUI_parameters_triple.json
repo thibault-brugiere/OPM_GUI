@@ -6,14 +6,14 @@
             "vchipsize": 2368,
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
-            "hsize": 4432,
-            "hpos": 0,
-            "vsize": 2368,
-            "vpos": 0,
+            "hsize": 1024,
+            "hpos": 1704,
+            "vsize": 1024,
+            "vpos": 672,
             "exposure_time": 0.01,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
-            "image_readout_time": 0.008712436363636365
+            "image_readout_time": 0.003800727272727273
         }
     },
     "channels": {
@@ -29,7 +29,7 @@
             },
             "laser_power": {
                 "405": 0,
-                "488": 32,
+                "488": 35,
                 "561": 0,
                 "640": 0
             },
@@ -71,7 +71,7 @@
                 "405": 0,
                 "488": 0,
                 "561": 0,
-                "640": 28
+                "640": 32
             },
             "filter": "TexRed",
             "camera": 0,
@@ -98,11 +98,7 @@
         "galvo_response_time": 0.3,
         "galvo_flyback_time": 3.0,
         "stage_port": "COM10",
-        "filter_changing_time": [
-            55,
-            70,
-            85
-        ],
+        "filter_changing_time": [55,70,85],
         "filters": [
             "BFP",
             "GFP",

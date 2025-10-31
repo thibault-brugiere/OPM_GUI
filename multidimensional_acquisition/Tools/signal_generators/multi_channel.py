@@ -89,6 +89,10 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
     
         # --- Experiment parameters ----
     n_steps = experiment.n_steps # Number of image per channel
+        
+    filterseq = [chan.filter for chan in channels]
+    filters_mouve = mouvement_sequence(microscope.filters , filterseq)
+    
     scan_range_um = experiment.scan_range
     
         # ---- Microscope parameters ----
@@ -96,7 +100,7 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
     galvo_response_time_s = microscope.galvo_response_time /1000 # To get response_time in seconds
     galvo_flyback_time_s = microscope.galvo_flyback_time /1000
     laser_response_time_s = microscope.laser_response_time /1000
-    filter_changing_time = microscope.filter_changing_time / 1000
+    filter_changing_time = [time / 1000 for time in microscope.filter_changing_time]
     
     #
     # Time calculation in unit of time
@@ -104,13 +108,9 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
     
         # Convert times to sample units based on the sampling frequency
     pre_volume_wait = int(max(galvo_flyback_time_s,laser_response_time_s)*frequency) # Time before the volume in unit of time
-    if len(channels) == 1:
-        post_volume_wait = int(max(galvo_flyback_time_s,laser_response_time_s)*frequency) # Time after the volume in unit of time
-    else:
-        post_volume_wait = int(max(galvo_flyback_time_s,laser_response_time_s, filter_changing_time)*frequency) # Time after the volume in unit of time
+
     galvo_response_time = int(np.ceil(galvo_response_time_s * frequency)) # en unité de temps
     image_readout_time = int(np.ceil(image_readout_time_s * frequency)) # en unité de temps
-    filter_triger_duration = min(int(np.ceil(10 / 1000 * frequency)),post_volume_wait) # en unité de temps
     
         # --- Pre_Create output arrays ---
     tensions_galvo = np.zeros(0)
@@ -118,7 +118,6 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
     tensions_laser_blanking = np.zeros([4,0], dtype='bool') # Laser is On for all volume
     tensions_lasers = np.zeros([4,0])
     tensions_filters = np.zeros([2,0], dtype='bool')
-    tensions_channel_finished = np.zeros(0, dtype='bool')
     
     #
     # Values that will be use to calculate vectors
@@ -131,11 +130,21 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
                               galvo_tensions_amplitude / 2,
                               n_steps)
     
-    first_channel = True # Will be used to select the appropriate trigger for the filter weel 
-    
-    for channel in channels:
+    for index, channel in enumerate(channels):
+        
         """Get all the values from dictionnary the the actual channel, time is converted in seconds"""
         
+        # calculate the time to change the filter at the end of the channel
+        if len(channels) == 1:
+            post_volume_wait = int(max(galvo_flyback_time_s,laser_response_time_s)*frequency) # Time after the volume in unit of time
+        else:
+            fm = abs(filters_mouve[index])
+            t = filter_changing_time[fm - 1] if fm > 0 else 0
+            post_volume_wait = int(max(galvo_flyback_time_s,laser_response_time_s, t)*frequency) # Time after the volume in unit of time
+        
+        filter_triger_duration = min(int(np.ceil(10 / 1000 * frequency)),post_volume_wait) # en unité de temps
+            
+            
             # ---- Camera / channel parameters ----
         camera_id = channel.camera
         image_readout_time_s = cameras[camera_id].image_readout_time
@@ -166,7 +175,6 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
         tensions_laser_blanking_channel = np.zeros([4,channel_duration], dtype='bool') # Laser is On for all volume
         tensions_lasers_channel = np.zeros([4,channel_duration])
         tensions_filters_channel = np.zeros([2,channel_duration], dtype='bool')
-        tensions_channel_finished = np.zeros(0, dtype='bool')
         
         #
         # fill vectors
@@ -221,6 +229,33 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
                        }
 
     return tensions_library
+
+def mouvement_sequence(filters, filterseq):
+    """
+    Calcule les mouvements cycliques à faire sur la roue de filtres.
+
+    Args:
+        filters : Liste complète des positions de la roue (ordre physique).
+        filterseq: Liste des filtres à utiliser (ordre acquisition).
+
+    Returns:
+        liste_de_mouvements: Liste des déplacements cycliques entre chaque filtre (en slots, positifs ou négatifs).
+    """
+    n = len(filters)
+    positions = [filters.index(filtre) for filtre in filterseq]
+    positions.append(positions[0])
+    mouvements = []
+    for i in range(1, len(positions)):
+        pos_actuelle = positions[i-1]
+        pos_voulue = positions[i]
+        # Mouvement minimal (cyclique)
+        delta_plus = (pos_voulue - pos_actuelle) % n
+        if delta_plus <= n/2:
+            mouvement = delta_plus
+        else:
+            mouvement = delta_plus - n
+        mouvements.append(mouvement)
+    return mouvements
 
 ###############################################################################
 def plot_tension_vectors(tensions_library):
@@ -284,7 +319,7 @@ if __name__ == '__main__':
     
     start_time = time.time()
         
-    microscope_config = config(filename = 'GUI_parameters1.json')
+    microscope_config = config(filename = 'GUI_parameters_double.json')
         
     frequency = 1e5
     print(microscope_config.experiment.exp_name)

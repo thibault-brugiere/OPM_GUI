@@ -9,7 +9,7 @@ Created on Tue Sep  2 09:03:43 2025
     ########
     # Main #
     ########
-#♦ TODO : allumer quand-même l'interface si la roue n'est pas connectée
+# TODO : allumer quand-même l'interface si la roue n'est pas connectée
 
 # TODO : ouvrir laser_GUI depuis l'interface (et autres GUI)
 # TODO : faire un dictionnaire.json dans config pour toute la description du microscope
@@ -25,7 +25,6 @@ Created on Tue Sep  2 09:03:43 2025
     #################################
     
 # TODO : Faire un protocole d'acquisition ultra rapide (mouvement galvo continu)
-# TODO : Prendre en compte le temps de changement de filtres entre 1, 2 ou 3 filtres de décalage
 # TODO : pourquoi les lasers ne s'allument pas si je lance directement le main_MDA ?
 
     #-----------
@@ -33,25 +32,18 @@ Created on Tue Sep  2 09:03:43 2025
     #-----------
     
 # TODO Ajouter un bouton pour abandonner l'expérience
-    
-# TODO : Faire le contrôle de la roue :
-    - placement + trigger en ammont pour le dual channel
-    - trigger à chaque volume pour le multi-channel
-    
-    
-    
+
     # ---------
     # Hardware
     # --------
-    
+
+# TODO Ajout mock filterwheel
     
     # daq_controller
 
     #-------------
     # Tools
     #-------------
-    
-# TODO supprimer le single_channels
 
     #################
     # Sample Finder #
