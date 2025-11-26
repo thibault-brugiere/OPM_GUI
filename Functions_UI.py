@@ -222,7 +222,7 @@ class functions_ui():
     #
     
     def label_volume_duration(scan_range, sample_pixel_size, aspect_ratio, tilt_angle,
-                              exposure_time, vsize, line_readout_time, galvo_response_time):
+                              exposure_time, vsize, line_readout_time, galvo_response_time, mode):
         """
         Return a label for the interface containing the number of steps / volume
         as well as the duration of eachvolumes.
@@ -245,6 +245,8 @@ class functions_ui():
             time to read two lines of the camera 
         galvo_response_time :  (ms)
             time for galvo to move of 1 step
+        mode : str
+            acquisition mode, "standard" for standard acquisition mode, "fast" for fast acquisition mode
 
         Returns
         -------
@@ -254,10 +256,12 @@ class functions_ui():
         step_size = aspect_ratio * sample_pixel_size / np.sin(tilt_angle * math.pi / 180)
         n_steps = 1 + int(round(scan_range / step_size))
         
-        estimated_time = n_steps * (exposure_time + vsize * line_readout_time * 1000 / 2
-                                    + galvo_response_time) * galvo_response_time * 2
+        if mode == "standard" :
+            estimated_time = n_steps * (exposure_time + galvo_response_time) + galvo_response_time * 2
+        elif mode == "fast" :
+            estimated_time = n_steps * exposure_time + galvo_response_time * 2
         
-        message  = f'Number of frames/volume: {str(n_steps)}\n'
+        message  = f'Number of frames/volume/color: {str(n_steps)}\n'
         message += f'Step size: {round(step_size,3)}µm\n'
         message += f'Estimated volume duration: {round(estimated_time/1000,3)}s/channel'
         

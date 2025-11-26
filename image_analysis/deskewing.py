@@ -74,7 +74,7 @@ class deskew_volume(object):
             output_file_path = f'{path}{name}.tiff'
             tifffile.imwrite(output_file_path, self.deskewed_image, compression='zlib')
             
-            print(f"Volume TIFF enregistré sous {output_file_path}")
+            print(f"Volume saved: {name}")
         else:
             raise ValueError("No deskewed image")
     
@@ -122,21 +122,22 @@ class deskew_volume(object):
 
 if __name__ == '__main__':
     
-    # for k in range(9) :
+    for k in range(1) :
+        
     # name = 'GFP_volume_0000'
     
-    # name = 'GFP_volume_0000'
-    name = 'TexRed_volume_0000'
+        name = f'TexRed_volume_{k:04d}'
+        # name = f'GFP_volume_{k:04d}'
     
-    path = "D:/Projets_Python/OPM_GUI/Images/20251021_BrainSlices/20251021_162838_20251021_BraineSlice_06_01_Atto643"
+        path = "D:/Projets_Python/OPM_GUI/Images/20251106_ExpandedSample/20251106_161949_ExpandedSample"
+        
+        file_path = os.path.join(path, f'{name}.tiff')
+        
+        image = tifffile.imread(file_path)
+        
+        volume = deskew_volume(image, aspect_ratio = 5.873697418240959, angle = 40, angle_unit = "deg")
+        
+        volume.deskew_volume()
     
-    file_path = os.path.join(path, f'{name}.tiff')
-    
-    image = tifffile.imread(file_path)
-    
-    volume = deskew_volume(image, aspect_ratio = 3.3563985247091197, angle = 40, angle_unit = "deg")
-    
-    volume.deskew_volume()
-
-    volume.save_numpy_image(f'deskew_{name}',f'{path}/')
+        volume.save_numpy_image(f'deskew_{name}',f'{path}/')
     

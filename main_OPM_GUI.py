@@ -248,6 +248,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_snoutscope_acquisition.setText("Fast acquisition")
         self.pb_snoutscope_acquisition.setCheckable(True)
         
+            # TODO renomer le bouton push button
+            
+        self.pb_MinMax_grayscale.setText("Min / Max")
+        
         ##############################################
         ## Connection between functions and buttons ##
         ##############################################
@@ -650,7 +654,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                                      self.preview_channel.exposure_time,
                                                      self.camera[self.camera_id].vsize,
                                                      self.camera[self.camera_id].line_readout_time,
-                                                     self.microscope.galvo_response_time)
+                                                     self.microscope.galvo_response_time,
+                                                     self.experiment.mode)
         
         self.label_volume_duration.setText(message)
     
@@ -1133,7 +1138,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         
     def pb_snoutscope_acquisition_clicked_connect(self):
-        pass
+        if self.pb_snoutscope_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
+            self.experiment.mode = "fast"
+        else:
+            self.experiment.mode = "standard"
+            
+        self.label_volume_duration_update()
             
     def pb_multidimensional_acquisition_clicked_connect(self):
         if self.pb_snoutscope_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton

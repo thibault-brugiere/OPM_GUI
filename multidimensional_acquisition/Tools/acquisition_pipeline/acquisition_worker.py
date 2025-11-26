@@ -22,7 +22,7 @@ class AcquisitionWorker(QObject):
     new_volume_ready = Signal(np.ndarray, dict)  # signal Qt émis avec buffer + metadata
     
     def __init__(self, camera_worker, save_dir, n_steps, timepoints, n_channels,
-             channel_names=None, max_volume_queue=6, save_type="TIFF"):
+             channel_names=None, mode = "standard", max_volume_queue=6, save_type="TIFF"):
         """
         Initialize the acquisition pipeline with multithreaded image reading, buffering, and saving.
 
@@ -42,6 +42,9 @@ class AcquisitionWorker(QObject):
         - channel_names: list of str, optional
             List of channel identifiers (e.g., ["GFP", "RFP"]) used for naming saved volumes. Defaults to ["CH"].
         
+        - mode: str
+            mode of acquisition, "standard" for stardard acquisition and "fast" for fast acquisition
+        
         - max_volume_queue: int
             Maximum number of volumes allowed in the internal RAM buffer before being written to disk.
             This limits memory usage.
@@ -56,8 +59,20 @@ class AcquisitionWorker(QObject):
         self.n_steps = n_steps
         self.timepoints = timepoints
         
+        self.mode = mode
+        
         self.max_volume_queue = max_volume_queue
         self.channel_names = channel_names or ["CH"]
+        
+        self.n_frames = self.n_steps * self.timepoints * len(self.channel_names)
+        self.n_volumes = self.timepoints * len(self.channel_names)
+        
+        if self.mode == "standard" :
+            self.steps_per_volume = n_steps
+        elif self.mode == "fast" :
+            # En mode fast les volumes sont composés de n_steps + 1 images (sauf le dernier)
+            self.steps_per_volume = n_steps + 1
+
         self.save_type = save_type.upper()
 
         self.stop_event = threading.Event()
@@ -79,7 +94,7 @@ class AcquisitionWorker(QObject):
 
         for _ in range(max_volume_queue):
             for _ in self.channel_names:
-                buffer = np.empty((n_steps, *self.image_shape), dtype=np.uint16)
+                buffer = np.empty((self.steps_per_volume, *self.image_shape), dtype=np.uint16)
                 self.buffer_pool.put(buffer)
 
     def start(self):
@@ -87,9 +102,9 @@ class AcquisitionWorker(QObject):
         
                 
         # Initialize tqdm bars
-        self.frame_bar = tqdm(total=self.n_steps * self.timepoints * len(self.channel_names),
+        self.frame_bar = tqdm(total=self.n_frames,
                               desc="Frames Acquired", position=0)
-        self.volume_bar = tqdm(total=self.timepoints * len(self.channel_names), desc="Volumes Saved   ", position=1)
+        self.volume_bar = tqdm(total=self.n_volumes, desc="Volumes Saved   ", position=1)
         
         self.stop_event.clear()
         self.start_time = time.time()
@@ -119,13 +134,23 @@ class AcquisitionWorker(QObject):
         while not self.stop_event.is_set():
             frames = self.camera.read_camera()
             for frame in frames:
-                if slice_idx < self.n_steps:
+                
+                # --------- Calcul du nombre d'images attendues pour ce volume ----------
+                # Dernier volume : attendre seulement n_steps (pas n_steps + 1)
+                if (volume_id == self.n_volumes - 1) :
+                    expected_slices = self.n_steps
+                    if self.mode == "fast" :
+                        current_buffer[self.n_steps] = 0
+                else:
+                    expected_slices = self.steps_per_volume  # (n_steps+1) en fast, n_steps sinon
+
+                if slice_idx < expected_slices:
                     current_buffer[slice_idx] = frame
                     slice_idx += 1
                     self.total_frames += 1
                     self.frame_bar.update(1)
                 
-                if slice_idx == self.n_steps:
+                if slice_idx == expected_slices:
                     # EMIT the volume as soon as it's filled
                     if self.preview_callback:
                         preview_data = {
@@ -134,6 +159,7 @@ class AcquisitionWorker(QObject):
                             "shape": current_buffer.shape
                         }
                         self.new_volume_ready.emit(current_buffer.copy(), preview_data)
+                        
                     self.queue_to_save.put(ImageFrame(current_buffer, volume_id, current_channel))
                     channel_index = (channel_index + 1) % len(self.channel_names)
                     if channel_index == 0:

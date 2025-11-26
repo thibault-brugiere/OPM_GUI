@@ -127,6 +127,7 @@ class MultidimensionalAcquisition:
                 timepoints=self.config.experiment.timepoints,
                 n_channels = self.n_channels,
                 channel_names=[ch.channel_id for ch in self.config.channels],
+                mode = self.config.experiment.mode
             )
             self.acquisition_workers.append(worker)
             
