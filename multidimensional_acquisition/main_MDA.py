@@ -22,6 +22,7 @@ from Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
 from Tools.acquisition_pipeline.count_worker import CountWorker, mouvement_sequence
 from Tools.saving import prepare_saving_directory, save_metadata
 from Tools.signal_generators.multi_channel import generate_channel_signals
+from Tools.signal_generators.multi_channel_ultra_fast import generate_channel_signals as generate_signals_fast
 
 class MultidimensionalAcquisition:
     def __init__(self, hcams=None, filterwheel = None, frequency=1e5):
@@ -44,11 +45,19 @@ class MultidimensionalAcquisition:
             
         self.filters_mouve = mouvement_sequence(self.config.microscope.filters , self.filterseq)
             
-        self.volume_tensions_library = generate_channel_signals(self.config.cameras,
-                                                                self.config.channels,
-                                                                self.config.experiment,
-                                                                self.config.microscope,
-                                                                frequency = 1e5)
+        if self.config.experiment.mode == "standard" :
+            self.volume_tensions_library = generate_channel_signals(self.config.cameras,
+                                                                    self.config.channels,
+                                                                    self.config.experiment,
+                                                                    self.config.microscope,
+                                                                    frequency = 1e5)
+        if self.config.experiment.mode == "fast" :
+            self.volume_tensions_library = generate_signals_fast(self.config.cameras,
+                                                                 self.config.channels,
+                                                                 self.config.experiment,
+                                                                 self.config.microscope,
+                                                                 frequency = 1e5)
+            
         volume_duration = len(self.volume_tensions_library['tensions_galvo']) / self.frequency
         print(f'[Main MDA] volume duration : {volume_duration} s')
         if volume_duration > self.config.experiment.time_intervals + 0.001:

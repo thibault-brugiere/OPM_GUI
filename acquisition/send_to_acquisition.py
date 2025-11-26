@@ -145,6 +145,7 @@ def send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list
                              'timepoints': experiment.timepoints,
                              'time_intervals': experiment.time_intervals,
                              'total_duration': experiment.total_duration,
+                             'mode' : experiment.mode,
                              'scanner_position': experiment.scanner_position,
                              'scan_range': experiment.scan_range,
                              'aspect_ratio': experiment.aspect_ratio,

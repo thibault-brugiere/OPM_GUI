@@ -56,6 +56,7 @@ class experiment(object):
         self.timepoints = 10
         self.time_intervals = 1.0 # in s
         self.total_duration = 10.0 # in s
+        self.mode = "standard"
         
         self.scanner_position = 0
         self.scan_range = 20

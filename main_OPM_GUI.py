@@ -244,7 +244,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.comboBox_channel_filter_index_changed()
         
             # Desactivate tools # TODO supprimer le bouton
-        self.pb_snoutscope_acquisition.setDisabled(True)
+        # self.pb_snoutscope_acquisition.setDisabled(True)
+        self.pb_snoutscope_acquisition.setText("Fast acquisition")
+        self.pb_snoutscope_acquisition.setCheckable(True)
         
         ##############################################
         ## Connection between functions and buttons ##
@@ -1134,6 +1136,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         pass
             
     def pb_multidimensional_acquisition_clicked_connect(self):
+        if self.pb_snoutscope_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
+            self.experiment.mode = "fast"
+        else:
+            self.experiment.mode = "standard"
+            
         """Start acquisition with the Multi Dimentionnal Acquisition protocole from Thibault"""
         if self.is_preview:
             # Eteint l'acquisition si nécessaire

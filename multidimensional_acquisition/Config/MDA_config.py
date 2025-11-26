@@ -116,6 +116,7 @@ class config():
         exp.data_path = exp_data["data_path"]
         exp.timepoints = exp_data["timepoints"]
         exp.time_intervals = exp_data["time_intervals"]
+        exp.mode = exp_data["mode"]
         exp.total_duration = exp_data["total_duration"]
         exp.scanner_position = exp_data["scanner_position"]
         exp.scan_range = exp_data["scan_range"]

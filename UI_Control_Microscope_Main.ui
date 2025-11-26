@@ -2362,7 +2362,7 @@ Pixels above this value will appear white.</string>
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>Snoutscope
+           <string>Fast
 Acquisition</string>
           </property>
          </widget>

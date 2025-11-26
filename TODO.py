@@ -16,7 +16,8 @@ Created on Tue Sep  2 09:03:43 2025
         Pour qu'elle soit enregistrée lors de l'acquisition
 # TODO : Ajuster la taille du preview pour avoir le champ entier (auto ?)
 # TODO : Avoir plusieurs LUT (Fire ?)
-# TODO : supprimer le bouton snoutscope acquisition
+# TODO : modifier le bouton snoutscope acquisition depuis le fichier original
+# TODO : améliorer l'affichage du temps d'acquisition d'un volume.
 
 # TODO : si on modifie la liste des filtres depuis l'interface, il faut la modifier dans la classe filter_wheel
         
