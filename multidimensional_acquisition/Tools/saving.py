@@ -45,6 +45,7 @@ def save_metadata(config, save_path):
         f.write(f"Number of Cameras: {len(config.cameras)}\n")
         f.write(f"Z Slices (n_steps): {config.experiment.n_steps}\n")
         f.write(f"Timepoints: {config.experiment.timepoints}\n")
+        f.write(f"Timeinterval: {config.experiment.time_intervals:.3f} s\n")
         f.write(f"Scan Range: {config.experiment.scan_range:.2f} µm\n")
         f.write(f"Step Size: {config.experiment.step_size:.3f} µm\n")
         f.write(f"Slit Aperture: {config.experiment.slit_aperture}\n")

@@ -125,7 +125,8 @@ class AcquisitionWorker(QObject):
         self._append_acquisition_summary()
 
     def acquisition_loop(self):
-        volume_id = 0
+        volume_id = 0 # id of the volume with all the colors
+        actual_volume = 0 # id of the volume, color by color
         channel_index = 0
         current_buffer = self.buffer_pool.get()
         slice_idx = 0
@@ -137,7 +138,7 @@ class AcquisitionWorker(QObject):
                 
                 # --------- Calcul du nombre d'images attendues pour ce volume ----------
                 # Dernier volume : attendre seulement n_steps (pas n_steps + 1)
-                if (volume_id == self.n_volumes - 1) :
+                if (actual_volume == self.n_volumes - 1) :
                     expected_slices = self.n_steps
                     if self.mode == "fast" :
                         current_buffer[self.n_steps] = 0
@@ -165,6 +166,7 @@ class AcquisitionWorker(QObject):
                     if channel_index == 0:
                         volume_id += 1
                     current_channel = self.channel_names[channel_index]
+                    actual_volume += 1
                     if not self.buffer_pool.empty():
                         current_buffer = self.buffer_pool.get()
                         slice_idx = 0
