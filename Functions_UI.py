@@ -24,6 +24,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
     
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
+from acquisition.functions_acquisition import functions_acquisition as fa
 
 class functions_ui():
     
@@ -252,16 +253,19 @@ class functions_ui():
         -------
         message : str
         """
+        aspect_ratio = fa.legalize_aspect_ratio(sample_pixel_size, aspect_ratio, tilt_angle)
         
         step_size = aspect_ratio * sample_pixel_size / np.sin(tilt_angle * math.pi / 180)
         n_steps = 1 + int(round(scan_range / step_size))
+        image_readout_time = (vsize / 2 + 8) * line_readout_time * 1000 # in ms
         
         if mode == "standard" :
-            estimated_time = n_steps * (exposure_time + galvo_response_time) + galvo_response_time * 2
+            estimated_time = n_steps * (exposure_time + max(image_readout_time, galvo_response_time)) + galvo_response_time * 2
         elif mode == "fast" :
             estimated_time = n_steps * exposure_time + galvo_response_time * 2
         
         message  = f'Number of frames/volume/color: {str(n_steps)}\n'
+        message += f'Legalized aspect ratio: {round(aspect_ratio,3)}\n'
         message += f'Step size: {round(step_size,3)}µm\n'
         message += f'Estimated volume duration: {round(estimated_time/1000,3)}s/channel'
         

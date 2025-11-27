@@ -38,6 +38,7 @@ from hardware.filter_wheel import FilterWheel
 from hardware.Laser_Controller import LaserController
 # from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
 # from mock.DAQ import functions_daq
+from mock.Null import NullObject
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
 
 from ui_Control_Microscope_Main import Ui_MainWindow
@@ -132,9 +133,13 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         # Connect to the filter wheel
         #
         
-        self.filterWheel = FilterWheel(filterList = self.microscope.filters)
-        self.filterWheel.connect()
-        self.filterWheel.home()
+        try :
+            self.filterWheel = FilterWheel(filterList = self.microscope.filters)
+            self.filterWheel.connect()
+            self.filterWheel.home()
+        except: # TODO ajouter mock filterwheel
+            print("[WARNING] failled to connect filter wheel")
+            self.filterWheel = NullObject()
         
         #
         # creation of the channels / lasers
@@ -197,8 +202,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
         self.sync_laser_interface() # Block modification and starting of not connected laser (to the DAQ)
         
-        self.comboBox_channel_name_set_indexes() # Put all the channels to the self.comboBox_channel_name
-        
         self.sync_filter_interface() # synchronize channels filters to avaliable filters (can be modified via action_Filters)
 
         #
@@ -223,6 +226,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.timer_gray_hystogram = QTimer() # Timer to show grayscale graph
         self.timer_gray_hystogram.timeout.connect(self.update_gray_histogram)
+        
+        self.comboBox_channel_name_set_indexes() # Put all the channels to the self.comboBox_channel_name
         
         #
         # Petites choses de l'interface
@@ -705,6 +710,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.comboBox_channel_name.clear()
         self.comboBox_channel_name.addItems(list(self.channel.keys()))
         self.comboBox_channel_name.blockSignals(False)
+        
+        self.label_volume_duration_update()
     
     def comboBox_channel_name_index_changed(self):
         "Configures the interface elements when changing the comboBox_channel from selected channel object."
@@ -714,6 +721,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                            self.channel[self.comboBox_channel_name.currentText()])
         
         self.preview_channel = self.channel[self.comboBox_channel_name.currentText()] # Change the current name of the channel used for preview
+        
+        self.label_volume_duration_update()
         
     def pb_channel_save_clicked_connect(self):
         "Saves the settings from the interface elements into the specified channel object."
@@ -835,6 +844,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         if self.is_preview: # Change exposure time during preview
             self.hcam[self.preview_channel.camera].set_exposure(self.camera[self.preview_channel.camera].exposure_time)
+            
+        self.label_volume_duration_update()
             
     
     def comboBox_channel_filter_index_changed(self):
