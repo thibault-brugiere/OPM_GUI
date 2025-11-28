@@ -14,6 +14,7 @@ NOTE : les mocks sont en rempacer dans : * main_OPM_GUI * hardware.Laser_Control
 
 import copy
 import json
+import math
 import numpy as np
 import os
 import pickle
@@ -513,11 +514,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.camera[self.camera_id].vsize = size
         self.camera[self.camera_id].calculate_image_readout_time()
+        self.pb_snoutscope_acquisition_clicked_connect()
         
         #set vpos
         self.spinBox_vpos_value_changed()
         
-        self.label_volume_duration_update()
+        self.pb_snoutscope_acquisition_clicked_connect()
         
     def spinBox_vpos_value_changed(self):
         'Vertical position of the ROI'
@@ -1149,10 +1151,26 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         
     def pb_snoutscope_acquisition_clicked_connect(self):
+        """
+        Select the acquisition mode :
+            "standard" for standard acquisition protocol
+            "fast" for fast acquisition protocol with galvo mirror mooving while
+            camera exposing
+
+        """
         if self.pb_snoutscope_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
             self.experiment.mode = "fast"
+            # Set minimum exposure time
+            min_exposure_time = math.ceil(100*(self.camera[self.camera_id].image_readout_time)*1000)/100
+            self.spinBox_channel_exposure_time.setMinimum(min_exposure_time)
+            for channel in self.channel.keys():
+                if self.channel[channel].exposure_time < min_exposure_time:
+                    self.channel[channel].exposure_time = min_exposure_time
+                    self.status_bar.showMessage(f"Exposure time to low for at least one channel, exposure time set to {min_exposure_time}ms")
+                
         else:
             self.experiment.mode = "standard"
+            self.spinBox_channel_exposure_time.setMinimum(0.01)
             
         self.label_volume_duration_update()
             

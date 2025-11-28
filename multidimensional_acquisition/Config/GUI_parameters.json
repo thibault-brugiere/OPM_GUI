@@ -8,12 +8,12 @@
             "sample_pixel_size": 0.15535292131036815,
             "hsize": 1024,
             "hpos": 1704,
-            "vsize": 1024,
-            "vpos": 672,
-            "exposure_time": 0.01,
+            "vsize": 512,
+            "vpos": 928,
+            "exposure_time": 0.0019299999999999999,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
-            "image_readout_time": 0.003800727272727273
+            "image_readout_time": 0.0019296
         }
     },
     "channels": {
@@ -29,47 +29,27 @@
             },
             "laser_power": {
                 "405": 0,
-                "488": 20,
+                "488": 61,
                 "561": 0,
                 "640": 0
             },
             "filter": "GFP",
             "camera": 0,
-            "exposure_time": 10.0
-        },
-        "channel_CY3.5": {
-            "channel_id": "CY3.5",
-            "is_active": true,
-            "channel_order": null,
-            "laser_is_active": {
-                "405": false,
-                "488": false,
-                "561": true,
-                "640": false
-            },
-            "laser_power": {
-                "405": 0,
-                "488": 0,
-                "561": 5,
-                "640": 0
-            },
-            "filter": "CY3.5",
-            "camera": 0,
-            "exposure_time": 10.0
+            "exposure_time": 1.93
         }
     },
     "experiment": {
-        "exp_name": "Fast_Acquisition_TwoColors",
+        "exp_name": "Fast_Volume",
         "data_path": "D:/Projets_Python/OPM_GUI/Images",
-        "timepoints": 2,
-        "time_intervals": 1.0,
-        "total_duration": 2.0,
+        "timepoints": 50,
+        "time_intervals": 0.08,
+        "total_duration": 4.0,
         "mode": "fast",
         "scanner_position": 0,
-        "scan_range": 99.77702726162828,
-        "aspect_ratio": 3.3563985247091197,
-        "n_steps": 124,
-        "step_size": 0.8111953435904738,
+        "scan_range": 49.68571479491652,
+        "aspect_ratio": 5.873697418240959,
+        "n_steps": 36,
+        "step_size": 1.4195918512833292,
         "slit_aperture": 800
     },
     "microscope": {

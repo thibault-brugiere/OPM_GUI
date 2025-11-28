@@ -6,6 +6,7 @@ Pour l'instant la partie qui a été faite est dans : Tools.signal_generators
 
 @author: tbrugiere
 """
+import math
 import os
 from PySide6.QtCore import QThread
 import time
@@ -51,12 +52,20 @@ class MultidimensionalAcquisition:
                                                                     self.config.experiment,
                                                                     self.config.microscope,
                                                                     frequency = 1e5)
+            print("[Main MDA] channel signals generated")
+            
         if self.config.experiment.mode == "fast" :
+            min_exposure_time = math.ceil(100*self.config.cameras[0].image_readout_time*1000)/100
+            for channel in self.config.channels :
+                if channel.exposure_time < min_exposure_time:
+                    channel.exposure_time = min_exposure_time
+                    print(f"[INFO] Exposure time to low for {channel.channel_id}, exposure time set to {min_exposure_time}ms")
             self.volume_tensions_library = generate_signals_fast(self.config.cameras,
                                                                  self.config.channels,
                                                                  self.config.experiment,
                                                                  self.config.microscope,
                                                                  frequency = 1e5)
+            print("[Main MDA] channel signals generated")
             
         volume_duration = len(self.volume_tensions_library['tensions_galvo']) / self.frequency
         print(f'[Main MDA] volume duration : {volume_duration} s')
