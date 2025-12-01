@@ -140,6 +140,8 @@ class mda_mannager(QWidget, Ui_Form):
         
         self.sb_timeline.valueChanged.connect(self.sb_timeline_value_changed)
         
+        self.pb_stop.clicked.connect(self.pb_stop_clicked)
+        
         #####################################
         ## Functions called by the buttons ##
         #####################################
@@ -251,6 +253,9 @@ class mda_mannager(QWidget, Ui_Form):
             
         elif self.projection == "mean":
             self.display_timelapse_strip(self.strip_mean[self.channel_display], self.label_timeline)
+            
+    def pb_stop_clicked(self):
+        self.mda.stop_all()
         
         
         ###########################################

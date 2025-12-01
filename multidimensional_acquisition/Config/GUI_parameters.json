@@ -6,17 +6,37 @@
             "vchipsize": 2368,
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
-            "hsize": 1024,
-            "hpos": 1704,
-            "vsize": 512,
-            "vpos": 928,
-            "exposure_time": 0.0019299999999999999,
+            "hsize": 2368,
+            "hpos": 1032,
+            "vsize": 2368,
+            "vpos": 0,
+            "exposure_time": 0.02,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
-            "image_readout_time": 0.0019296
+            "image_readout_time": 0.008712436363636365
         }
     },
     "channels": {
+        "channel_BFP": {
+            "channel_id": "BFP",
+            "is_active": true,
+            "channel_order": null,
+            "laser_is_active": {
+                "405": true,
+                "488": false,
+                "561": false,
+                "640": false
+            },
+            "laser_power": {
+                "405": 17,
+                "488": 0,
+                "561": 0,
+                "640": 0
+            },
+            "filter": "BFP",
+            "camera": 0,
+            "exposure_time": 30.0
+        },
         "channel_GFP": {
             "channel_id": "GFP",
             "is_active": true,
@@ -29,27 +49,27 @@
             },
             "laser_power": {
                 "405": 0,
-                "488": 61,
+                "488": 16,
                 "561": 0,
                 "640": 0
             },
             "filter": "GFP",
             "camera": 0,
-            "exposure_time": 1.93
+            "exposure_time": 20.0
         }
     },
     "experiment": {
-        "exp_name": "Fast_Volume",
-        "data_path": "D:/Projets_Python/OPM_GUI/Images",
-        "timepoints": 50,
-        "time_intervals": 0.08,
-        "total_duration": 4.0,
-        "mode": "fast",
+        "exp_name": "Lipid_Droplets_Timelaps",
+        "data_path": "C:/Users/tbrugiere/Documents/Images_OPM",
+        "timepoints": 120,
+        "time_intervals": 15.0,
+        "total_duration": 1800.0,
+        "mode": "standard",
         "scanner_position": 0,
-        "scan_range": 49.68571479491652,
-        "aspect_ratio": 5.873697418240959,
-        "n_steps": 36,
-        "step_size": 1.4195918512833292,
+        "scan_range": 150.07113856423766,
+        "aspect_ratio": 3.3563985247091197,
+        "n_steps": 186,
+        "step_size": 0.8111953435904738,
         "slit_aperture": 800
     },
     "microscope": {

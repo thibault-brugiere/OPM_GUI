@@ -77,6 +77,7 @@ class MultidimensionalAcquisition:
         self.save_dir = prepare_saving_directory(self.config.experiment.data_path,
                                                  self.config.experiment.exp_name)
         save_metadata(self.config, self.save_dir)
+        self.config.copy_parameters(self.save_dir)
 
         # Placeholders for hardware
         self.cameras_acquisition = []

@@ -7,6 +7,7 @@ Created on Tue Jul  8 14:00:18 2025
 
 import json
 import os
+import shutil
 
 from configs.config import camera, channel_config, experiment, microscope
 
@@ -61,6 +62,15 @@ class config():
         with open(file_path, 'r') as json_file:
             parameters = json.load(json_file)
         return parameters
+    
+    def copy_parameters(self, dest, filename = 'GUI_parameters.json'):
+        dirname = self.dirname
+        file_path = os.path.join(dirname, filename)   # Construct full path to the file
+        
+        destination = os.path.join(dest, 'parameters')
+        
+        shutil.copy(file_path,destination)
+        
     
     def GUI_parameters_to_config(self):
         """
