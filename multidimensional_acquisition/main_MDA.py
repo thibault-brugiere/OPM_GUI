@@ -181,6 +181,14 @@ class MultidimensionalAcquisition:
         print("[Main MDA] DAQ ready")
         
     def initialize_count_worker(self):
+        """
+        worker used to properly set the position of the filter wheel at the right moment during the acquisition
+
+        Returns
+        -------
+        None.
+
+        """
         self.count_worker = CountWorker(self.daq, self.filterwheel, self.filters_mouve)
         self.count_thread = QThread()
         self.count_worker.moveToThread(self.count_thread)

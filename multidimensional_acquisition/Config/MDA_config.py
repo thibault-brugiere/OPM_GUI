@@ -67,7 +67,7 @@ class config():
         dirname = self.dirname
         file_path = os.path.join(dirname, filename)   # Construct full path to the file
         
-        destination = os.path.join(dest, 'parameters')
+        destination = os.path.join(dest, 'GUI_parameters.txt')
         
         shutil.copy(file_path,destination)
         

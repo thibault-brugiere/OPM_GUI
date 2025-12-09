@@ -122,23 +122,22 @@ class deskew_volume(object):
 
 if __name__ == '__main__':
     
-    for k in range(60) :
+    for k in range(296) :
+        # name = 'GFP_volume_0000'
         
-    # name = 'GFP_volume_0000'
-    
         name = f'GFP_volume_{k:04d}'
         # name = f'GFP_volume_{k:04d}'
-    
-        # path = "D:/Projets_Python/OPM_GUI/Images/20251106_ExpandedSample/20251106_161949_ExpandedSample"
-        path = "C:/Users/tbrugiere/Documents/Images_OPM/20251128_161746_Lipid_Droplets_Timelaps"
+        # 
+        # path = "D:/Projets_Python/OPM_GUI/Images/20251202_142215_PSF_170nm_Green"
+        path = "C:/Users/tbrugiere/Documents/Images_OPM/20251203_Hela_Rab6-GFP/20251203_170853_Hela_Rab6-GFP_10vps_fast"
         
-        file_path = os.path.join(path, f'{name}.tiff')
+        file_path = os.path.join(path, f'{name}.tif')
         
         image = tifffile.imread(file_path)
         
         volume = deskew_volume(image, aspect_ratio = 3.3563985247091197, angle = 40, angle_unit = "deg")
         
         volume.deskew_volume()
-    
+        
         volume.save_numpy_image(f'deskew_{name}',f'{path}/')
     

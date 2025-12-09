@@ -6,37 +6,17 @@
             "vchipsize": 2368,
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
-            "hsize": 2368,
-            "hpos": 1032,
+            "hsize": 4432,
+            "hpos": 0,
             "vsize": 2368,
             "vpos": 0,
-            "exposure_time": 0.02,
+            "exposure_time": 0.01,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
-            "image_readout_time": 0.008712436363636365
+            "image_readout_time": 0.008493058
         }
     },
     "channels": {
-        "channel_BFP": {
-            "channel_id": "BFP",
-            "is_active": true,
-            "channel_order": null,
-            "laser_is_active": {
-                "405": true,
-                "488": false,
-                "561": false,
-                "640": false
-            },
-            "laser_power": {
-                "405": 17,
-                "488": 0,
-                "561": 0,
-                "640": 0
-            },
-            "filter": "BFP",
-            "camera": 0,
-            "exposure_time": 30.0
-        },
         "channel_GFP": {
             "channel_id": "GFP",
             "is_active": true,
@@ -49,26 +29,26 @@
             },
             "laser_power": {
                 "405": 0,
-                "488": 16,
+                "488": 5,
                 "561": 0,
                 "640": 0
             },
             "filter": "GFP",
             "camera": 0,
-            "exposure_time": 20.0
+            "exposure_time": 10.0
         }
     },
     "experiment": {
-        "exp_name": "Lipid_Droplets_Timelaps",
-        "data_path": "C:/Users/tbrugiere/Documents/Images_OPM",
-        "timepoints": 120,
-        "time_intervals": 15.0,
-        "total_duration": 1800.0,
+        "exp_name": "Image",
+        "data_path": "D:/Projets_Python/OPM_GUI/Images",
+        "timepoints": 50,
+        "time_intervals": 5.0,
+        "total_duration": 250.0,
         "mode": "standard",
         "scanner_position": 0,
-        "scan_range": 150.07113856423766,
+        "scan_range": 99.77702726162828,
         "aspect_ratio": 3.3563985247091197,
-        "n_steps": 186,
+        "n_steps": 124,
         "step_size": 0.8111953435904738,
         "slit_aperture": 800
     },

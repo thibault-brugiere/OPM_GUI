@@ -48,7 +48,8 @@ def save_metadata(config, save_path):
         f.write(f"Timeinterval: {config.experiment.time_intervals:.3f} s\n")
         f.write(f"Scan Range: {config.experiment.scan_range:.2f} µm\n")
         f.write(f"Step Size: {config.experiment.step_size:.5f} µm\n")
-        f.write(f"Aspect Ratio: {config.experiment.aspect_ratio:.3f}\n")
+        f.write(f"Aspect Ratio: {config.experiment.aspect_ratio:.5f}\n")
+        f.write(f"Acquisition mode : {config.experiment.mode}\n")
         f.write(f"Slit Aperture: {config.experiment.slit_aperture}\n")
         f.write("\n")
         

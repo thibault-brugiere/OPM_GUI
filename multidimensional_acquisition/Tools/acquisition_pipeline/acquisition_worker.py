@@ -22,7 +22,7 @@ class AcquisitionWorker(QObject):
     new_volume_ready = Signal(np.ndarray, dict)  # signal Qt émis avec buffer + metadata
     
     def __init__(self, camera_worker, save_dir, n_steps, timepoints, n_channels,
-             channel_names=None, mode = "standard", max_volume_queue=6, save_type="TIFF"):
+             channel_names=None, mode = "standard", max_volume_queue=4, save_type="TIFF"):
         """
         Initialize the acquisition pipeline with multithreaded image reading, buffering, and saving.
 
@@ -191,7 +191,7 @@ class AcquisitionWorker(QObject):
 
                 filename_base = os.path.join(self.save_dir, f"{channel}_volume_{volume_id:04d}")
                 if self.save_type == "TIFF":
-                    imwrite(f"{filename_base}.tiff", buffer)
+                    imwrite(f"{filename_base}.tif", buffer)
                 elif self.save_type == "RAW":
                     raw_path = f"{filename_base}.raw"
                     json_path = f"{filename_base}.json"
