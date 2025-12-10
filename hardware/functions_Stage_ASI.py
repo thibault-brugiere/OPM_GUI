@@ -9,6 +9,20 @@ from functions_serial_ports import functions_serial_ports as serial_port
 
 serial_port.list_serial_ports()
 
+class Stage_ASI:
+    def  __init__ (self, port = 'COM10'):
+       self.port = port
+
+    def check_connexion(self):
+        return 'ASI_STAGE'
+    
+    def move_rel(self, x = 0, y = 0, z = 0):
+        command = f'R X={x} Y={y} Z= {z}'
+        serial_port.send_command(command, self.port)
+        
+        
+        
+
 """
 ACCEL :
     sets the amount of time in milliseconds that it takes an axis motor speed to go from stopped to the maximum speed

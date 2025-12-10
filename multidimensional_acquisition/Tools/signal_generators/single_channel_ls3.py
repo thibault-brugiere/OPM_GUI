@@ -7,9 +7,10 @@ Created on Wed Mar 12 10:45:10 2025
 import numpy as np
 import matplotlib.pyplot as plt
  
-def generate_channel_signals(cameras, channels, experiment, microscope, frequency = 1e5):
+def generate_channel_signals(cameras, channels, experiment, microscope, channel_index = 0, frequency = 1e5):
     """
-    Generate voltage and logic signals required to control volume acquisition with a microscope.
+    Generate voltage and logic signals required to acquire a single channel of an experiment
+    using a Light-sheet stabilized scanning (LS3) algorythme
 
     The function simulates one volumetric acquisition, which includes:
         1) Galvo positioning (with response time and flyback delay)
@@ -45,10 +46,10 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
         Describes the hardware setup. Must include:
             - volts_per_um (float): galvanometer scale in V/µm.
             - galvo_response_time (float): in milliseconds.
-            - galvo_flyback_time (float): in milliseconds.
             - laser_response_time (float): in milliseconds.
-            - filter_changing_time (float): in milliseconds.
             - volts_per_laser_percent (dict): scaling from % to volts for each laser.
+            
+    channel_index : the index of the channel corresponding to the algorythme
 
     frequency : float, optional
         Sampling rate in Hz (default: 10,000 Hz). Determines the time resolution of generated signals.
@@ -76,9 +77,6 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
     
     """Get all the values from dictionnary, time is converted in seconds"""
     
-        # ---- Camera parameters ----
-    image_readout_time_s = cameras[0].image_readout_time
-    
         # Get laser calibration factors (V per % of power)
     volts_per_laser_percent = [microscope.volts_per_laser_percent['405'],
                                microscope.volts_per_laser_percent['488'],
@@ -88,28 +86,34 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
     
         # --- Experiment parameters ----
     n_steps = experiment.n_steps # Number of image per channel
-        
-    filterseq = [chan.filter for chan in channels]
-    filters_mouve = mouvement_sequence(microscope.filters , filterseq)
     
     scan_range_um = experiment.scan_range
     
         # ---- Microscope parameters ----
     volts_per_um = microscope.volts_per_um
     galvo_response_time_s = microscope.galvo_response_time /1000 # To get response_time in seconds
-    galvo_flyback_time_s = microscope.galvo_flyback_time /1000
     laser_response_time_s = microscope.laser_response_time /1000
-    filter_changing_time = [time / 1000 for time in microscope.filter_changing_time]
+    
+        # ---- Channel-Camera parameters -----
+    index = channel_index
+    channel = channels[index]
+    
+    exposure_time_s = channel.exposure_time / 1000 # To get exposure_time in seconds
+    
+    camera_id = channel.camera
+    image_readout_time_s = cameras[camera_id].image_readout_time
+    
+    step_duration_s = image_readout_time_s + exposure_time_s
     
     #
     # Time calculation in unit of time
     #
     
         # Convert times to sample units based on the sampling frequency
-    pre_volume_wait = int(max(galvo_flyback_time_s,laser_response_time_s)*frequency) # Time before the volume in unit of time
-
-    galvo_response_time = int(np.ceil(galvo_response_time_s * frequency)) # en unité de temps
-    image_readout_time = int(np.ceil(image_readout_time_s * frequency)) # en unité de temps
+    pre_volume_wait = int(max(galvo_response_time_s ,laser_response_time_s)*frequency) # Time before the volume in unit of time
+    post_volume_wait = int(max(galvo_response_time_s ,laser_response_time_s, image_readout_time_s)*frequency) # Time after the volume in unit of time
+    
+    exposure_time = int(np.ceil(channel.exposure_time / 1000 * frequency)) # en unité de temps
     
         # --- Pre_Create output arrays ---
     tensions_galvo = np.zeros(0)
@@ -122,103 +126,71 @@ def generate_channel_signals(cameras, channels, experiment, microscope, frequenc
     # Values that will be use to calculate vectors
     #
     
-        # --- Galvo scanning positions in volts ---
+        # Galvo
+        
+    stage_speed_um_s = scan_range_um / (n_steps * step_duration_s) # en µm / s
+
+    galvo_tensions_amplitude = stage_speed_um_s * step_duration_s * volts_per_um
     
-    galvo_tensions_amplitude = volts_per_um * scan_range_um
-    galvo_positions = np.linspace(-galvo_tensions_amplitude / 2,
-                              galvo_tensions_amplitude / 2,
-                              n_steps)
+        # Get laser powers in % for each laser channel (405, 488, 561, 640), and laser active
+        
+    laser_power = [channel.laser_power['405'],channel.laser_power['488'],
+                   channel.laser_power['561'],channel.laser_power['640']] # Get all laser power in percent
     
-    for index, channel in enumerate(channels):
-        
-        """Get all the values from dictionnary the the actual channel, time is converted in seconds"""
-        
-        # calculate the time to change the filter at the end of the channel
-        if len(channels) == 1:
-            post_volume_wait = int(max(galvo_flyback_time_s,laser_response_time_s)*frequency) # Time after the volume in unit of time
-        else:
-            fm = abs(filters_mouve[index])
-            t = filter_changing_time[fm - 1] if fm > 0 else 0
-            post_volume_wait = int(max(galvo_flyback_time_s,laser_response_time_s, t)*frequency) # Time after the volume in unit of time
-        
-        filter_triger_duration = min(int(np.ceil(10 / 1000 * frequency)),post_volume_wait) # en unité de temps
-            
-            
-            # ---- Camera / channel parameters ----
-        camera_id = channel.camera
-        image_readout_time_s = cameras[camera_id].image_readout_time
-        exposure_time_s = channel.exposure_time / 1000 # To get exposure_time in seconds
-        exposure_time = int(np.ceil(exposure_time_s * frequency))
-        
-            # Get laser powers in % for each laser channel (405, 488, 561, 640), and laser active
-            
-        laser_power = [channel.laser_power['405'],channel.laser_power['488'],
-                       channel.laser_power['561'],channel.laser_power['640']] # Get all laser power in percent
-        
-        laser_active = [channel.laser_is_active['405'],channel.laser_is_active['488'],
-                        channel.laser_is_active['561'],channel.laser_is_active['640']]
-        
-        # Duration of a single step = galvo settle + exposure + readout
-        step_duration = exposure_time + max(image_readout_time, galvo_response_time)
+    laser_active = [channel.laser_is_active['405'],channel.laser_is_active['488'],
+                    channel.laser_is_active['561'],channel.laser_is_active['640']]
     
-        # Total number of timepoints in the signal
-        channel_duration = int(pre_volume_wait + post_volume_wait + n_steps * step_duration)
-        
-        #
-        # Create vectors
-        #
-        
-            # --- Preallocate output arrays ---
-        tensions_galvo_channel = np.zeros(channel_duration)
-        tensions_camera_channel = np.zeros(channel_duration , dtype='bool')
-        tensions_laser_blanking_channel = np.zeros([4,channel_duration], dtype='bool') # Laser is On for all volume
-        tensions_lasers_channel = np.zeros([4,channel_duration])
-        tensions_filters_channel = np.zeros([2,channel_duration], dtype='bool')
-        
-        #
-        # fill vectors
-        #
-        
-        # Convert laser powers in % to voltages
-        laser_volts = []
-        
-        for k in range(len(laser_power)) :
-            laser_volts.append(laser_power[k] * volts_per_laser_percent[k]) # Get all laser power in volts
-            tensions_lasers_channel[k,:channel_duration - post_volume_wait] = laser_volts[k] # set laser power for all volume
-        
-        tensions_galvo_channel[0:pre_volume_wait] = galvo_positions[0]
-        
-        # --- Step loop ---
-        for step in range(n_steps) :
-            
-            start_index = pre_volume_wait + step * step_duration
-            
-            # Set galvo position
-            tensions_galvo_channel[start_index : start_index + step_duration] = galvo_positions[step]
-            
-            # Turn laser on during exposure time if it is on
-            for i in range(len(laser_active)):
-                if laser_active[i]:
-                    tensions_laser_blanking_channel[i,start_index : start_index + exposure_time] = True
-            
-            # Trigger camera during exposure window
-            tensions_camera_channel[start_index : start_index + exposure_time] = True
-        
-            # send signal to move the filter to the next position
-        wheel_trigger = 0
-        
-        if len(channels) != 1 :
+    # Duration of a single step = galvo settle + exposure + readout
+    step_duration = int(step_duration_s * frequency)
+
+    # Total number of timepoints in the signal
+    channel_duration = int(pre_volume_wait + post_volume_wait + n_steps * step_duration)
     
-            tensions_filters_channel[wheel_trigger,channel_duration - post_volume_wait : channel_duration - post_volume_wait + filter_triger_duration] = True
+    #
+    # Create vectors
+    #
+    
+        # --- Preallocate output arrays ---
+    tensions_galvo_channel = np.zeros(channel_duration)
+    tensions_camera_channel = np.zeros(channel_duration , dtype='bool')
+    tensions_laser_blanking_channel = np.zeros([4,channel_duration], dtype='bool') # Laser is On for all volume
+    tensions_lasers_channel = np.zeros([4,channel_duration])
+    tensions_filters_channel = np.zeros([2,channel_duration], dtype='bool')
+    
+    #
+    # fill vectors
+    #
+    
+    # Convert laser powers in % to voltages
+    laser_volts = []
+    
+    for k in range(len(laser_power)) :
+        laser_volts.append(laser_power[k] * volts_per_laser_percent[k]) # Get all laser power in volts
+        tensions_lasers_channel[k,:channel_duration - post_volume_wait] = laser_volts[k] # set laser power for all volume
+    
+    # tensions_galvo_channel[0:pre_volume_wait] = 0
+    
+    # --- Step loop ---
+    for step in range(n_steps) :
         
-        else:  # Est- utilisé pour le comptage des channels depuis l'ordinateur
-            tensions_filters_channel[wheel_trigger,channel_duration - post_volume_wait : channel_duration -1 ] = True 
+        start_index = pre_volume_wait + step * step_duration
         
-        tensions_galvo = np.append(tensions_galvo, tensions_galvo_channel)
-        tensions_camera = np.append(tensions_camera, tensions_camera_channel)
-        tensions_laser_blanking = np.concat((tensions_laser_blanking, tensions_laser_blanking_channel), axis = 1)
-        tensions_lasers = np.concat((tensions_lasers, tensions_lasers_channel), axis = 1)
-        tensions_filters = np.concat((tensions_filters, tensions_filters_channel), axis = 1)
+        # Set galvo position
+        tensions_galvo_channel[start_index : start_index + step_duration] = np.linspace(0, -galvo_tensions_amplitude ,step_duration)
+        
+        # Turn laser on during exposure time if it is on
+        for i in range(len(laser_active)):
+            if laser_active[i]:
+                tensions_laser_blanking_channel[i,start_index : start_index + exposure_time] = True
+        
+        # Trigger camera during exposure window
+        tensions_camera_channel[start_index : start_index + exposure_time] = True
+    
+    tensions_galvo = np.append(tensions_galvo, tensions_galvo_channel)
+    tensions_camera = np.append(tensions_camera, tensions_camera_channel)
+    tensions_laser_blanking = np.concat((tensions_laser_blanking, tensions_laser_blanking_channel), axis = 1)
+    tensions_lasers = np.concat((tensions_lasers, tensions_lasers_channel), axis = 1)
+    tensions_filters = np.concat((tensions_filters, tensions_filters_channel), axis = 1)
     
     tensions_library = {'tensions_galvo' : tensions_galvo,
                        'tensions_camera' : tensions_camera,

@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 
 def generate_channel_signals(cameras, channels, experiment, microscope, frequency = 1e5):
     """
-    Generate voltage and logic signals required to control a single-channel, single-camera
-    volume acquisition with a microscope.
+    Generate voltage and logic signals required to control volume acquisition with a microscope.
+    Using a ultra-fast algorythme
 
     The function simulates one volumetric acquisition, which includes:
         1) Galvo positioning (with response time and flyback delay)
