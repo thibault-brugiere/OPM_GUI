@@ -12,7 +12,10 @@ serial_port.list_serial_ports()
 class Stage_ASI:
     def  __init__ (self, port = 'COM10'):
        self.port = port
-
+       
+    def on_init(self):
+       self.speed = 0
+       
     def check_connexion(self):
         return 'ASI_STAGE'
     
@@ -20,8 +23,8 @@ class Stage_ASI:
         command = f'R X={x} Y={y} Z= {z}'
         serial_port.send_command(command, self.port)
         
-    def set_speed(self, x=5.745920, y=5.745920, z=1.286400) :
         command = f'S X={x} Y={y} Z= {z}'
+    def set_speed(self, x=5.745920, y=5.745920, z=1.286400) :
         serial_port.send_command(command, self.port)
 
 """
