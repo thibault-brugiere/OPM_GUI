@@ -2347,7 +2347,7 @@ Pixels above this value will appear white.</string>
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pb_snoutscope_acquisition">
+         <widget class="QPushButton" name="pb_fast_acquisition">
           <property name="font">
            <font>
             <pointsize>10</pointsize>
@@ -2400,6 +2400,34 @@ Acquisition</string>
         </item>
         <item>
          <spacer name="horizontalSpacer_11">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pb_LS3_acquisition">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>LS3
+Acquisition</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_18">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>

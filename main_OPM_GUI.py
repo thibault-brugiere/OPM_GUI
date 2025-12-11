@@ -27,7 +27,6 @@ from PySide6.QtCore import QTimer #, QCoreApplication, QEventLoop
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
 
-#from acquisition.send_to_acquisition import send_to_snoutscope_acquisition #TODO a supprimer
 from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
 from acquisition.z_stack import z_stack
 from configs.config import channel_config, microscope, experiment #, camera
@@ -249,12 +248,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.comboBox_channel_filter_index_changed()
         
-            # Desactivate tools # TODO supprimer le bouton
-        # self.pb_snoutscope_acquisition.setDisabled(True)
-        self.pb_snoutscope_acquisition.setText("Fast acquisition")
-        self.pb_snoutscope_acquisition.setCheckable(True)
-        
-            # TODO renomer le bouton push button
+        self.pb_fast_acquisition.setText("Fast acquisition")
+        self.pb_fast_acquisition.setCheckable(True)
             
         self.pb_MinMax_grayscale.setText("Min / Max")
         
@@ -328,7 +323,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_snap.clicked.connect(self.pb_snap_clicked_connect)
         
             ## Acquisition
-        self.pb_snoutscope_acquisition.clicked.connect(self.pb_snoutscope_acquisition_clicked_connect)
+        self.pb_fast_acquisition.clicked.connect(self.pb_fast_acquisition_clicked_connect)
         self.pb_multidimensional_acquisition.clicked.connect(self.pb_multidimensional_acquisition_clicked_connect)
         
     ###############################################
@@ -443,7 +438,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_pause_preview.setDisabled(desactivation)
         self.pb_stop_preview.setDisabled(desactivation)
         self.pb_snap.setDisabled(desactivation)
-        self.pb_snoutscope_acquisition.setDisabled(desactivation)
         self.pb_multidimensional_acquisition.setDisabled(desactivation)
 
     def comboBox_camera_index_changed(self):
@@ -514,12 +508,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.camera[self.camera_id].vsize = size
         self.camera[self.camera_id].calculate_image_readout_time()
-        self.pb_snoutscope_acquisition_clicked_connect()
+        self.pb_fast_acquisition_clicked_connect()
         
         #set vpos
         self.spinBox_vpos_value_changed()
         
-        self.pb_snoutscope_acquisition_clicked_connect()
+        self.pb_fast_acquisition_clicked_connect()
         
     def spinBox_vpos_value_changed(self):
         'Vertical position of the ROI'
@@ -1150,7 +1144,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         # Acquisition
         #
         
-    def pb_snoutscope_acquisition_clicked_connect(self):
+    def pb_fast_acquisition_clicked_connect(self):
         """
         Select the acquisition mode :
             "standard" for standard acquisition protocol
@@ -1158,7 +1152,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             camera exposing
 
         """
-        if self.pb_snoutscope_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
+        if self.pb_fast_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
             self.experiment.mode = "fast"
             # Set minimum exposure time
             min_exposure_time = math.ceil(100*(self.camera[self.camera_id].image_readout_time)*1000)/100
@@ -1175,7 +1169,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.label_volume_duration_update()
             
     def pb_multidimensional_acquisition_clicked_connect(self):
-        if self.pb_snoutscope_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
+        if self.pb_fast_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
             self.experiment.mode = "fast"
         else:
             self.experiment.mode = "standard"

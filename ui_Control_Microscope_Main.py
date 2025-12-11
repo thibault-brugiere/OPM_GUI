@@ -1120,12 +1120,12 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_25.addItem(self.horizontalSpacer_9)
 
-        self.pb_snoutscope_acquisition = QPushButton(self.centralwidget)
-        self.pb_snoutscope_acquisition.setObjectName(u"pb_snoutscope_acquisition")
-        self.pb_snoutscope_acquisition.setFont(font)
-        self.pb_snoutscope_acquisition.setAutoFillBackground(False)
+        self.pb_fast_acquisition = QPushButton(self.centralwidget)
+        self.pb_fast_acquisition.setObjectName(u"pb_fast_acquisition")
+        self.pb_fast_acquisition.setFont(font)
+        self.pb_fast_acquisition.setAutoFillBackground(False)
 
-        self.horizontalLayout_25.addWidget(self.pb_snoutscope_acquisition)
+        self.horizontalLayout_25.addWidget(self.pb_fast_acquisition)
 
         self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -1140,6 +1140,16 @@ class Ui_MainWindow(object):
         self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_25.addItem(self.horizontalSpacer_11)
+
+        self.pb_LS3_acquisition = QPushButton(self.centralwidget)
+        self.pb_LS3_acquisition.setObjectName(u"pb_LS3_acquisition")
+        self.pb_LS3_acquisition.setFont(font)
+
+        self.horizontalLayout_25.addWidget(self.pb_LS3_acquisition)
+
+        self.horizontalSpacer_18 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_25.addItem(self.horizontalSpacer_18)
 
 
         self.verticalLayout_4.addLayout(self.horizontalLayout_25)
@@ -1474,14 +1484,16 @@ class Ui_MainWindow(object):
         self.pb_snap.setText(QCoreApplication.translate("MainWindow", u"Snap", None))
         self.label_histogram_greyvalue.setText("")
 #if QT_CONFIG(tooltip)
-        self.pb_snoutscope_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"Start image acquisition using the Snoutscope program.", None))
+        self.pb_fast_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"Start image acquisition using the Snoutscope program.", None))
 #endif // QT_CONFIG(tooltip)
-        self.pb_snoutscope_acquisition.setText(QCoreApplication.translate("MainWindow", u"Snoutscope\n"
+        self.pb_fast_acquisition.setText(QCoreApplication.translate("MainWindow", u"Fast\n"
 "Acquisition", None))
 #if QT_CONFIG(tooltip)
         self.pb_multidimensional_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"Start a multidimensional acquisition, including multiple channels, positions, or timepoints.", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_multidimensional_acquisition.setText(QCoreApplication.translate("MainWindow", u"Multidimensional\n"
+"Acquisition", None))
+        self.pb_LS3_acquisition.setText(QCoreApplication.translate("MainWindow", u"LS3\n"
 "Acquisition", None))
         self.menuFichier.setTitle(QCoreApplication.translate("MainWindow", u"Fichier", None))
         self.menuConfig.setTitle(QCoreApplication.translate("MainWindow", u"Config", None))
