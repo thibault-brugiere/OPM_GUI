@@ -110,8 +110,8 @@ def generate_channel_signals(cameras, channels, experiment, microscope, channel_
     #
     
         # Convert times to sample units based on the sampling frequency
-    pre_volume_wait = int(max(galvo_response_time_s ,laser_response_time_s)*frequency) # Time before the volume in unit of time
-    post_volume_wait = int(max(galvo_response_time_s ,laser_response_time_s, image_readout_time_s)*frequency) # Time after the volume in unit of time
+    pre_volume_wait = int(np.ceil(max(galvo_response_time_s ,laser_response_time_s)*frequency)) # Time before the volume in unit of time
+    post_volume_wait = int(np.ceil(max(galvo_response_time_s ,laser_response_time_s, image_readout_time_s)*frequency)) # Time after the volume in unit of time
     
     exposure_time = int(np.ceil(channel.exposure_time / 1000 * frequency)) # en unité de temps
     
@@ -141,7 +141,7 @@ def generate_channel_signals(cameras, channels, experiment, microscope, channel_
                     channel.laser_is_active['561'],channel.laser_is_active['640']]
     
     # Duration of a single step = galvo settle + exposure + readout
-    step_duration = int(step_duration_s * frequency)
+    step_duration = int(np.ceil(step_duration_s * frequency))
 
     # Total number of timepoints in the signal
     channel_duration = int(pre_volume_wait + post_volume_wait + n_steps * step_duration)

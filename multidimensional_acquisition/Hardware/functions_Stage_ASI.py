@@ -5,7 +5,7 @@ Created on Tue Dec  9 10:55:10 2025
 @author: tbrugiere
 """
 
-from functions_serial_ports import functions_serial_ports as serial_port
+from Hardware.functions_serial_ports import functions_serial_ports as serial_port
 
 serial_port.list_serial_ports()
 
@@ -20,8 +20,9 @@ class Stage_ASI:
         command = f'R X={x} Y={y} Z= {z}'
         serial_port.send_command(command, self.port)
         
-        
-        
+    def set_speed(self, x=5.745920, y=5.745920, z=1.286400) :
+        command = f'S X={x} Y={y} Z= {z}'
+        serial_port.send_command(command, self.port)
 
 """
 ACCEL :

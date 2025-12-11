@@ -28,7 +28,7 @@ from Tools.signal_generators.single_channel_ls3 import generate_channel_signals 
 class Light_sheet_stabilized_scanning:
     def __init__(self, hcams=None, filterwheel = None, frequency=1e5):
         
-        print('[Main MDA] Start multidimensionnal acquisition')
+        print('[Main LS3] Start Light sheet stabilized stage scanning')
         
         self.hcams = hcams
         self.filterwheel = filterwheel
@@ -48,7 +48,7 @@ class Light_sheet_stabilized_scanning:
         
         self.list_volume_tensions_library = []
         volume_duration = 0
-        for idx in len(self.config.experiment.channels) :
+        for idx in range(len(self.config.experiment.channels)) :
             self.list_volume_tensions_library.append(
                 generate_channel_signals_LS3(self.config.cameras,
                                              self.config.channels,
@@ -214,12 +214,12 @@ class Light_sheet_stabilized_scanning:
         
         expected_volume_images = self.config.experiment.n_steps
         
-        for timepoint in self.config.experiment.timepoints :
+        for timepoint in range(self.config.experiment.timepoints) :
             
-            for idx in len(self.config.experiment.channels) :
+            for chan in range(len(self.config.experiment.channels)) :
                 
                 self.scan_duration = self.config.experiment.n_steps * (
-                        self.config.channels[idx].exposure_time
+                        self.config.channels[chan].exposure_time
                         + self.config.cameras[0].image_readout_time)
     
                 self.stage_speed = self.config.experiment.scan_range / 1000 / self.scan_duration
@@ -227,7 +227,7 @@ class Light_sheet_stabilized_scanning:
                 self.stage.set_speed(y = self.stage_speed)
                 
                 self.daq.send_signals_to_daq_single_channel(
-                    self.volume_tensions_library,
+                    self.list_volume_tensions_library[chan],
                     1, # experiment.timepoints
                     self.config.experiment.time_intervals,
                     self.config.microscope.daq_channels,
@@ -237,7 +237,7 @@ class Light_sheet_stabilized_scanning:
                 
                 self.daq.arm_task()
                 
-                self.stage.moverel(y = self.config.experiment.scan_range * 10) # axis unit is 0.1µm
+                self.stage.move_rel(y = self.config.experiment.scan_range * 10) # axis unit is 0.1µm
                 self.daq.trigger_acquisition()
 
                 try:
@@ -246,16 +246,22 @@ class Light_sheet_stabilized_scanning:
                         if all(v >= expected_volume_images for v in images):
                             break
                         time.sleep(0.5)
-                        
-                    self.stage.moverel(y = -self.config.experiment.scan_range * 10) # Retour à la position de départ
-                    
-                    self.stage.set_speed(y=5)
-                    
-                    moving_duration = 5 / self.config.experiment.scan_range * 1000
-                    
-                    time.sleep(moving_duration)
+
                 except:
                     print("[INFO] Acquisition interrupted by user.")
+                    
+                self.stage.set_speed()
+                
+                # self.stage.move_rel(y = -self.config.experiment.scan_range * 10) # Retour à la position de départ
+                self.stage.move_rel(y = -20000)
+                
+                moving_duration = self.config.experiment.scan_range / 1000 / 5.745920
+                time.sleep(moving_duration)
+                
+                self.daq.stop()
+                self.daq.close()
+                
+                expected_volume_images += self.config.experiment.n_steps
         
         self.stop_all()
         
@@ -274,10 +280,10 @@ class Light_sheet_stabilized_scanning:
             cam.stop_acquisition()
             cam.release_camera()
         
-        self.count_worker.stop()
+        # self.count_worker.stop()
         
-        self.count_thread.quit()
-        self.count_thread.wait()
+        # self.count_thread.quit()
+        # self.count_thread.wait()
         
         if self.fw_None :
             self.filterwheel.close()
@@ -302,11 +308,12 @@ class Light_sheet_stabilized_scanning:
 ##############################################################################
 
 if __name__ == "__main__":
-    MDA = Light_sheet_stabilized_scanning()
-    MDA.initialize_cameras()
-    MDA.initialize_laser()
-    MDA.initialize_acquisition_workers()
-    MDA.initialize_filterwheel()
-    MDA.configure_daq()
-    MDA.initialize_count_worker()
-    MDA.run()
+    LS3 = Light_sheet_stabilized_scanning()
+    LS3.initialize_cameras()
+    LS3.initialize_laser()
+    LS3.initialize_acquisition_workers()
+    LS3.initialize_filterwheel()
+    LS3.configure_daq()
+    LS3.configure_stage()
+    # LS3.initialize_count_worker()
+    LS3.run_acquisition()
