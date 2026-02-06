@@ -1,12 +1,16 @@
 {
     "tilt_angle": 40.0,
     "mag_total": 29.61,
-    "volts_per_um": 0.01024,
+    "volts_per_um": 0.009679,
     "galvo_response_time": 0.3,
     "galvo_flyback_time": 3.0,
     "stage_port": "COM10",
     "filter_port": "COM?",
-    "filter_changing_time": [55,70,85],
+    "filter_changing_time": [
+        55,
+        70,
+        85
+    ],
     "filters": [
         "BFP",
         "GFP",
@@ -43,7 +47,7 @@
         "camera_1": "Dev1/port0/line1",
         "filter_wheel_1": "Dev1/port0/line2",
         "filter_wheel_2": "Dev1/port0/line3",
-        "channel_finished" : "/Dev1/PFI1",
+        "channel_finished": "/Dev1/PFI1",
         "laser_blanking": "Dev1/port0/line4"
     },
     "daq_channels_laser_analog_out": {

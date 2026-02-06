@@ -71,7 +71,7 @@ class deskew_volume(object):
 
         """
         if self.deskewed_image is not None :
-            output_file_path = f'{path}{name}.tiff'
+            output_file_path = f'{path}{name}.tif'
             tifffile.imwrite(output_file_path, self.deskewed_image, compression='zlib')
             
             print(f"Volume saved: {name}")
@@ -122,22 +122,33 @@ class deskew_volume(object):
 
 if __name__ == '__main__':
     
-    for k in range(296) :
-        # name = 'GFP_volume_0000'
+    channels_list = ["BFP","GFP", "CY3.5", "TexRed"]
+    
+    channels = ["GFP"]
+    
+    # path = "D:/Projets_Python/OPM_GUI/Images/20251212_Lipid_Droplets/20251212_155228_Lipid_Droplets"
+    # path = "C:/Users/tbrugiere/Documents/Images_OPM/20260123_CalciumImaging_Explant/20260123_170243_CalciumImaging_Explant_2_superbe"
+    path = "D:/Projets_Python/OPM_GUI/Images/20260202_152416_COS7_NHS-Esther_Atto488" 
+    
+    # time_code = ['20251217_170044','20251217_170619']
+    
+    # for time in time_code :
+    #     print(f'FOLDER : {time}')
+    
+    for channel in channels :
         
-        name = f'GFP_volume_{k:04d}'
-        # name = f'GFP_volume_{k:04d}'
-        # 
-        # path = "D:/Projets_Python/OPM_GUI/Images/20251202_142215_PSF_170nm_Green"
-        path = "C:/Users/tbrugiere/Documents/Images_OPM/20251203_Hela_Rab6-GFP/20251203_170853_Hela_Rab6-GFP_10vps_fast"
-        
-        file_path = os.path.join(path, f'{name}.tif')
-        
-        image = tifffile.imread(file_path)
-        
-        volume = deskew_volume(image, aspect_ratio = 3.3563985247091197, angle = 40, angle_unit = "deg")
-        
-        volume.deskew_volume()
-        
-        volume.save_numpy_image(f'deskew_{name}',f'{path}/')
+        for k in range(1) :
+            
+            name = f'{channel}_volume_{k:04d}'
+            print(f'Deskewing {name}')
+            
+            file_path = os.path.join(path, f'{name}.tif')
+            
+            image = tifffile.imread(file_path)
+            
+            volume = deskew_volume(image, aspect_ratio = 3.3564, angle = 40, angle_unit = "deg")
+            
+            volume.deskew_volume()
+            
+            volume.save_numpy_image(f'deskew_{name}',f'{path}/')
     

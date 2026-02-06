@@ -253,6 +253,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
         self.pb_MinMax_grayscale.setText("Min / Max")
         
+        #
+        # Modifications d'élements de l'interface
+        #
+        
+        self.spinBox_timepoints.setMaximum(999999)
+        
         ##############################################
         ## Connection between functions and buttons ##
         ##############################################
