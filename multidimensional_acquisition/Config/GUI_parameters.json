@@ -6,17 +6,37 @@
             "vchipsize": 2368,
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
-            "hsize": 2000,
-            "hpos": 1400,
-            "vsize": 500,
-            "vpos": 932,
-            "exposure_time": 0.02,
+            "hsize": 1024,
+            "hpos": 1704,
+            "vsize": 1024,
+            "vpos": 672,
+            "exposure_time": 0.05,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
-            "image_readout_time": 0.0018857454545454547
+            "image_readout_time": 0.003800727272727273
         }
     },
     "channels": {
+        "channel_TexRed": {
+            "channel_id": "TexRed",
+            "is_active": true,
+            "channel_order": null,
+            "laser_is_active": {
+                "405": false,
+                "488": false,
+                "561": false,
+                "640": true
+            },
+            "laser_power": {
+                "405": 0,
+                "488": 0,
+                "561": 0,
+                "640": 15
+            },
+            "filter": "TexRed",
+            "camera": 0,
+            "exposure_time": 50.0
+        },
         "channel_GFP": {
             "channel_id": "GFP",
             "is_active": true,
@@ -29,13 +49,13 @@
             },
             "laser_power": {
                 "405": 0,
-                "488": 16,
+                "488": 19,
                 "561": 0,
                 "640": 0
             },
             "filter": "GFP",
             "camera": 0,
-            "exposure_time": 20.0
+            "exposure_time": 50.0
         },
         "channel_BFP": {
             "channel_id": "BFP",
@@ -48,27 +68,27 @@
                 "640": false
             },
             "laser_power": {
-                "405": 13,
+                "405": 16,
                 "488": 0,
                 "561": 0,
                 "640": 0
             },
             "filter": "BFP",
             "camera": 0,
-            "exposure_time": 20.0
+            "exposure_time": 50.0
         }
     },
     "experiment": {
-        "exp_name": "Lipid_Droplets",
-        "data_path": "C:/Users/tbrugiere/Documents/Images_OPM/20260206_LipidDroplets",
-        "timepoints": 60,
-        "time_intervals": 30.0,
-        "total_duration": 1800.0,
+        "exp_name": "NS_synapsin_map2",
+        "data_path": "D:/Projets_Python/OPM_GUI/Images",
+        "timepoints": 1,
+        "time_intervals": 1.0,
+        "total_duration": 1.0,
         "mode": "standard",
         "scanner_position": 0,
-        "scan_range": 300.1422771284753,
+        "scan_range": 200.36524986684705,
         "aspect_ratio": 3.3563985247091197,
-        "n_steps": 371,
+        "n_steps": 248,
         "step_size": 0.8111953435904738,
         "slit_aperture": 800
     },

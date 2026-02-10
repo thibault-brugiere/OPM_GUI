@@ -11,6 +11,11 @@ Resolved FTDI DLL issue by copying ftd2xx64.dll from Thorlabs software to C:\Win
 NOTE : les mocks sont en rempacer dans : * main_OPM_GUI * hardware.Laser_Controller * functions_camera * main_MDA
 """
 # Branche laser
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    message="pkg_resources is deprecated as an API"
+)
 
 import copy
 import json
@@ -50,7 +55,6 @@ from widget.Microscope_Settings_Window import microscope_settings_window
 from widget.Preset_ROI_Window import PresetROIWindow
 from widget.Sample_Finder import sample_finder_Window
 from widget.set_DAQ_Window import setDAQWindow
-# from widget.Set_Filters_Window import filtersEditionWindow #TODO a supprimer
 
 class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     """

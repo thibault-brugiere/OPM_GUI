@@ -9,146 +9,172 @@ import numpy as np
 import os
 import tifffile
 
-class functions_tiff():
-    
-    def open_tiff():
-        pass
-    
-    def save_tiff():
-        pass
-    
-    def compress_tiff():
-        pass
+def legalize_voxel_aspect_ratio(aspect_ratio, angle):
+    """
+    Pixels between two frames, 
+    We need the pixels aligned in the R' frame, and we have the relation:
+    tan(theta) = x'/z'
+    So in order to keep the tilting angle, the aspect ratio must be a multiple
+    of tan(theta), with theta the tilting angle.
+    """
+    return max(int(round(aspect_ratio / math.tan(angle))), 1) * math.tan(angle)
 
-class deskew_volume(object):
+def px_shift_calculation(aspect_ratio:float, angle:float, angle_unit:str = "rad") -> int:
+    """
+    Angle in degree
+
+    Parameters
+    ----------
+    aspect_ratio : float
+        DESCRIPTION.
+    angle : float
+        DESCRIPTION.
+    unit : str
+        DESCRIPTION.
+
+    Raises
+    ------
+    ValueError
+        DESCRIPTION.
+
+    Returns
+    -------
+    int
+        DESCRIPTION.
+
+    """
+    angle = angle if angle_unit == "rad" else np.deg2rad(angle)
+                                                         
+    px_shift = aspect_ratio/math.tan(angle)
     
-    def __init__(self, images, aspect_ratio, angle, angle_unit = "rad"):
-        """
+    int_px_shift = round(px_shift)
+    
+    if not math.isclose(px_shift, int_px_shift, rel_tol=0.0001):
+        raise ValueError(f'Aspect ratio is not legal, pixel shift = {px_shift}')
         
-        Args:
-        image (tiff) : volume acquired from OPM microscope
-        aspect_ratio (float) : ratio of the distance between two plane and piexel
-            size of the camera.
-        angle (float) : angle in between focal plane of the objective
-            and bessel beam. It can be in radian or degree, defined aby angle_unit
-            default is radian.
-        angle_unit (str) : unit of the angle, can be "deg" or "rad"
+    return int(int_px_shift)
 
-        """
-        self.images = images
-        self.deskewed_image = None
-        self.aspect_ratio = aspect_ratio
-        self.angle = angle
-        
-        self.angle = angle if angle_unit == "rad" else np.deg2rad(angle)
-        
-        self.px_shift_calculation()
+def deskew_numpy(volume: np.ndarray, px_shift_y: int = 0, px_shift_x: int = 0) -> np.ndarray:
+    """
+    Deskew a 3D volume (Z, Y, X) by shifting each Z-slice along Y and/or X
+    by a fixed number of pixels per slice.
+    For image with my OPM, the pixel shift is made in Y
 
-    def px_shift_calculation(self):
-        """
-        Calculate the pixel translation between two frames.
+    Parameters:
+    - volume: np.ndarray of shape (Z, Y, X)
+    - px_shift_y: int, shift in Y per Z-plane
+    - px_shift_x: int, shift in X per Z-plane
 
-        Returns:
-        self.px_shift (int) : shifting in pixels between two frames
+    Returns:
+    - np.ndarray of shape (Z, Y + Z*shift_y, X + Z*shift_x)
+    """
+    Z, Y, X = volume.shape
+    new_Y = Y + Z * abs(px_shift_y)
+    new_X = X + Z * abs(px_shift_x)
 
-        """
-        
-        px_shift = self.aspect_ratio/math.tan(self.angle)
-        
-        int_px_shift = round(px_shift)
-        
-        if not math.isclose(px_shift, int_px_shift, rel_tol=0.0001):
-            raise ValueError(f'Aspect ratio is not legal, pixel shift = {px_shift}')
-            
-        self.px_shift =int(int_px_shift)
+    deskewed = np.zeros((Z, new_Y, new_X), dtype=volume.dtype)
+
+    for z in range(Z):
+        y_start = z * px_shift_y if px_shift_y >= 0 else new_Y - Y - z * abs(px_shift_y)
+        y_end = y_start + Y
+
+        x_start = z * px_shift_x if px_shift_x >= 0 else new_X - X - z * abs(px_shift_x)
+        x_end = x_start + X
+
+        deskewed[z, y_start:y_end, x_start:x_end] = volume[z]
+
+    return deskewed
+
+def save_image(image: np.ndarray, name: str = "numpy_deskewed", path: str=''):
+    """
+    Save an image or image stack to a TIFF file.
     
-    def deskew_volume(self):
-        self.deskewed_image = self.deskew_numpy(volume = self.images, px_shift_y = self.px_shift)
-
-    def save_numpy_image(self, name = "numpy_deskewed", path=''):
-        """
-        Save the shifted images as a TIFF stack.
-
-        """
-        if self.deskewed_image is not None :
-            output_file_path = f'{path}{name}.tif'
-            tifffile.imwrite(output_file_path, self.deskewed_image, compression='zlib')
-            
-            print(f"Volume saved: {name}")
-        else:
-            raise ValueError("No deskewed image")
+    The input array is written as a TIFF or BigTIFF file depending on its
+    size. Compression is enabled to reduce disk usage.
     
-    def legalize_voxel_aspect_ratio(aspect_ratio, angle):
-        """
-        Pixels between two frames, 
-        We need the pixels aligned in the R' frame, and we have the relation:
-        tan(theta) = x'/z'
-        So in order to keep the tilting angle, the aspect ratio must be a multiple
-        of tan(theta), with theta the tilting angle.
-        """
-        return max(int(round(aspect_ratio / math.tan(angle))), 1) * math.tan(angle)
+    Parameters
+    ----------
+    image : np.ndarray
+        Image or image stack to save.
+    name : str, optional
+        Base name of the output file without extension
+        (default: ``"numpy_deskewed"``).
+    path : str, optional
+        Output directory. The file name is appended to this path
+        (default: empty string).
     
-    def deskew_numpy(self, volume: np.ndarray, px_shift_y: int = 0, px_shift_x: int = 0) -> np.ndarray:
-        """
-        Deskew a 3D volume (Z, Y, X) by shifting each Z-slice along Y and/or X
-        by a fixed number of pixels per slice.
-
-        Parameters:
-        - volume: np.ndarray of shape (Z, Y, X)
-        - px_shift_y: int, shift in Y per Z-plane
-        - px_shift_x: int, shift in X per Z-plane
-
-        Returns:
-        - np.ndarray of shape (Z, Y + Z*shift_y, X + Z*shift_x)
-        """
-        Z, Y, X = volume.shape
-        new_Y = Y + Z * abs(px_shift_y)
-        new_X = X + Z * abs(px_shift_x)
-
-        deskewed = np.zeros((Z, new_Y, new_X), dtype=volume.dtype)
-
-        for z in range(Z):
-            y_start = z * px_shift_y if px_shift_y >= 0 else new_Y - Y - z * abs(px_shift_y)
-            y_end = y_start + Y
-
-            x_start = z * px_shift_x if px_shift_x >= 0 else new_X - X - z * abs(px_shift_x)
-            x_end = x_start + X
-
-            deskewed[z, y_start:y_end, x_start:x_end] = volume[z]
-
-        return deskewed
+    Returns
+    -------
+    None
+    """
+    
+    output_file_path = f'{path}{name}.tif'
+    tifffile.imwrite(output_file_path, image, compression='zlib')
     
 ###############################################################################
 
 if __name__ == '__main__':
     
+    import time
+    from pathlib import Path
+    
+    aspect_ratio = 3.3564
+    
     channels_list = ["BFP","GFP", "CY3.5", "TexRed"]
     
-    channels = ["GFP"]
+    # experiment_path = "D:/Projets_Python/OPM_GUI/Images/20260206_LipidDroplets"
+    experiment_path = Path(r"D:\Projets_Python\OPM_GUI\Images\20260210_NS_synapsin_map2_Louis")
     
-    # path = "D:/Projets_Python/OPM_GUI/Images/20251212_Lipid_Droplets/20251212_155228_Lipid_Droplets"
-    # path = "C:/Users/tbrugiere/Documents/Images_OPM/20260123_CalciumImaging_Explant/20260123_170243_CalciumImaging_Explant_2_superbe"
-    path = "D:/Projets_Python/OPM_GUI/Images/20260202_152416_COS7_NHS-Esther_Atto488" 
+    folders= ['20260210_145132_NS_synapsin_map2',
+              '20260210_145933_NS_synapsin_map2',
+              '20260210_150404_NS_synapsin_map2',
+              '20260210_150950_NS_synapsin_map2']
     
-    # time_code = ['20251217_170044','20251217_170619']
+    channels = ["TexRed","GFP","BFP"]
     
-    # for time in time_code :
-    #     print(f'FOLDER : {time}')
+    for folder in folders :
+        print(f'FOLDER : {folder}')
+        path = os.path.join(experiment_path , folder)
     
-    for channel in channels :
+        for channel in channels :
+            
+            for k in range(1) :
+                
+                t0 = time.perf_counter()
+                
+                name = f'{channel}_volume_{k:04d}'
+                print(f'Deskewing {name}')
+                
+                #
+                # Opening Image
+                #
+                
+                file_path = os.path.join(path, f'{name}.tif')
+                
+                image = tifffile.imread(file_path)
+                
+                print("oppened")
+                
+                #
+                # Deskew
+                #
+                
+                px_shift = px_shift_calculation(aspect_ratio, angle = 40, angle_unit = "deg")
+                
+                deskew_image = deskew_numpy(image,px_shift_y=px_shift)
+                
+                print("deskewed")
+                
+                #
+                # Saving
+                #
+                
+                os.makedirs(f'{path}/deskew', exist_ok=True)
+                
+                save_image(deskew_image, f'deskew_{name}', f'{path}/deskew/')
+                
+                print(f"deskew_{name} saved")
+                
+                print(f"Duration: {time.perf_counter() - t0:.3f} s")
+                print(" ")
         
-        for k in range(1) :
-            
-            name = f'{channel}_volume_{k:04d}'
-            print(f'Deskewing {name}')
-            
-            file_path = os.path.join(path, f'{name}.tif')
-            
-            image = tifffile.imread(file_path)
-            
-            volume = deskew_volume(image, aspect_ratio = 3.3564, angle = 40, angle_unit = "deg")
-            
-            volume.deskew_volume()
-            
-            volume.save_numpy_image(f'deskew_{name}',f'{path}/')
-    
