@@ -1,3 +1,4 @@
+import gc
 import json
 import numpy as np
 import queue
@@ -9,7 +10,15 @@ import time
 
 from PySide6.QtCore import Signal, QObject
 
+_STOP = object()
 
+def _drain_queue(q: "queue.Queue"):
+    try:
+        while True:
+            q.get_nowait()
+    except queue.Empty:
+        pass
+    
 # Container class for a single image frame, with optional timestamp and metadata
 class ImageFrame:
     def __init__(self, buffer, volume_id, channel):
@@ -79,6 +88,7 @@ class AcquisitionWorker(QObject):
         self.threads = []
         
         self.preview_callback = False
+        self._preview_connected = False
         
         self.total_images = 0
         self.total_frames = 0
@@ -116,13 +126,50 @@ class AcquisitionWorker(QObject):
             t.start()
 
     def stop(self):
+        # 1) stop threads
         self.stop_event.set()
+        
+        # 2) débloquer saving_loop quoi qu'il arrive
+        try:
+            self.queue_to_save.put_nowait(_STOP)
+        except Exception:
+            pass
+        
         for t in self.threads:
             t.join()
+        
+        self.camera = None
+        
+        self.threads = []
+        if self._preview_connected :
+            try:
+                self.new_volume_ready.disconnect()
+            except:
+                pass
+            self._preview_connected = False
+            
+        # 3) fermer tqdm
         self.frame_bar.close()
         self.volume_bar.close()
+        
         self._print_stats()
         self._append_acquisition_summary()
+        
+                
+        # 4) vider les queues (enlève toutes références restantes)
+        _drain_queue(self.queue_to_save)
+        _drain_queue(self.buffer_pool)
+        
+        # 5) casser les références aux gros ndarrays
+        self.queue_to_save = None
+        self.buffer_pool = None
+        
+        # 6) si preview Qt : attention, des copies peuvent encore être en transit
+        #    (côté GUI). Ici, on fait au moins tomber le flag.
+        self.preview_callback = False
+        
+        # 7) forcer GC
+        gc.collect()
 
     def acquisition_loop(self):
         volume_id = 0 # id of the volume with all the colors
@@ -179,39 +226,45 @@ class AcquisitionWorker(QObject):
             time.sleep(0.001)
 
     def saving_loop(self):
-        while not self.stop_event.is_set() or not self.queue_to_save.empty():
+        while True:
             try:
                 frame = self.queue_to_save.get(timeout=0.1)
-                if not isinstance(frame, ImageFrame):
-                    print(f"[ERROR] Unexpected object in save queue: {type(frame)}")
-                    continue
-                buffer = frame.buffer
-                volume_id = frame.volume_id
-                channel = frame.channel
-
-                filename_base = os.path.join(self.save_dir, f"{channel}_volume_{volume_id:04d}")
-                if self.save_type == "TIFF":
-                    imwrite(f"{filename_base}.tif", buffer)
-                elif self.save_type == "RAW":
-                    raw_path = f"{filename_base}.raw"
-                    json_path = f"{filename_base}.json"
-                    buffer.tofile(raw_path)
-                    metadata = {
-                        "shape": list(buffer.shape),
-                        "dtype": str(buffer.dtype),
-                        "channel": channel,
-                        "volume_id": volume_id
-                    }
-                    with open(json_path, 'w') as jf:
-                        json.dump(metadata, jf, indent=4)
-
-                self.total_volumes += 1
-                self.volume_bar.update(1)
-                    
-                self.buffer_pool.put(buffer)   # recycle the buffer
-
-            except queue.Empty:
+            except:
+                if self.stop_event.is_set():
+                    break
                 continue
+            
+            if frame is _STOP:
+                break
+            
+            if not isinstance(frame, ImageFrame):
+                print(f"[ERROR] Unexpected object in save queue: {type(frame)}")
+                continue
+
+            buffer = frame.buffer
+            volume_id = frame.volume_id
+            channel = frame.channel
+
+            filename_base = os.path.join(self.save_dir, f"{channel}_volume_{volume_id:04d}")
+            if self.save_type == "TIFF":
+                imwrite(f"{filename_base}.tif", buffer)
+            elif self.save_type == "RAW":
+                raw_path = f"{filename_base}.raw"
+                json_path = f"{filename_base}.json"
+                buffer.tofile(raw_path)
+                metadata = {
+                    "shape": list(buffer.shape),
+                    "dtype": str(buffer.dtype),
+                    "channel": channel,
+                    "volume_id": volume_id
+                }
+                with open(json_path, 'w') as jf:
+                    json.dump(metadata, jf, indent=4)
+
+            self.total_volumes += 1
+            self.volume_bar.update(1)
+                
+            self.buffer_pool.put(buffer)   # recycle the buffer
             
     def set_preview_callback(self):
         """
@@ -220,6 +273,7 @@ class AcquisitionWorker(QObject):
         The function is also connected to as Qt signal for Qt integration
         """
         self.preview_callback = True
+        self._preview_connected = True
         # self.new_volume_ready.connect(callback_func)
 
     def _print_stats(self):

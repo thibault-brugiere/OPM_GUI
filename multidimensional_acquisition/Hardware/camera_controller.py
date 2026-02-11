@@ -166,7 +166,7 @@ class camera_acquisition():
         Fully releases the camera and resets the state to idle.
         """
         if self.hcam is not None:
-            print('Camera clearing')
+            print('[hcam] Camera clearing')
             self.hcam.clear_acquisition()
             self.hcam.cav["trigger_source"] = 1
             self.hcam = None
