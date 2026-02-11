@@ -6,6 +6,12 @@ Pour l'instant la partie qui a été faite est dans : Tools.signal_generators
 
 @author: tbrugiere
 """
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    message="pkg_resources is deprecated as an API"
+)
+
 import math
 import os
 from PySide6.QtCore import QThread
@@ -249,6 +255,7 @@ class MultidimensionalAcquisition:
         Stop all acquisition workers and DAQ tasks. Can be called at the end of acquisition
         or via external user action (e.g. GUI button).
         """
+
         for worker in self.acquisition_workers:
             worker.stop()
             
