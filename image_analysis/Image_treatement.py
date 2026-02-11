@@ -10,10 +10,10 @@ cupyx
 
 import numpy as np
 import os
+from pathlib import Path
 import tifffile
 import time
 
-from deskewing_class import deskew_volume
 import preprocessing as pp
 import deskewing
 # from preprocessing import crop_stack, save_image, subtract_bg_xy_gpu, bleach_correction_exp
@@ -22,16 +22,8 @@ aspect_ratio = 3.3564
 
 channels = ["BFP"]
 
-path1 = "C:/Users/tbrugiere/Documents/Images_OPM/20260206_LipidDroplets/20260206_111018_Lipid_Droplets"
-
-path2 = "C:/Users/tbrugiere/Documents/Images_OPM/20260206_LipidDroplets/20260206_103347_Lipid_Droplets"
-
-crop1 = [0,30,1999,410]
-
-crop2 = [0,50,1999,450]
-
 parameters1 = {
-    "path" : "C:/Users/tbrugiere/Documents/Images_OPM/20260206_LipidDroplets/20260206_111018_Lipid_Droplets",
+    "path" : Path(r"C:/Users/tbrugiere/Documents/Images_OPM/20260206_LipidDroplets/20260206_111018_Lipid_Droplets"),
     "crop" : [0,30,1999,410],
     "BFP" : {
         'I0' : 551,
@@ -50,7 +42,7 @@ parameters1 = {
     }
 
 parameters2 = {
-    "path": "C:/Users/tbrugiere/Documents/Images_OPM/20260206_LipidDroplets/20260206_103347_Lipid_Droplets",
+    "path": Path(r"C:/Users/tbrugiere/Documents/Images_OPM/20260206_LipidDroplets/20260206_103347_Lipid_Droplets"),
     "crop" : [0,50,1999,450],
     "BFP" : {
         'I0' : -73,
@@ -68,7 +60,7 @@ parameters2 = {
         }
     }
 
-experiments = [parameters1]
+experiments = [parameters2]
 
 images = [0,10,20,30,40,50]
 
@@ -79,16 +71,17 @@ for parameters in experiments:
         
     
     for channel in channels :
+        
         I0 = parameters[channel]["I0"]
         bleach_constant = parameters[channel]["bleach_constant"]
         background = parameters[channel]["background"]
         back_ground_substraction = parameters[channel]["back_ground_substraction"]
         rolling_ball_radius = parameters[channel]["rolling_ball_radius"]
         
-        for i in range(60) : # Nombre de fichiers du timelaps
+        for i in range(25) : # Nombre de fichiers du timelaps
         # for k in images :
             
-            k = i
+            k = i + 35
         
             t0 = time.perf_counter()
     
@@ -128,7 +121,7 @@ for parameters in experiments:
             #
             if back_ground_substraction :
                 # image = pp.subtract_bg_xy_gpu(image, rolling_ball_radius, gpu_id=1)
-                image = pp.subtract_bg_stack_xy_gpu(image, rolling_ball_radius, gpu_id = 0)
+                image = pp.subtract_bg_stack_xy_gpu(image, rolling_ball_radius, gpu_id = 1)
                 
                 print("Background substracted       ")
             
