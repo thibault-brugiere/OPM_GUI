@@ -39,11 +39,12 @@ class mda_mannager(QWidget, Ui_Form):
     """
     channel_received = Signal(tuple)
     
-    def __init__(self, mda, parent=None):
+    def __init__(self, mda, parent=None, max_preview_size = 2):
         
         super().__init__(parent)
         self.setupUi(self)
         self.mda = mda
+        self.max_preview_size = max_preview_size # Maximum size of preview image in gigabite 
         self.on_init()
         
     def on_init(self):
@@ -65,8 +66,13 @@ class mda_mannager(QWidget, Ui_Form):
         self._dropped_meta = deque()      # store metadata of dropped items for UI placeholders
         self._processor_busy = False      # guarded by lock usage pattern (UI thread only writes it)
         
-        # Optional: count dropped preview volumes (debug / UI info)
+        # Count dropped preview volumes (debug / UI info)
         self.preview_dropped = 0
+        
+        # Maximum volume size allowed for live processing (bytes).
+        # Volumes larger than this are dropped (black placeholder in timeline).
+        self.max_preview_bytes = int(self.max_preview_size * 1024**3)  # 2 GiB
+        self.preview_message = "Displaying live preview"
     
         
         self.info_timer = QTimer() # Timer to update informations
@@ -318,6 +324,9 @@ Frames Dropped: {self.frames_dropped}/{self.total_images}
 Channels Saved: {self.channels_saved}/{self.total_timepoints * self.total_channels}
 Volumes Recived: {self.volumes_recived}
 Time Ellapsed: {self.format_time(self.ellapsed_time)} s
+
+Preview volumes dropped: {self.preview_dropped}
+{self.preview_message}
                                         """)
         self.update_progress_bar()
                                         
@@ -353,6 +362,24 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
         """
         self.volumes_recived = metadata["volume_id"]
         self.update_infos()
+        
+        # -----------------------------
+        # Safety guard: size-based drop
+        # -----------------------------
+        nbytes = self._volume_nbytes(channel)
+        if nbytes >= self.max_preview_bytes:
+            # Drop immediately: too risky to deskew / process in RAM.
+            self.preview_dropped += 1
+            self.preview_message = f"Preview skipped: volume size {nbytes/1024**3:.1f} GiB exceeds limit ({self.max_preview_bytes/1024**3:.1f} GiB)"
+        
+            # Add one black placeholder to timeline (debug-friendly).
+            # We append to "dropped meta" queue so placeholders appear on next processed frame.
+            with self._pending_lock:
+                self._dropped_meta.append(metadata)
+        
+            return
+        else:
+            self.preview_message = "Displaying live preview"
     
         with self._pending_lock:
             # If there is already a pending volume waiting for processing, we drop it.
@@ -365,9 +392,26 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
     
             # Store the latest payload (channel volume + metadata)
             self._pending_payload = (channel, metadata)
+            
     
         # Try to start processing if the worker thread is idle
         self._try_dispatch_processing()
+        
+    def _volume_nbytes(self, vol: np.ndarray) -> int:
+        """
+        Return the memory footprint in bytes of a numpy array.
+    
+        Notes
+        -----
+        - For a contiguous ndarray, nbytes is the true payload size.
+        - For views, nbytes reflects the view's element count * itemsize,
+          not necessarily the base allocation. In practice your volumes are contiguous.
+        """
+        try:
+            return int(vol.nbytes)
+        except Exception:
+            # Fallback if something weird is passed
+            return 0
         
     def _try_dispatch_processing(self):
         """
