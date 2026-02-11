@@ -6,6 +6,7 @@ Created on Wed Jul 16 16:30:29 2025
 
 pyside6-uic widget/ui_mda.ui -o widget/ui_mda.py
 """
+from collections import deque
 import cv2
 import numpy as np
 import os
@@ -31,6 +32,7 @@ from multidimensional_acquisition.Live_Viewer.mda_manager_functions import LookU
 
 from widget.ui_mda import Ui_Form
 
+
 class mda_mannager(QWidget, Ui_Form):
     """
     Show the window to follow rhe multidimensionnal acquisition.
@@ -48,9 +50,23 @@ class mda_mannager(QWidget, Ui_Form):
         self.setWindowTitle('Multidimensionnal Acquisition')
         self.setWindowFlag(Qt.Window) 
         
+        
         ###############################
         ## Creation of the Variables ##
         ###############################
+        
+        # -------------------------------
+        # "Latest-only" preview pipeline
+        # -------------------------------
+        # We keep at most ONE pending volume (the latest received).
+        # If processing is busy when a new volume arrives, the older pending one is dropped.
+        self._pending_lock = threading.Lock()
+        self._pending_payload = None      # type: tuple[np.ndarray, dict] | None
+        self._dropped_meta = deque()      # store metadata of dropped items for UI placeholders
+        self._processor_busy = False      # guarded by lock usage pattern (UI thread only writes it)
+        
+        # Optional: count dropped preview volumes (debug / UI info)
+        self.preview_dropped = 0
     
         
         self.info_timer = QTimer() # Timer to update informations
@@ -320,21 +336,90 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
 
     def set_controller(self):
         """
-        Branche le contrôleur principal (MultidimensionalAcquisition) à l’interface.
-        Connecte les signaux de preview pour affichage en temps réel.
+        Connect the main acquisition worker to the GUI preview.
         """
-    
-        # Pour l’instant, une seule caméra => worker(0)
         worker = self.mda.acquisition_workers[0]
         worker.new_volume_ready.connect(self.handle_new_channel)
         worker.set_preview_callback()
         
     def handle_new_channel(self, channel: np.ndarray, metadata: dict):
+        """
+        Receive a new 3D volume from the acquisition thread.
+    
+        IMPORTANT:
+        - This slot runs in the GUI thread (Qt queued connection).
+        - We MUST avoid accumulating volumes here, otherwise RAM explodes.
+        - Strategy: keep only the latest pending volume (max 1), drop older pending.
+        """
         self.volumes_recived = metadata["volume_id"]
         self.update_infos()
+    
+        with self._pending_lock:
+            # If there is already a pending volume waiting for processing, we drop it.
+            # We keep its metadata to create a "black placeholder" in the timeline.
+            if self._pending_payload is not None:
+                dropped_vol, dropped_meta = self._pending_payload
+                self._dropped_meta.append(dropped_meta)
+                self._pending_payload = None
+                self.preview_dropped += 1
+    
+            # Store the latest payload (channel volume + metadata)
+            self._pending_payload = (channel, metadata)
+    
+        # Try to start processing if the worker thread is idle
+        self._try_dispatch_processing()
         
-        # Senf the new volume recievend to the volume_processor thread
-        self.channel_received.emit((channel, metadata))
+    def _try_dispatch_processing(self):
+        """
+        Dispatch one pending volume to the processing thread if it is idle.
+    
+        We never send more than one volume at a time to the processing thread.
+        This prevents Qt queued signals from piling up with huge ndarray payloads.
+        """
+        # Only the GUI thread should call this method.
+        if self._processor_busy:
+            return
+    
+        with self._pending_lock:
+            if self._pending_payload is None:
+                return
+            payload = self._pending_payload
+            self._pending_payload = None
+    
+        # Mark busy BEFORE emitting (avoid race if another volume arrives immediately)
+        self._processor_busy = True
+        self.channel_received.emit(payload)  # queued to ChannelProcessor thread
+        
+    def _append_dropped_placeholders_if_any(self, channel: str):
+        """
+        Append black placeholder frames into the timeline strips for dropped volumes.
+    
+        Notes:
+        - We only append placeholders to the channel that is currently producing projections
+          (because we need the projection shape to create the placeholder).
+        - This is a deliberate simplification for debug: it visually shows that something was missed.
+        """
+        # Determine current projection reference for shape (max/mean front)
+        ref = self.project_max_front.get(channel) if self.project_max_front else None
+        if ref is None:
+            return
+    
+        # Drain dropped meta queue
+        drained = 0
+        with self._pending_lock:
+            while self._dropped_meta:
+                _ = self._dropped_meta.popleft()
+                drained += 1
+    
+        if drained == 0:
+            return
+    
+        # Create one black placeholder (2D) and append it "drained" times
+        placeholder = np.zeros_like(ref, dtype=ref.dtype)
+    
+        for _ in range(drained):
+            self.strip_max[channel] = update_timelapse_strip(self.strip_max[channel], placeholder)
+            self.strip_mean[channel] = update_timelapse_strip(self.strip_mean[channel], placeholder)
     
     def receive_projections(self, data):
         # Get the four projections
@@ -358,6 +443,20 @@ Time Ellapsed: {self.format_time(self.ellapsed_time)} s
         
         if self.timeline_position == int(self.volumes_recived) - 1:
             self.sb_timeline.setValue(int(self.volumes_recived))
+            
+        # -------------------------------------------
+        # Handle dropped volumes: add black placeholders
+        # -------------------------------------------
+        # If volumes were dropped while processing was busy, we add black frames
+        # to the timeline strip so the user can SEE the drop (debug-friendly).
+        self._append_dropped_placeholders_if_any(channel)
+    
+        # Update UI preview
+        self.update_preview()
+    
+        # Mark processor idle and immediately process the latest pending volume (if any)
+        self._processor_busy = False
+        self._try_dispatch_processing()
         
         self.update_preview()
         
