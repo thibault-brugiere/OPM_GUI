@@ -9,39 +9,55 @@ import numpy as np
 import os
 import tifffile
 
-def legalize_voxel_aspect_ratio(aspect_ratio, angle):
+def legalize_voxel_aspect_ratio(aspect_ratio:float, angle:float):
     """
-    Pixels between two frames, 
-    We need the pixels aligned in the R' frame, and we have the relation:
-    tan(theta) = x'/z'
-    So in order to keep the tilting angle, the aspect ratio must be a multiple
-    of tan(theta), with theta the tilting angle.
+    Adjust the voxel aspect ratio to be compatible with an integer pixel
+    shift during OPM deskewing.
+    
+    Parameters
+    ----------
+    aspect_ratio : float
+        Desired voxel aspect ratio (typically dz / dx).
+    angle : float
+        Tilt angle of the oblique plane, in radians.
+    
+    Returns
+    -------
+    float
+        Adjusted (legalized) voxel aspect ratio compatible with an integer
+        pixel shift.
     """
     return max(int(round(aspect_ratio / math.tan(angle))), 1) * math.tan(angle)
 
 def px_shift_calculation(aspect_ratio:float, angle:float, angle_unit:str = "rad") -> int:
     """
-    Angle in degree
+    Compute the integer pixel shift per Z step required for OPM deskewing.
+
+    The deskew operation assumes that the lateral shift between consecutive
+    planes is an integer number of pixels. This function computes the pixel
+    shift from the voxel aspect ratio and the tilt angle, and checks that
+    the result is compatible with this constraint.
 
     Parameters
     ----------
     aspect_ratio : float
-        DESCRIPTION.
+        Voxel aspect ratio (typically dz / dx).
     angle : float
-        DESCRIPTION.
-    unit : str
-        DESCRIPTION.
+        Tilt angle of the oblique plane.
+    angle_unit : str, optional
+        Unit of the input angle: ``"rad"`` for radians or ``"deg"`` for
+        degrees (default: ``"rad"``).
 
     Raises
     ------
     ValueError
-        DESCRIPTION.
+        If the computed pixel shift is not close to an integer value,
+        indicating an incompatible voxel aspect ratio.
 
     Returns
     -------
     int
-        DESCRIPTION.
-
+        Integer pixel shift per Z plane.
     """
     angle = angle if angle_unit == "rad" else np.deg2rad(angle)
                                                          
