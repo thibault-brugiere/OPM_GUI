@@ -11,7 +11,7 @@ import os
 from PySide6.QtCore import QThread
 import time
 
-from Config.MDA_config import config
+from Config.LS3_config import config
 from Hardware.daq_controller import NIDAQ_Acquisition
 from Hardware.camera_controller import camera_acquisition
 from Hardware.filter_wheel_controller import FilterWheel
@@ -23,9 +23,7 @@ from Hardware.functions_Stage_ASI import Stage_ASI
 from Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
 from Tools.acquisition_pipeline.count_worker import CountWorker, mouvement_sequence
 from Tools.saving import prepare_saving_directory, save_metadata
-from Tools.signal_generators.single_channel_ls3 import generate_channel_signals as generate_channel_signals_LS3
-
-# TODO : a supprimer
+from Tools.signal_generators.ls3 import generate_channel_signals as generate_channel_signals_LS3
 
 class Light_sheet_stabilized_scanning:
     def __init__(self, hcams=None, filterwheel = None, frequency=1e5):
@@ -48,6 +46,8 @@ class Light_sheet_stabilized_scanning:
             
         self.filters_mouve = mouvement_sequence(self.config.microscope.filters , self.filterseq)
         
+        # Generate list of one tension library per channel
+        
         self.list_volume_tensions_library = []
         volume_duration = 0
         for idx in range(len(self.config.experiment.channels)) :
@@ -67,6 +67,7 @@ class Light_sheet_stabilized_scanning:
         if volume_duration > self.config.experiment.time_intervals + 0.001:
             self.config.experiment.time_intervals = volume_duration + 0.001
             print(f"[INFO] Time interval too short. Adjusted to : {volume_duration + 0.001} s to match volume duration.")
+
         
         # Prepare saving directory and metadata
         self.save_dir = prepare_saving_directory(self.config.experiment.data_path,
@@ -86,7 +87,8 @@ class Light_sheet_stabilized_scanning:
                       }
         
         self.cw = False # Vérifie sur le countworker existe
-
+        
+    
     def initialize_cameras(self):
         for i, cam_cfg in enumerate(self.config.cameras):
             hcam = self.hcams[i] if self.hcams else None
