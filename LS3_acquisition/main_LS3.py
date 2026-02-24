@@ -6,6 +6,10 @@ Pour l'instant la partie qui a été faite est dans : Tools.signal_generators
 
 @author: tbrugiere
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[0]))
+
 import math
 import os
 from PySide6.QtCore import QThread
@@ -25,6 +29,13 @@ from Tools.acquisition_pipeline.count_worker import CountWorker, mouvement_seque
 from Tools.saving import prepare_saving_directory, save_metadata
 from Tools.signal_generators.ls3 import generate_channel_signals as generate_channel_signals_LS3
 
+"""
+L'architecture de ce protocole d'acquisition reprends celui du multidimensionna acquisition.
+Ainsi la notion de timepoint fait référence non pas à un suivi dans le temps, mais au nombre de lignes scannées
+par le microscope
+"""
+
+
 class Light_sheet_stabilized_scanning:
     def __init__(self, hcams=None, filterwheel = None, frequency=1e5):
         
@@ -43,8 +54,6 @@ class Light_sheet_stabilized_scanning:
         self.filterseq = [] # Liste des filtres dans l'ordre utilisé
         for n in range(self.n_channels):
             self.filterseq.append(self.config.channels[n].filter)
-            
-        self.filters_mouve = mouvement_sequence(self.config.microscope.filters , self.filterseq)
         
         # Generate list of one tension library per channel
         
@@ -61,12 +70,6 @@ class Light_sheet_stabilized_scanning:
             volume_duration += ( len(self.list_volume_tensions_library[idx]['tensions_galvo']) / self.frequency )
 
         print("[Main LS3] channel signals generated")
-        
-        print(f'[Main LS3] volume duration : {volume_duration} s')
-        
-        if volume_duration > self.config.experiment.time_intervals + 0.001:
-            self.config.experiment.time_intervals = volume_duration + 0.001
-            print(f"[INFO] Time interval too short. Adjusted to : {volume_duration + 0.001} s to match volume duration.")
 
         
         # Prepare saving directory and metadata
@@ -173,14 +176,14 @@ class Light_sheet_stabilized_scanning:
     def initialize_count_worker(self):
         
         """
-        worker used to properly set the position of the filter wheel at the right moment during the acquisition
+        worker used to properly set the position of the filter wheel and the stage at the right moment during the acquisition
 
         Returns
         -------
         None.
 
         """
-        self.count_worker = CountWorker(self.daq, self.filterwheel, self.filters_mouve)
+        self.count_worker = CountWorker(self.daq, self.filterwheel, self.filterseq, self.stage)
         self.count_thread = QThread()
         self.count_worker.moveToThread(self.count_thread)
         self.count_thread.started.connect(self.count_worker.start)
