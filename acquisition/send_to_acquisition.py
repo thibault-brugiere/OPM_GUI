@@ -10,67 +10,6 @@ import math
 import os
 from .functions_acquisition import functions_acquisition as fa
 
-def send_to_snoutscope_acquisition(camera, channel, experiment, microscope, filename='GUI_parameters.json'):
-    """
-    Save parameters in a fichier JSON file.
-    
-    Parameters:
-    - camera : parameters of the first camera of the system, as define in config.py, modified from UI
-    - channel : paremeters of the fisrt active channel in the interface, as define in config.py, modified from UI
-    - experiment: parameters of the experiment, as define in config.py, modified from UI
-    - microscope : parameters of the microscope, as define in config.py, modified from UI
-    - filename (str): Nom du fichier JSON.
-    """
-    # Permet d'ajuster le pourcentage de laser à la tension nécessaire au DAC
-    for laser in channel.laser_power.keys():
-        channel.laser_power[laser] = channel.laser_power[laser] * microscope.volts_per_laser_percent[laser]
-    
-    camera_parameters = {'camera_id' : camera.camera_id,
-              'subarray_hpos' : camera.hpos,
-              'subarray_hsize' : camera.hsize,
-              'subarray_vpos' : camera.vpos,
-              'subarray_vsize' : camera.vsize,
-              'line_readout_time' : camera.line_readout_time
-              }
-    
-    channel_parameters = {'channel_id' : channel.channel_id,
-               'is_active' : True,
-               'camera' : channel.camera,
-               'exposure_time' : channel.exposure_time,
-               'laser_is_active' : channel.laser_is_active,
-               'laser_power' : channel.laser_power,
-                }
-    
-    experiment_parameters = {'ASPECT_RATIO' : experiment.aspect_ratio,
-                  'SCAN_RANGE_UM' : experiment.scan_range,
-                  'SLIT_APERTURE' : experiment.slit_aperture,
-                  'TIME_INTERVAL' : experiment.time_intervals,
-                  'NUM_TIMEPOINTS' : experiment.timepoints,
-                  }
-    
-    microscope_parameters = {'EXP_NAME' : experiment.exp_name,
-                  'DATA_PATH' : experiment.data_path,
-                  'TILT_ANGLE' : microscope.tilt_angle*math.pi/180, # To get the angle in radians
-                  'MAG_TOTAL' : microscope.mag_total,
-                  'CAMERA_PIXELSIZE' : camera.pixel_size,
-                  'VOLTS_PER_UM' : microscope.volts_per_um,
-                  'GALVO_RESPONSE_TIME' : int(microscope.galvo_response_time * 1000), # should be in µs
-                  'GALVO_FLYBACK_TIME' : int(microscope.galvo_flyback_time * 1000), # should be in µs
-                  'DAQ_CHANNELS' : microscope.daq_channels,
-                  }
-    
-    parameters = {'camera' : camera_parameters,
-                  'channel' : channel_parameters,
-                  'experiment' : experiment_parameters,
-                  'microscope' : microscope_parameters
-                  }
-    
-    config_dir = 'snoutscopev3/config'
-    file_path = os.path.join(config_dir, filename)  # filename définit en entrée de la fonction
-    
-    with open(file_path, 'w') as json_file:
-        json.dump(parameters, json_file, indent = 4)
-
 def send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list, experiment, microscope,
                                           dirname = 'acquisition', filename = 'GUI_parameters.json'):
     """
@@ -148,6 +87,9 @@ def send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list
                              'mode' : experiment.mode,
                              'scanner_position': experiment.scanner_position,
                              'scan_range': experiment.scan_range,
+                             'stage_scan_range': experiment.stage_scan_range,
+                             'scanV_range' : experiment.scanV_range,
+                             'scanV_overlap': experiment.scanV_overlap,
                              'aspect_ratio': experiment.aspect_ratio,
                              'n_steps' : experiment.n_steps,
                              'step_size' : experiment.step_size,
@@ -194,4 +136,32 @@ def send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list
 
     with open(file_path, 'w') as json_file:
         json.dump(parameters, json_file, indent=4)
-    
+
+def send_to_ls3_acquisition(camera_list, filterwheel, channel_list, experiment, microscope,
+                                          dirname = 'acquisition', filename = 'GUI_parameters.json'):
+    """
+    Seems to be exactelly the same than sending to the multidimensionnal acquisition
+
+    Parameters
+    ----------
+    camera_list : TYPE
+        DESCRIPTION.
+    filterwheel : TYPE
+        DESCRIPTION.
+    channel_list : TYPE
+        DESCRIPTION.
+    experiment : TYPE
+        DESCRIPTION.
+    microscope : TYPE
+        DESCRIPTION.
+    dirname : TYPE, optional
+        DESCRIPTION. The default is 'acquisition'.
+    filename : TYPE, optional
+        DESCRIPTION. The default is 'GUI_parameters.json'.
+
+    Returns
+    -------
+    None.
+
+    """
+    send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list, experiment, microscope)

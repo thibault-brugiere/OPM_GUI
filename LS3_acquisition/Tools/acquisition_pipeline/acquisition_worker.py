@@ -31,7 +31,7 @@ class ImageFrame:
 class AcquisitionWorker(QObject):
     new_volume_ready = Signal(np.ndarray, dict)  # signal Qt émis avec buffer + metadata
     
-    def __init__(self, camera_worker, save_dir, n_steps, timepoints, n_channels,
+    def __init__(self, camera_worker, save_dir, n_steps, n_lines, n_channels,
              channel_names=None, mode = "ls3", images_per_file = 100, max_volume_queue=3, save_type="TIFF"):
         """
         Initialize the acquisition pipeline with multithreaded image reading, buffering, and saving.
@@ -46,8 +46,8 @@ class AcquisitionWorker(QObject):
         - n_steps: int
             Number of image frames per volume (typically corresponding to Z-slices in a 3D acquisition).
         
-        - timepoints: int
-            Number of volumes to acquire (typically corresponding to time-lapse or sequential acquisitions).
+        - n_lines: int
+            Number of lines to acquire during scanning.
         
         - channel_names: list of str, optional
             List of channel identifiers (e.g., ["GFP", "RFP"]) used for naming saved volumes. Defaults to ["CH"].
@@ -70,7 +70,7 @@ class AcquisitionWorker(QObject):
         self.camera = camera_worker
         self.save_dir = save_dir
         self.n_steps = n_steps
-        self.timepoints = timepoints
+        self.n_lines = n_lines
         self.n_channels = n_channels
         self.channel_names = channel_names or ["CH"]
         self.mode = mode
@@ -78,10 +78,10 @@ class AcquisitionWorker(QObject):
         self.max_volume_queue = max_volume_queue
         self.save_type = save_type.upper()
 
-        self.n_frames = self.n_steps * self.timepoints * len(self.channel_names)
-        self.n_volumes = self.timepoints * len(self.channel_names)
+        self.n_frames = self.n_steps * self.n_lines * len(self.channel_names)
+        self.n_volumes = self.n_lines * len(self.channel_names)
         self.file_per_channel = math.ceil(self.n_steps / self.images_per_file)
-        self.n_files = self.file_per_channel * self.n_channels * self.timepoints
+        self.n_files = self.file_per_channel * self.n_channels * self.n_lines
         self.images_in_last_file = self.n_steps - (self.file_per_channel - 1) * self.images_per_file
 
         self.stop_event = threading.Event()

@@ -34,6 +34,9 @@
      </item>
      <item>
       <widget class="QLineEdit" name="lineEdit_vol_trig">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Trigger start of each volume&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string/>
        </property>
@@ -73,7 +76,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit_vol_trig_outputt"/>
+      <widget class="QLineEdit" name="lineEdit_vol_trig_outputt">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Trigger start of each volume&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_vol_trig_outputt_out">
@@ -109,7 +116,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit_galvo"/>
+      <widget class="QLineEdit" name="lineEdit_galvo">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Analog Out for galvo scanner movement&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_galvo_out">
@@ -145,7 +156,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit_camera1"/>
+      <widget class="QLineEdit" name="lineEdit_camera1">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Trigger of camera 1 expositions&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_camera1_out">
@@ -181,7 +196,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit_camera2"/>
+      <widget class="QLineEdit" name="lineEdit_camera2">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Trigger of camera 2 expositions&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_camera2_out">
@@ -217,7 +236,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit_filter_wheel_1"/>
+      <widget class="QLineEdit" name="lineEdit_filter_wheel_1">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Trigger filter wheel&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_camera2_out_2">
@@ -264,7 +287,7 @@
         </size>
        </property>
        <property name="text">
-        <string>digital out (optionnal)</string>
+        <string>digital in or out (optionnal)</string>
        </property>
       </widget>
      </item>
@@ -289,7 +312,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit_ChannelFinished"/>
+      <widget class="QLineEdit" name="lineEdit_ChannelFinished">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Trigger at the end of each channel for the computer (not used yet)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_camera2_out_4">
@@ -325,7 +352,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit_laser_blanking"/>
+      <widget class="QLineEdit" name="lineEdit_laser_blanking">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Trigger le blanking AOTF laser blanking (not used)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_laser_blanking_out">
@@ -337,6 +368,46 @@
        </property>
        <property name="text">
         <string>digital out</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_34">
+     <item>
+      <widget class="QLabel" name="label_stage_triger">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>stage triger</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_stage_triger">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Trigger from the stage to start ls3 scanning&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_stage_triger_out">
+       <property name="minimumSize">
+        <size>
+         <width>180</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>PFI</string>
        </property>
       </widget>
      </item>

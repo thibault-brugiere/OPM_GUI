@@ -65,6 +65,7 @@ class setDAQWindow(QWidget, Ui_Form):
                         "filter_wheel_2" : self.lineEdit_filter_wheel_2,
                         "channel_finished": self.lineEdit_ChannelFinished,
                         "laser_blanking" : self.lineEdit_laser_blanking,
+                        "stage_triger" : self.lineEdit_stage_triger
                         }
         
         self.lineEdit_laser_analog_out = {
@@ -93,20 +94,8 @@ class setDAQWindow(QWidget, Ui_Form):
                 if self.daq_channels_Dict[lineEditkey][key] is None:
                     self.lineEditDict[lineEditkey][key].setText('None')
                 
-                
-        
-        # for key in self.lineEdit.keys():
-        #     self.lineEdit[key].setText(self.daq_channels[key])
-        #     if self.daq_channels[key] is None:
-        #         self.lineEdit[key].setText('None')
-                
         
     def set_daq_channels(self):
-        # for key in self.lineEdit.keys():
-        #     if self.lineEdit[key].text() == 'None':
-        #         self.daq_channels[key] = None
-        #     else:
-        #         self.daq_channels[key] = self.lineEdit[key].text()
         
         for lineEditkey in self.lineEditDict.keys():
             for key in self.lineEditDict[lineEditkey].keys():
@@ -149,6 +138,7 @@ if __name__ == '__main__':
                     "filter_wheel_2": "Dev1/port0/line3", # Trigger de la roue de filtres
                     "channel_finished": "/Dev1/PFI1",
                     "laser_blanking" : "Dev1/port0/line4", # Trigger le blanking de l'AOTF du banc laser
+                    "stage_triger" : "Dev1/PFI2" # Trigger from the stage to start ls3 scanning
                     }
     
     daq_channels_laser_analog_out = {"405" : "Dev1/ao1", # Régle la puissance du laser 405

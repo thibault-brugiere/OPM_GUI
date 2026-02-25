@@ -44,6 +44,9 @@ class Light_sheet_stabilized_scanning:
         config_path = os.path.join(os.path.dirname(__file__), "Config")
         self.config = config(dirname=config_path)
         
+        if self.config.experiment.mode != "LS3":
+            raise NameError("LS3 Error: nnot the right experiment mode")
+        
         self.n_channels = len(self.config.channels)
         self.n_lines = self._get_lines()
         
@@ -86,7 +89,7 @@ class Light_sheet_stabilized_scanning:
     def _get_lines(self):
         field_size = self.config.cameras[0].pixel_size * self.config.cameras[0].hsize
         scanV_size = self.config.experiment.scanV_range
-        scanV_overlap = self.config.experiment.scanV_overlap # in %
+        scanV_overlap = self.config.experiment.scanV_overlap
         fied_overlap = scanV_overlap * field_size
         
         return math.ceil(scanV_size / (field_size - fied_overlap))
@@ -179,7 +182,7 @@ class Light_sheet_stabilized_scanning:
         """
         return {"n_lines" : 1 if self.n_channels == 1 else self.n_lines,
                 "SCANR_start" : 0,
-                "SCANR_stop" : self.config.experiment.scan_range,
+                "SCANR_stop" : self.config.experiment.stage_scan_range,
                 "SCANV_start" : 0 if self.n_channels == 1 else 0,
                 "SCANV_stop" : 0 if self.n_channels == 1 else 0,
                 "SCANV_lines" : self.n_lines if self.n_channels == 1 else 1,

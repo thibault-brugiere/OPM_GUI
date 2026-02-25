@@ -24,7 +24,7 @@ class Stage_ASI:
         except:
             raise NameError("ASI stage: connection error")
         
-    def set_scan(self, SPEED, SCANR_start:float, SCANR_stop:float, SCANV_start:float,
+    def set_scan(self, SPEED:float, SCANR_start:float, SCANR_stop:float, SCANV_start:float,
                  SCANV_stop:float, SCANV_number_of_lines:float = 1, axis:str = 'Y'):
         """
         
@@ -102,7 +102,20 @@ class Stage_ASI:
         elif response == ":N-21":
             print("ASI stage: movement interupted")
         
-    def set_speed(self, x=5.745920, y=5.745920, z=1.286400) :
+    def set_speed(self, x:int=5.745920, y:int=5.745920, z:int=1.286400) :
+        """
+        Set speed of the axis movement (not during scanning)
+        Defaults speeds are speeds from factory
+
+        Parameters
+        ----------
+        x : int, optional
+            The default is 5.745920.
+        y : int, optional
+            The default is 5.745920.
+        z : int, optional
+            The default is 1.286400.
+        """
         command = f'S X={x} Y={y} Z= {z}'
         serial_port.send_command(command, self.port)
     

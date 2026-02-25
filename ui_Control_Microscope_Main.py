@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'ui_Control_Microscope_Main.ui'
+## Form generated from reading UI file 'UI_Control_Microscope_Main.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.1
 ##
@@ -68,8 +68,8 @@ class Ui_MainWindow(object):
         self.action_Sample_finder.setObjectName(u"action_Sample_finder")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.horizontalLayout_38 = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_38.setObjectName(u"horizontalLayout_38")
+        self.horizontalLayout_41 = QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_41.setObjectName(u"horizontalLayout_41")
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.label_saving = QLabel(self.centralwidget)
@@ -636,14 +636,14 @@ class Ui_MainWindow(object):
         self.verticalLayout.addItem(self.verticalSpacer)
 
 
-        self.horizontalLayout_38.addLayout(self.verticalLayout)
+        self.horizontalLayout_41.addLayout(self.verticalLayout)
 
         self.line = QFrame(self.centralwidget)
         self.line.setObjectName(u"line")
         self.line.setFrameShape(QFrame.Shape.VLine)
         self.line.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_38.addWidget(self.line)
+        self.horizontalLayout_41.addWidget(self.line)
 
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
@@ -658,7 +658,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
         self.spinBox_timepoints = QSpinBox(self.centralwidget)
         self.spinBox_timepoints.setObjectName(u"spinBox_timepoints")
-        self.spinBox_timepoints.setMaximum(3600)
+        self.spinBox_timepoints.setMaximum(999999)
         self.spinBox_timepoints.setValue(10)
 
         self.horizontalLayout_16.addWidget(self.spinBox_timepoints)
@@ -795,7 +795,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_34.setObjectName(u"horizontalLayout_34")
         self.spinBox_scan_range = QDoubleSpinBox(self.centralwidget)
         self.spinBox_scan_range.setObjectName(u"spinBox_scan_range")
-        self.spinBox_scan_range.setMaximum(300.000000000000000)
+        self.spinBox_scan_range.setMaximum(400.000000000000000)
         self.spinBox_scan_range.setValue(20.000000000000000)
 
         self.horizontalLayout_34.addWidget(self.spinBox_scan_range)
@@ -905,28 +905,83 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addItem(self.verticalSpacer_2)
 
-        self.line_6 = QFrame(self.centralwidget)
-        self.line_6.setObjectName(u"line_6")
-        self.line_6.setFrameShape(QFrame.Shape.HLine)
-        self.line_6.setFrameShadow(QFrame.Shadow.Sunken)
-
-        self.verticalLayout_5.addWidget(self.line_6)
-
         self.label_volume_duration = QLabel(self.centralwidget)
         self.label_volume_duration.setObjectName(u"label_volume_duration")
         self.label_volume_duration.setAutoFillBackground(False)
 
         self.verticalLayout_5.addWidget(self.label_volume_duration)
 
+        self.line_9 = QFrame(self.centralwidget)
+        self.line_9.setObjectName(u"line_9")
+        self.line_9.setFrameShape(QFrame.Shape.HLine)
+        self.line_9.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_38.addLayout(self.verticalLayout_5)
+        self.verticalLayout_5.addWidget(self.line_9)
+
+        self.label_channels_2 = QLabel(self.centralwidget)
+        self.label_channels_2.setObjectName(u"label_channels_2")
+        self.label_channels_2.setFont(font)
+        self.label_channels_2.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_5.addWidget(self.label_channels_2)
+
+        self.horizontalLayout_38 = QHBoxLayout()
+        self.horizontalLayout_38.setObjectName(u"horizontalLayout_38")
+        self.spinBox_stage_scan_range = QSpinBox(self.centralwidget)
+        self.spinBox_stage_scan_range.setObjectName(u"spinBox_stage_scan_range")
+        self.spinBox_stage_scan_range.setMaximum(10000)
+
+        self.horizontalLayout_38.addWidget(self.spinBox_stage_scan_range)
+
+        self.label_stage_scan_range = QLabel(self.centralwidget)
+        self.label_stage_scan_range.setObjectName(u"label_stage_scan_range")
+
+        self.horizontalLayout_38.addWidget(self.label_stage_scan_range)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_38)
+
+        self.horizontalLayout_39 = QHBoxLayout()
+        self.horizontalLayout_39.setObjectName(u"horizontalLayout_39")
+        self.spinBox_scanV_range = QSpinBox(self.centralwidget)
+        self.spinBox_scanV_range.setObjectName(u"spinBox_scanV_range")
+        self.spinBox_scanV_range.setMaximum(10000)
+
+        self.horizontalLayout_39.addWidget(self.spinBox_scanV_range)
+
+        self.label_scanV_range = QLabel(self.centralwidget)
+        self.label_scanV_range.setObjectName(u"label_scanV_range")
+
+        self.horizontalLayout_39.addWidget(self.label_scanV_range)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_39)
+
+        self.horizontalLayout_40 = QHBoxLayout()
+        self.horizontalLayout_40.setObjectName(u"horizontalLayout_40")
+        self.spinBox_scanV_overlap = QSpinBox(self.centralwidget)
+        self.spinBox_scanV_overlap.setObjectName(u"spinBox_scanV_overlap")
+        self.spinBox_scanV_overlap.setMaximum(50)
+
+        self.horizontalLayout_40.addWidget(self.spinBox_scanV_overlap)
+
+        self.label_scanV_overlap = QLabel(self.centralwidget)
+        self.label_scanV_overlap.setObjectName(u"label_scanV_overlap")
+
+        self.horizontalLayout_40.addWidget(self.label_scanV_overlap)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_40)
+
+
+        self.horizontalLayout_41.addLayout(self.verticalLayout_5)
 
         self.line_2 = QFrame(self.centralwidget)
         self.line_2.setObjectName(u"line_2")
         self.line_2.setFrameShape(QFrame.Shape.VLine)
         self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_38.addWidget(self.line_2)
+        self.horizontalLayout_41.addWidget(self.line_2)
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
@@ -1155,7 +1210,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.addLayout(self.horizontalLayout_25)
 
 
-        self.horizontalLayout_38.addLayout(self.verticalLayout_4)
+        self.horizontalLayout_41.addLayout(self.verticalLayout_4)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -1377,6 +1432,9 @@ class Ui_MainWindow(object):
         self.spinBox_channel_exposure_time.setToolTip(QCoreApplication.translate("MainWindow", u"Set the exposure time for the 405 nm channel in milliseconds.", None))
 #endif // QT_CONFIG(tooltip)
         self.label_channel_exposure_time.setText(QCoreApplication.translate("MainWindow", u"Exposure Time (ms)", None))
+#if QT_CONFIG(tooltip)
+        self.pb_laser_emission.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Start the emission of the laser event if preview is not running</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.pb_laser_emission.setText(QCoreApplication.translate("MainWindow", u"Emission", None))
         self.label_laser_icon.setText("")
         self.label_laser.setText(QCoreApplication.translate("MainWindow", u"OFF", None))
@@ -1430,6 +1488,20 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.label_volume_duration.setText(QCoreApplication.translate("MainWindow", u"Number of frames/volumes\n"
 "Estimated volume duration: 0.000 s", None))
+        self.label_channels_2.setText(QCoreApplication.translate("MainWindow", u"LS3\n"
+"scanning parameters", None))
+#if QT_CONFIG(tooltip)
+        self.spinBox_stage_scan_range.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Set the length of the scanning using Light sheet stabilized scanning</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_stage_scan_range.setText(QCoreApplication.translate("MainWindow", u"Stage scan range", None))
+#if QT_CONFIG(tooltip)
+        self.spinBox_scanV_range.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Set the width of the scanning using Light sheet stabilized scanning</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_scanV_range.setText(QCoreApplication.translate("MainWindow", u"Scan width", None))
+#if QT_CONFIG(tooltip)
+        self.spinBox_scanV_overlap.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Set the overlap between twoo lines during Light sheet stabilized scanning</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_scanV_overlap.setText(QCoreApplication.translate("MainWindow", u"Scan overlap (in %)", None))
         self.label_image_preview.setText("")
         self.checkBox_show_saturation.setText(QCoreApplication.translate("MainWindow", u"Show saturation", None))
         self.comboBox_preview_zoom.setItemText(0, QCoreApplication.translate("MainWindow", u"Image zoom", None))
@@ -1484,7 +1556,7 @@ class Ui_MainWindow(object):
         self.pb_snap.setText(QCoreApplication.translate("MainWindow", u"Snap", None))
         self.label_histogram_greyvalue.setText("")
 #if QT_CONFIG(tooltip)
-        self.pb_fast_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"Start image acquisition using the Snoutscope program.", None))
+        self.pb_fast_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Start image acquisition using the Fast Acquisition program.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_fast_acquisition.setText(QCoreApplication.translate("MainWindow", u"Fast\n"
 "Acquisition", None))
@@ -1493,6 +1565,9 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.pb_multidimensional_acquisition.setText(QCoreApplication.translate("MainWindow", u"Multidimensional\n"
 "Acquisition", None))
+#if QT_CONFIG(tooltip)
+        self.pb_LS3_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Start the acquisition using the Light sheet stabilized scanning</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.pb_LS3_acquisition.setText(QCoreApplication.translate("MainWindow", u"LS3\n"
 "Acquisition", None))
         self.menuFichier.setTitle(QCoreApplication.translate("MainWindow", u"Fichier", None))

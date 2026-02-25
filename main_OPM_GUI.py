@@ -32,7 +32,7 @@ from PySide6.QtCore import QTimer #, QCoreApplication, QEventLoop
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
 
-from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
+from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition, send_to_ls3_acquisition
 from acquisition.z_stack import z_stack
 from configs.config import channel_config, microscope, experiment #, camera
 from display.histogram import HistogramThread
@@ -44,6 +44,7 @@ from hardware.Laser_Controller import LaserController
 # from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
 # from mock.DAQ import functions_daq
 from mock.Null import NullObject
+from LS3_acquisition.main_LS3 import Light_sheet_stabilized_scanning
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
 
 from ui_Control_Microscope_Main import Ui_MainWindow
@@ -260,8 +261,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         # Modifications d'élements de l'interface
         #
-        
-        self.spinBox_timepoints.setMaximum(999999)
+        # TODO a modifier via le fichier .ui
         
         ##############################################
         ## Connection between functions and buttons ##
@@ -318,6 +318,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
                 ### Channel selection and orders
         self.spinBox_number_channels.valueChanged.connect(self.spinBox_number_channels_value_changed)
+        
+                ### LS3 parameters
+        self.spinBox_stage_scan_range.valueChanged.connect(self.spinBox_stage_scan_range_value_changed)
+        self.spinBox_scanV_range.valueChanged.connect(self.spinBox_scanV_range_value_changed)
+        self.spinBox_scanV_overlap.valueChanged.connect(self.spinBox_scanV_overlap_value_changed)
 
             ## Preview
         self.checkBox_show_saturation.stateChanged.connect(self.checkBox_show_saturation_value_changed)
@@ -335,6 +340,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ## Acquisition
         self.pb_fast_acquisition.clicked.connect(self.pb_fast_acquisition_clicked_connect)
         self.pb_multidimensional_acquisition.clicked.connect(self.pb_multidimensional_acquisition_clicked_connect)
+        self.pb_LS3_acquisition.clicked.connect(self.pb_LS3_acquisition_clicked_connect)
         
     ###############################################
     ## Connection between functions and toolbars ##
@@ -898,6 +904,19 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.active_channels = [comboBox.currentText() for comboBox in self.comboBoxes_channel_order]
 
         #
+        # LS3 parameters    
+        #
+        
+    def spinBox_stage_scan_range_value_changed(self):
+        self.experiment.stage_scan_range = self.spinBox_stage_scan_range.value()
+    
+    def spinBox_scanV_range_value_changed(self):
+        self.experiment.scanV_range = self.spinBox_scanV_range.value()
+    
+    def spinBox_scanV_overlap_value_changed(self):
+        self.experiment.scanV_overlap = self.spinBox_scanV_overlap.value()
+
+        #
         # Preview
         #
         
@@ -1209,11 +1228,45 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.MDA_manager.show()
                 self.MDA_manager.start_acquisition()
                 
-                # functions_ui.start_multidimensional_acquisition(self.hcam)
             except:
                 self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
         else:
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
+            
+    def pb_LS3_acquisition_clicked_connect(self):
+        """Start acquisition with the Light sheet stabilized scanning protocole from Thibault"""
+        if self.is_preview:
+            # Eteint l'acquisition si nécessaire
+            self.pb_stop_preview_clicked()
+            # Eteint les lasers si nécessaire
+            self.pb_laser_emission.setChecked(False)
+            self.pb_laser_emission_clicked()
+            
+        self.experiment.mode = "LS3"
+         
+        if self.active_channels and self.active_channels[0] != 'None' :
+            try:
+                channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
+                send_to_ls3_acquisition(self.camera,
+                                        self.filterWheel,
+                                        channel_acquisition,
+                                        self.experiment,
+                                        self.microscope,
+                                        dirname = 'LS3_acquisition/Config',
+                                        filename = 'GUI_parameters.json')
+                
+                self.status_bar.showMessage("start Light_sheet_stabilized_scanning acquisition")
+                
+                LS3 = Light_sheet_stabilized_scanning(self.hcam, self.filterWheel)
+                self.MDA_manager = mda_mannager(LS3, self)
+                self.MDA_manager.show()
+                self.MDA_manager.start_acquisition()
+                
+            except:
+                self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
+        else:
+            self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
+            
         
     ##################################
     ## Fonctions called by toolbars ##
