@@ -20,15 +20,14 @@ class Stage_ASI:
             if response[0:2] == ':A':
                 self.connexion = True
             else:
-                print("ASI stage: connection error")
+                raise NameError("ASI stage: connection error")
         except:
-            print("ASI stage: connection error")
+            raise NameError("ASI stage: connection error")
         
     def set_scan(self, SPEED, SCANR_start:float, SCANR_stop:float, SCANV_start:float,
-                 SCANV_stop:float, SCANV_number_of_lines:float = 1, axis:str = 'X'):
+                 SCANV_stop:float, SCANV_number_of_lines:float = 1, axis:str = 'Y'):
         """
         
-
         Parameters
         ----------
         SPEED : float
@@ -67,20 +66,29 @@ class Stage_ASI:
             if response[0:2] == ':A':
                 pass
             else:
-                print(f"ASI stage: Error command {command}, message {response}")
+                raise NameError(f"ASI stage: Error command {command}, message {response}")
                 
-    def start_stop_scan(self):
+    def start_scan(self):
         """
-        Star the scan if it is not running, stop it if 
-         it is
+        Star the scan if it is not running, stop ifit is
 
         Returns
         -------
         None.
 
         """
-        
-        serial_port.send_command('SCAN', self.port)
+        if not self._is_moving() :
+            response = serial_port.send_command_response('SCAN', self.port)
+            if not response == ":A" :
+                raise NameError(f"ASI stage: scan didn't start: {response}")
+        else :
+            raise NameError("ASI stage is actually moving")
+            
+    def stop_scan(self):
+        if self._is_moving():
+            response = serial_port.send_command_response('SCAN')
+            if not response == ":A" :
+                raise NameError(f"ASI stage: scan stop didn't work: {response}")
         
     def stop(self):
         """
@@ -94,11 +102,19 @@ class Stage_ASI:
         elif response == ":N-21":
             print("ASI stage: movement interupted")
         
-        
     def set_speed(self, x=5.745920, y=5.745920, z=1.286400) :
         command = f'S X={x} Y={y} Z= {z}'
         serial_port.send_command(command, self.port)
-
+    
+    def _is_moving(self):
+        response = serial_port.send_command_response("STATUS", self.port)
+        if response == "N" :
+            return False
+        elif response == "B" :
+            return True
+        else : 
+            return None
+    
 """
 ACCEL :
     sets the amount of time in milliseconds that it takes an axis motor speed to go from stopped to the maximum speed

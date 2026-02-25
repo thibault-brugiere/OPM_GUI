@@ -57,7 +57,7 @@ class MultidimensionalAcquisition:
                                                                     self.config.channels,
                                                                     self.config.experiment,
                                                                     self.config.microscope,
-                                                                    frequency = 1e5)
+                                                                    frequency = self.frequency)
             print("[Main MDA] channel signals generated")
             
         if self.config.experiment.mode == "fast" :

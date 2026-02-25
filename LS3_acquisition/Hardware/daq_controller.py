@@ -8,10 +8,11 @@ import nidaqmx
 from nidaqmx.constants import Edge, CountDirection
 import numpy as np
 
-class NIDAQ_Acquisition:
+class NIDAQ_Acquisition_ls3:
     
     """
-    Class to control signal generation and synchronization for volumetric image acquisition 
+    Class to control signal generation and synchronization for volumetric image acquisition
+    during ls3 scanning protocol
     using a National Instruments DAQ device.
     
     This class manages:
@@ -91,7 +92,6 @@ class NIDAQ_Acquisition:
                 must take in account the number of analog output avaliable (others should be set as Null)
                 if there are more, only 3 firsts will be tanken in account.
             => daq_channels_laser_digital_out : daq channels used fot digital laser controll
-            => Counter: 'co_channel', 'co_terminal'
         
         frequency : float, optional
             Sampling frequency (in Hz) for analog and digital waveform outputs. Default is 10 kHz.
@@ -148,7 +148,7 @@ class NIDAQ_Acquisition:
         
             # Configure trigger: AO task starts on rising edge of CO terminal signal, and is retriggerable
         self.task_ao.triggers.start_trigger.retriggerable = True
-        self.task_ao.triggers.start_trigger.cfg_dig_edge_start_trig(self.daq_channels["co_terminal"],
+        self.task_ao.triggers.start_trigger.cfg_dig_edge_start_trig(self.daq_channels["stage_triger"],
                                                                     trigger_edge=nidaqmx.constants.Edge(10280)) #10280 => Rising Edge
             # Send analog waveforms (stack galvo + first 3 lasers)
         self.task_ao.write(np.vstack([self.tensions_library["tensions_galvo"],
@@ -170,7 +170,7 @@ class NIDAQ_Acquisition:
         
             # Configure trigger: AO task starts on rising edge of CO terminal signal, and is retriggerable
         self.task_do.triggers.start_trigger.retriggerable = True
-        self.task_do.triggers.start_trigger.cfg_dig_edge_start_trig(self.daq_channels["co_terminal"],
+        self.task_do.triggers.start_trigger.cfg_dig_edge_start_trig(self.daq_channels["stage_triger"],
                                                                     trigger_edge=nidaqmx.constants.Edge(10280)) #10280 => Rising Edge
         
             # Send digital waveforms (camera trigger and laser blanking signals)
@@ -216,7 +216,7 @@ class NIDAQ_Acquisition:
             high_ticks=int((self.time_intervals * 1e5 )-100))
         
             # Specify where the TTL pulse is sent
-        self.channel_co.co_pulse_term = self.daq_channels["co_terminal"]
+        self.channel_co.co_pulse_term = self.daq_channels["stage_triger"]
         
             # Set implicit timing to repeat the pulse signal for the number of timepoints
         self.task_co.timing.cfg_implicit_timing(samps_per_chan = self.timepoints)

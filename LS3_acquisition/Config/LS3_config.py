@@ -94,7 +94,7 @@ class config():
             cam = camera(camera_id=cam_data["camera_id"])
             cam.hchipsize = cam_data["hchipsize"]
             cam.vchipsize = cam_data["vchipsize"]
-            cam.pixel_size = cam_data["pixel_size"]
+            cam.pixel_size = 0.155 #cam_data["pixel_size"]
             cam.sample_pixel_size = cam_data["sample_pixel_size"]
             cam.hsize = cam_data["hsize"]
             cam.hpos = cam_data["hpos"]
@@ -135,7 +135,7 @@ class config():
             exp.scanV_overlap = exp_data["scanV_overlap"] # Overlaping of the images in %
         except:
             exp.scanV_range = 0.0
-            exp.scanV_overlap = 0.0
+            exp.scanV_overlap = 25.0
         exp.aspect_ratio = exp_data["aspect_ratio"]
         exp.n_steps = exp_data["n_steps"]
         exp.step_size = exp_data["step_size"]

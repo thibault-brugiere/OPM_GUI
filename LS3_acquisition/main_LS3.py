@@ -16,7 +16,7 @@ from PySide6.QtCore import QThread
 import time
 
 from Config.LS3_config import config
-from Hardware.daq_controller import NIDAQ_Acquisition
+from Hardware.daq_controller import NIDAQ_Acquisition_ls3
 from Hardware.camera_controller import camera_acquisition
 from Hardware.filter_wheel_controller import FilterWheel
 from Hardware.functions_serial_ports import functions_serial_ports
@@ -25,19 +25,12 @@ from Hardware.functions_Stage_ASI import Stage_ASI
 # from Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
 # from Hardware.mock import MockCameraAcquisition as camera_acquisition
 from Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
-from Tools.acquisition_pipeline.count_worker import CountWorker, mouvement_sequence
 from Tools.saving import prepare_saving_directory, save_metadata
-from Tools.signal_generators.ls3 import generate_channel_signals as generate_channel_signals_LS3
-
-"""
-L'architecture de ce protocole d'acquisition reprends celui du multidimensionna acquisition.
-Ainsi la notion de timepoint fait référence non pas à un suivi dans le temps, mais au nombre de lignes scannées
-par le microscope
-"""
+from Tools.signal_generators.single_channel_ls3 import generate_channel_signals as generate_channel_signals_LS3
 
 
 class Light_sheet_stabilized_scanning:
-    def __init__(self, hcams=None, filterwheel = None, frequency=1e5):
+    def __init__(self, hcams=None, filterwheel = None, frequency=1e5, scanning_axis = "Y"):
         
         print('[Main LS3] Start Light sheet stabilized stage scanning')
         
@@ -45,18 +38,20 @@ class Light_sheet_stabilized_scanning:
         self.filterwheel = filterwheel
         self.fw_None = True
         self.frequency = frequency
+        self.scanning_axis = scanning_axis
         
-        # Load configuration
+        # Load configuration and get values
         config_path = os.path.join(os.path.dirname(__file__), "Config")
         self.config = config(dirname=config_path)
+        
         self.n_channels = len(self.config.channels)
+        self.n_lines = self._get_lines()
         
         self.filterseq = [] # Liste des filtres dans l'ordre utilisé
         for n in range(self.n_channels):
             self.filterseq.append(self.config.channels[n].filter)
         
         # Generate list of one tension library per channel
-        
         self.list_volume_tensions_library = []
         volume_duration = 0
         for idx in range(len(self.config.experiment.channels)) :
@@ -66,12 +61,11 @@ class Light_sheet_stabilized_scanning:
                                              self.config.experiment,
                                              self.config.microscope,
                                              idx,
-                                             frequency = 1e5))
+                                             frequency = self.frequency))
             volume_duration += ( len(self.list_volume_tensions_library[idx]['tensions_galvo']) / self.frequency )
 
         print("[Main LS3] channel signals generated")
 
-        
         # Prepare saving directory and metadata
         self.save_dir = prepare_saving_directory(self.config.experiment.data_path,
                                                  self.config.experiment.exp_name)
@@ -84,14 +78,19 @@ class Light_sheet_stabilized_scanning:
         self.daq = None
         
         self.state = {'camera': 'idle',
-                      'acquisition_workers' : 'idle',
+                      'acquisition_workers': 'idle',
                       'daq': 'idle',
-                      'stage' : 'idle',
+                      'stage': 'idle',
                       }
         
-        self.cw = False # Vérifie sur le countworker existe
+    def _get_lines(self):
+        field_size = self.config.cameras[0].pixel_size * self.config.cameras[0].hsize
+        scanV_size = self.config.experiment.scanV_range
+        scanV_overlap = self.config.experiment.scanV_overlap # in %
+        fied_overlap = scanV_overlap * field_size
         
-    
+        return math.ceil(scanV_size / (field_size - fied_overlap))
+        
     def initialize_cameras(self):
         for i, cam_cfg in enumerate(self.config.cameras):
             hcam = self.hcams[i] if self.hcams else None
@@ -132,12 +131,12 @@ class Light_sheet_stabilized_scanning:
     def initialize_acquisition_workers(self):
         for cam in self.cameras_acquisition:
             worker = AcquisitionWorker(
-                camera_worker=cam,
-                save_dir=self.save_dir,
-                n_steps=self.config.experiment.n_steps,
-                timepoints=self.config.experiment.timepoints,
+                camera_worker = cam,
+                save_dir = self.save_dir,
+                n_steps = self.config.experiment.n_steps,
+                n_lines = self.n_lines,
                 n_channels = self.n_channels,
-                channel_names=[ch.channel_id for ch in self.config.channels],
+                channel_names = [ch.channel_id for ch in self.config.channels],
                 mode = self.config.experiment.mode
             )
             self.acquisition_workers.append(worker)
@@ -163,7 +162,7 @@ class Light_sheet_stabilized_scanning:
         self.filterwheel.moveToFilter(self.filterseq[0])
 
     def configure_daq(self):
-        self.daq = NIDAQ_Acquisition()
+        self.daq = NIDAQ_Acquisition_ls3()
         
         self.state['daq'] = 'ready'
         
@@ -172,34 +171,21 @@ class Light_sheet_stabilized_scanning:
     def configure_stage(self):
         self.stage = Stage_ASI(port = self.config.microscope.stage_port)
         self.state['stage'] = 'ready'
-        
-    def initialize_count_worker(self):
-        
+    
+    def _prepare_scan_parameters(self):
         """
-        worker used to properly set the position of the filter wheel and the stage at the right moment during the acquisition
-
-        Returns
-        -------
-        None.
-
+        Prepare variables for scanning
+        If there is only one axis, the scanning wil be made in one time
         """
-        self.count_worker = CountWorker(self.daq, self.filterwheel, self.filterseq, self.stage)
-        self.count_thread = QThread()
-        self.count_worker.moveToThread(self.count_thread)
-        self.count_thread.started.connect(self.count_worker.start)
-        self.count_worker.trigger_received.connect(self.on_trigger_detected)
-        self.count_thread.start()
+        return {"n_lines" : 1 if self.n_channels == 1 else self.n_lines,
+                "SCANR_start" : 0,
+                "SCANR_stop" : self.config.experiment.scan_range,
+                "SCANV_start" : 0 if self.n_channels == 1 else 0,
+                "SCANV_stop" : 0 if self.n_channels == 1 else 0,
+                "SCANV_lines" : self.n_lines if self.n_channels == 1 else 1,
+                "axis": self.scanning_axis
+                }
         
-        self.cw = True
-        
-        print("[Main LS3] count workers initialized")
-        
-        
-    def on_trigger_detected(self, count):
-        # print(f"Trigger reçu : {count}")
-        pass
-        
-
     def run_acquisition(self):    
         if not self._all_ready():
             print(f"[Main LS3] Not ready to start : {self.state}")
@@ -221,20 +207,22 @@ class Light_sheet_stabilized_scanning:
         
         expected_volume_images = self.config.experiment.n_steps
         
-        for timepoint in range(self.config.experiment.timepoints) :
+        scan_parameters = self._prepare_scan_parameters()
+        
+        for line in range(scan_parameters["n_lines"]) :
             
-            for chan in range(len(self.config.experiment.channels)) :
+            for chan in range(self.n_channels) :
                 
-                self.scan_duration = self.config.experiment.n_steps * (
-                        self.config.channels[chan].exposure_time
-                        + self.config.cameras[0].image_readout_time)
-    
-                self.stage_speed = self.config.experiment.scan_range / 1000 / self.scan_duration
+                # go to the right filter
+                self.filterwheel.moveToFilter(self.config.experiment.channels[chan].filter)
                 
-                self.stage.set_speed(y = self.stage_speed)
+                # Prepare ni-daq
+                tensions_library = self.list_volume_tensions_library[chan]
+                
+                self.scan_duration = len(tensions_library["tensions_galvo"]) / self.frequency
                 
                 self.daq.send_signals_to_daq_single_channel(
-                    self.list_volume_tensions_library[chan],
+                    self.tensions_library,
                     1, # experiment.timepoints
                     self.config.experiment.time_intervals,
                     self.config.microscope.daq_channels,
@@ -244,9 +232,17 @@ class Light_sheet_stabilized_scanning:
                 
                 self.daq.arm_task()
                 
-                self.stage.move_rel(y = self.config.experiment.scan_range * 10) # axis unit is 0.1µm
                 self.daq.trigger_acquisition()
-
+                
+                # set scanning parameters and start scan
+                SPEED = tensions_library["stage_speed_mm_s"]
+                
+                self.stage.set_scan(SPEED, scan_parameters["SCANR_start"], scan_parameters["SCANR_stop"],
+                                    scan_parameters["SCANV_start"], scan_parameters["SCANV_stop"],
+                                    scan_parameters["SCANV_lines"], scan_parameters["axis"])
+                
+                self.stage.start_scan()
+                
                 try:
                     while True:
                         images = [w.total_images for w in self.acquisition_workers]
@@ -258,12 +254,6 @@ class Light_sheet_stabilized_scanning:
                     print("[INFO] Acquisition interrupted by user.")
                     
                 self.stage.set_speed()
-                
-                # self.stage.move_rel(y = -self.config.experiment.scan_range * 10) # Retour à la position de départ
-                self.stage.move_rel(y = -20000)
-                
-                moving_duration = self.config.experiment.scan_range / 1000 / 5.745920
-                time.sleep(moving_duration)
                 
                 self.daq.stop()
                 self.daq.close()
@@ -286,11 +276,6 @@ class Light_sheet_stabilized_scanning:
         for cam in self.cameras_acquisition :
             cam.stop_acquisition()
             cam.release_camera()
-        
-        # self.count_worker.stop()
-        
-        # self.count_thread.quit()
-        # self.count_thread.wait()
         
         if self.fw_None :
             self.filterwheel.close()

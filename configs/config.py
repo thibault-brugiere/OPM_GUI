@@ -114,6 +114,7 @@ class microscope(object):
                              "filter_wheel_2": "Dev1/port0/line3", # Trigger de la roue de filtres
                              "channel_finished" : "/Dev1/PFI1", # Trigger at the end of each channel for the computer (not used yet)
                              "laser_blanking" : "Dev1/port0/line4", # Trigger le blanking de l'AOTF du banc laser
+                             "stage_triger" : "Dev1/PFI2" # Trigger from the stage to start ls3 scanning
                              }
         
         self.daq_channels_laser_analog_out = {"405" : "Dev1/ao1", # Régle la puissance du laser 405
