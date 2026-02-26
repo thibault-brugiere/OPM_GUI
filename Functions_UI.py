@@ -17,11 +17,6 @@ import sys
 
 from PySide6.QtCore import QTime
 from PySide6.QtGui import QImage
-
-# set multidimensional_acquisition importable
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "multidimensional_acquisition"))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
     
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
 from acquisition.functions_acquisition import functions_acquisition as fa
@@ -407,30 +402,6 @@ class functions_ui():
         qimage = QImage(image_data, w, h, w * 4, QImage.Format_RGBA8888)
         
         return qimage
-    
-    #
-    # Acquisition
-    #
-    
-    # TODO: A supprimer
-    # def start_snoutscope_acquisition(file_path, working_directory) :
-    #     """
-    #     Lance un fichier Python en utilisant subprocess.
-        
-    #     Parameters:
-    #     - file_path (str): Le chemin vers le fichier Python à exécuter.
-    #     """
-    #     try:
-    #         # Exécuter le fichier Python
-    #         subprocess.run(["python", file_path],
-    #                        check=True, text=True,
-    #                        capture_output=True,
-    #                        cwd=working_directory)
-    #     except subprocess.CalledProcessError as e:
-    #         print(f"Erreur lors de l'exécution du fichier : {e}")
-    #         print("Return code:", e.returncode)
-    #         print("Output:", e.stdout)
-    #         print("Error:", e.stderr)
 
     def get_active_channel(active_channels, channel):
         channel_acquisition = []

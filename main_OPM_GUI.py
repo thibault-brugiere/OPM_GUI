@@ -8,7 +8,7 @@ Convert file.ui to file.py
 pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
 
 Resolved FTDI DLL issue by copying ftd2xx64.dll from Thorlabs software to C:\Windows\System32 and renaming it to ftd2xx.dll
-NOTE : les mocks sont en rempacer dans : * main_OPM_GUI * hardware.Laser_Controller * functions_camera * main_MDA
+NOTE : les mocks sont en rempacer dans : * main_OPM_GUI * hardware.Laser_Controller * functions_camera * main_MDA * main_LS3
 """
 # Branche laser
 import warnings
@@ -44,8 +44,9 @@ from hardware.Laser_Controller import LaserController
 # from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
 # from mock.DAQ import functions_daq
 from mock.Null import NullObject
-from LS3_acquisition.main_LS3 import Light_sheet_stabilized_scanning
+
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
+from LS3_acquisition.main_LS3 import Light_sheet_stabilized_scanning
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 

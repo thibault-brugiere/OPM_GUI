@@ -5,7 +5,7 @@ Created on Tue Dec  9 10:55:10 2025
 @author: tbrugiere
 """
 
-from Hardware.functions_serial_ports import functions_serial_ports as serial_port
+from LS3_acquisition.Hardware.functions_serial_ports import functions_serial_ports as serial_port
 
 serial_port.list_serial_ports()
 

@@ -8,7 +8,7 @@ import os
 import sys
 
     
-from Hardware.thorlabs_filter_wheel import ThorlabsFW103
+from multidimensional_acquisition.Hardware.thorlabs_filter_wheel import ThorlabsFW103
 
 filterList = ['BFP','GFP','CY3.5','TexRed','empty5', 'empty6']
 

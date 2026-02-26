@@ -12,24 +12,32 @@ warnings.filterwarnings(
     message="pkg_resources is deprecated as an API"
 )
 
+if __name__ == "__main__" and (__package__ is None or __package__ == ""):
+    # Lancement en script : on relance en module pour activer les imports relatifs
+    import sys
+    from pathlib import Path
+
+    pkg_root = Path(__file__).resolve().parent.parent  # dossier qui contient multidimensional_acquisition/
+    sys.path.insert(0, str(pkg_root))
+
 import math
 import os
 from PySide6.QtCore import QThread
 import time
 
-from Config.MDA_config import config
-from Hardware.daq_controller import NIDAQ_Acquisition
-from Hardware.camera_controller import camera_acquisition
-from Hardware.filter_wheel_controller import FilterWheel
-from Hardware.functions_serial_ports import functions_serial_ports
-# from Hardware.mock import Mock_functions_serial_ports as functions_serial_ports
-# from Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
-# from Hardware.mock import MockCameraAcquisition as camera_acquisition
-from Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
-from Tools.acquisition_pipeline.count_worker import CountWorker, mouvement_sequence
-from Tools.saving import prepare_saving_directory, save_metadata
-from Tools.signal_generators.multi_channel import generate_channel_signals
-from Tools.signal_generators.multi_channel_ultra_fast import generate_channel_signals as generate_signals_fast
+from multidimensional_acquisition.Config.MDA_config import config
+from multidimensional_acquisition.Hardware.daq_controller import NIDAQ_Acquisition
+from multidimensional_acquisition.Hardware.camera_controller import camera_acquisition
+from multidimensional_acquisition.Hardware.filter_wheel_controller import FilterWheel
+from multidimensional_acquisition.Hardware.functions_serial_ports import functions_serial_ports
+# from multidimensional_acquisition.Hardware.mock import Mock_functions_serial_ports as functions_serial_ports
+# from multidimensional_acquisition.Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
+# from multidimensional_acquisition.Hardware.mock import MockCameraAcquisition as camera_acquisition
+from multidimensional_acquisition.Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
+from multidimensional_acquisition.Tools.acquisition_pipeline.count_worker import CountWorker, mouvement_sequence
+from multidimensional_acquisition.Tools.saving import prepare_saving_directory, save_metadata
+from multidimensional_acquisition.Tools.signal_generators.multi_channel import generate_channel_signals
+from multidimensional_acquisition.Tools.signal_generators.multi_channel_ultra_fast import generate_channel_signals as generate_signals_fast
 
 class MultidimensionalAcquisition:
     def __init__(self, hcams=None, filterwheel = None, frequency=1e5):

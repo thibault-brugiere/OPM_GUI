@@ -34,6 +34,7 @@ Created on Tue Sep  2 09:03:43 2025
     # ---------
     # Hardware
     # --------
+# TODO: warning fun acquisition : "Finite acquisition or generation has been stopped before the requested number of samples were acquired or generated."
 
 # TODO Ajout mock filterwheel
     
