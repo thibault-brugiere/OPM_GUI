@@ -36,7 +36,7 @@ class Light_sheet_stabilized_scanning:
         
         self.hcams = hcams
         self.filterwheel = filterwheel
-        self.fw_None = True
+        self.fw_None = True if self.filterwheel is None else False # To properly close the filterwheel
         self.frequency = frequency
         self.scanning_axis = scanning_axis
         
@@ -45,18 +45,14 @@ class Light_sheet_stabilized_scanning:
         self.config = config(dirname=config_path)
         
         if self.config.experiment.mode != "LS3":
-            raise NameError("LS3 Error: nnot the right experiment mode")
+            raise NameError("LS3 Error: not the right experiment mode")
         
         self.n_channels = len(self.config.channels)
         self.n_lines = self._get_lines()
         
-        self.filterseq = [] # Liste des filtres dans l'ordre utilisé
-        for n in range(self.n_channels):
-            self.filterseq.append(self.config.channels[n].filter)
-        
         # Generate list of one tension library per channel
         self.list_volume_tensions_library = []
-        volume_duration = 0
+        self.volume_duration = 0
         for idx in range(len(self.config.experiment.channels)) :
             self.list_volume_tensions_library.append(
                 generate_channel_signals_LS3(self.config.cameras,
@@ -65,7 +61,7 @@ class Light_sheet_stabilized_scanning:
                                              self.config.microscope,
                                              idx,
                                              frequency = self.frequency))
-            volume_duration += ( len(self.list_volume_tensions_library[idx]['tensions_galvo']) / self.frequency )
+            self.volume_duration += len(self.list_volume_tensions_library[idx]['tensions_galvo']) / self.frequency
 
         print("[Main LS3] channel signals generated")
 
@@ -100,7 +96,7 @@ class Light_sheet_stabilized_scanning:
             cam = camera_acquisition(cam_cfg, hcam,
                                      channels = self.config.channels,
                                       experiment = self.config.experiment,
-                                      microscope = self.config.experiment)
+                                      microscope = self.config.microscope)
             if hcam is None:
                 cam.initialize_camera()
             cam.configure_camera_for_acquisition()
@@ -155,14 +151,11 @@ class Light_sheet_stabilized_scanning:
             self.filterwheel.home()
             print("[Main LS3] filter wheel initialized")
         else:
-            self.fw_None = False
             if not self.filterwheel.connected :
                 self.filterwheel.connect()
                 self.filterwheel.home()
                 
             print("[Main LS3] filter wheel initialized")
-                
-        self.filterwheel.moveToFilter(self.filterseq[0])
 
     def configure_daq(self):
         self.daq = NIDAQ_Acquisition_ls3()
@@ -310,5 +303,4 @@ if __name__ == "__main__":
     LS3.initialize_filterwheel()
     LS3.configure_daq()
     LS3.configure_stage()
-    # LS3.initialize_count_worker()
     LS3.run_acquisition()

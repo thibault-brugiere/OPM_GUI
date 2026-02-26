@@ -1441,7 +1441,7 @@ This value is linked to the total duration and interval.</string>
            <number>999999</number>
           </property>
           <property name="value">
-           <number>10</number>
+           <number>1</number>
           </property>
          </widget>
         </item>
@@ -1900,7 +1900,7 @@ scanning parameters</string>
         <item>
          <widget class="QSpinBox" name="spinBox_stage_scan_range">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the length of the scanning using Light sheet stabilized scanning&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the length of the scanning using Light sheet stabilized scanning in µm&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="maximum">
            <number>10000</number>
@@ -1910,7 +1910,7 @@ scanning parameters</string>
         <item>
          <widget class="QLabel" name="label_stage_scan_range">
           <property name="text">
-           <string>Stage scan range</string>
+           <string>Stage scan range (µm)</string>
           </property>
          </widget>
         </item>
@@ -1921,7 +1921,7 @@ scanning parameters</string>
         <item>
          <widget class="QSpinBox" name="spinBox_scanV_range">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the width of the scanning using Light sheet stabilized scanning&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the width of the scanning using Light sheet stabilized scanning (in µm)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="maximum">
            <number>10000</number>
@@ -1931,7 +1931,7 @@ scanning parameters</string>
         <item>
          <widget class="QLabel" name="label_scanV_range">
           <property name="text">
-           <string>Scan width</string>
+           <string>Scan width (µm)</string>
           </property>
          </widget>
         </item>

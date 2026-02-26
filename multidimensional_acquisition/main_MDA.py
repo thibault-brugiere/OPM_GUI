@@ -38,7 +38,7 @@ class MultidimensionalAcquisition:
         
         self.hcams = hcams
         self.filterwheel = filterwheel
-        self.fw_None = True
+        self.fw_None = True if self.filterwheel is None else False # To properly close the filterwheel
         self.frequency = frequency
         
         # Load configuration
@@ -103,7 +103,7 @@ class MultidimensionalAcquisition:
             cam = camera_acquisition(cam_cfg, hcam,
                                      channels = self.config.channels,
                                       experiment = self.config.experiment,
-                                      microscope = self.config.experiment)
+                                      microscope = self.config.microscope)
             if hcam is None:
                 cam.initialize_camera()
             cam.configure_camera_for_acquisition()
@@ -158,7 +158,6 @@ class MultidimensionalAcquisition:
             self.filterwheel.home()
             print("[Main MDA] filter wheel initialized")
         else:
-            self.fw_None = False
             if not self.filterwheel.connected :
                 self.filterwheel.connect()
                 self.filterwheel.home()

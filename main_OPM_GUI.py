@@ -1258,9 +1258,16 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.status_bar.showMessage("start Light_sheet_stabilized_scanning acquisition")
                 
                 LS3 = Light_sheet_stabilized_scanning(self.hcam, self.filterWheel)
-                self.MDA_manager = mda_mannager(LS3, self)
-                self.MDA_manager.show()
-                self.MDA_manager.start_acquisition()
+                LS3.initialize_cameras()
+                LS3.initialize_laser()
+                LS3.initialize_acquisition_workers()
+                LS3.initialize_filterwheel()
+                LS3.configure_daq()
+                LS3.configure_stage()
+                LS3.run_acquisition()
+                # self.MDA_manager = mda_mannager(LS3, self)
+                # self.MDA_manager.show()
+                # self.MDA_manager.start_acquisition()
                 
             except:
                 self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)

@@ -164,4 +164,4 @@ def send_to_ls3_acquisition(camera_list, filterwheel, channel_list, experiment, 
     None.
 
     """
-    send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list, experiment, microscope)
+    send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list, experiment, microscope, dirname, filename)

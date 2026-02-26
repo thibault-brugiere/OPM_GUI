@@ -130,12 +130,9 @@ class config():
         exp.total_duration = exp_data["total_duration"]
         exp.scanner_position = exp_data["scanner_position"]
         exp.scan_range = exp_data["scan_range"]
-        try :
-            exp.scanV_range = exp_data["scanV_range"] # Displacement on the axis of the scanning axis
-            exp.scanV_overlap = exp_data["scanV_overlap"] # Overlaping of the images in %
-        except:
-            exp.scanV_range = 0.0
-            exp.scanV_overlap = 25.0
+        exp.stage_scan_range = exp_data["stage_scan_range"]
+        exp.scanV_range = exp_data["scanV_range"] # Displacement on the axis of the scanning axis
+        exp.scanV_overlap = exp_data["scanV_overlap"] # Overlaping of the images in %
         exp.aspect_ratio = exp_data["aspect_ratio"]
         exp.n_steps = exp_data["n_steps"]
         exp.step_size = exp_data["step_size"]

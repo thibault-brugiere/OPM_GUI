@@ -659,7 +659,7 @@ class Ui_MainWindow(object):
         self.spinBox_timepoints = QSpinBox(self.centralwidget)
         self.spinBox_timepoints.setObjectName(u"spinBox_timepoints")
         self.spinBox_timepoints.setMaximum(999999)
-        self.spinBox_timepoints.setValue(10)
+        self.spinBox_timepoints.setValue(1)
 
         self.horizontalLayout_16.addWidget(self.spinBox_timepoints)
 
@@ -1491,13 +1491,13 @@ class Ui_MainWindow(object):
         self.label_channels_2.setText(QCoreApplication.translate("MainWindow", u"LS3\n"
 "scanning parameters", None))
 #if QT_CONFIG(tooltip)
-        self.spinBox_stage_scan_range.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Set the length of the scanning using Light sheet stabilized scanning</p></body></html>", None))
+        self.spinBox_stage_scan_range.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Set the length of the scanning using Light sheet stabilized scanning in \u00b5m</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_stage_scan_range.setText(QCoreApplication.translate("MainWindow", u"Stage scan range", None))
+        self.label_stage_scan_range.setText(QCoreApplication.translate("MainWindow", u"Stage scan range (\u00b5m)", None))
 #if QT_CONFIG(tooltip)
-        self.spinBox_scanV_range.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Set the width of the scanning using Light sheet stabilized scanning</p></body></html>", None))
+        self.spinBox_scanV_range.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Set the width of the scanning using Light sheet stabilized scanning (in \u00b5m)</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_scanV_range.setText(QCoreApplication.translate("MainWindow", u"Scan width", None))
+        self.label_scanV_range.setText(QCoreApplication.translate("MainWindow", u"Scan width (\u00b5m)", None))
 #if QT_CONFIG(tooltip)
         self.spinBox_scanV_overlap.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Set the overlap between twoo lines during Light sheet stabilized scanning</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)

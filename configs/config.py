@@ -53,7 +53,7 @@ class experiment(object):
     def __init__(self):
         self.exp_name = 'Image'
         self.data_path = "D:/Projets_Python/OPM_GUI"
-        self.timepoints = 10
+        self.timepoints = 1
         self.time_intervals = 1.0 # in s
         self.total_duration = 10.0 # in s
         self.mode = "standard"
