@@ -39,6 +39,7 @@ Created on Tue Sep  2 09:03:43 2025
 # TODO Ajout mock filterwheel
     
     # daq_controller
+# TODO ligne 175, ajouter : trigger_edge=nidaqmx.constants.Edge.RISING)
 
     #-------------
     # Tools

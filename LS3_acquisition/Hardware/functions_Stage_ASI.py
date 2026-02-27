@@ -5,6 +5,8 @@ Created on Tue Dec  9 10:55:10 2025
 @author: tbrugiere
 """
 
+import atexit
+
 from LS3_acquisition.Hardware.functions_serial_ports import functions_serial_ports as serial_port
 
 serial_port.list_serial_ports()
@@ -12,6 +14,8 @@ serial_port.list_serial_ports()
 class Stage_ASI:
     def  __init__ (self, port = 'COM10'):
        self.port = port
+       
+       atexit.register(self.stop)
        
     def on_init(self):
         self.connection = False
@@ -23,9 +27,10 @@ class Stage_ASI:
                 raise NameError("ASI stage: connection error")
         except:
             raise NameError("ASI stage: connection error")
+            
         
     def set_scan(self, SPEED:float, SCANR_start:float, SCANR_stop:float, SCANV_start:float,
-                 SCANV_stop:float, SCANV_number_of_lines:float = 1, axis:str = 'Y'):
+                 SCANV_stop:float, SCANV_number_of_lines:float = 1, axis:str = 'X', retrace = 100):
         """
         
         Parameters
@@ -50,19 +55,20 @@ class Stage_ASI:
         None.
 
         """
-        if axis != 'X' or axis != 'Y' :
-            raise NameError("ASI stage: scanning axis not X or Y")
+        if axis != 'X' and axis != 'Y' :
+            raise NameError("ASI stage: scanning axis not X or Y : {axis}")
             
         scan = f'SCAN X={1 if axis == "X" else 2} Y={1 if axis == "Y" else 2} Z=0 F=0'
         
         commands = ['SCAN X=0 Y=0 Z=0 F=0',
                     scan,
-                    f'SCANR X={SCANR_start} Y={SCANR_stop}', # Set the start and stop position for the fast scanning axis
-                    f'SCANV X={SCANV_start} Y={SCANV_stop} Z={SCANV_number_of_lines}', # same for the slow axis
-                    f'SPEED X={SPEED}'] # Set the speed for the fast scanning axis
+                    f'SCANR X={SCANR_start:.6f} Y=-{SCANR_stop:.6f}  R={retrace:.6f}', # Set the start and stop position and the speed for the fast scanning axis
+                    f'SCANV X={SCANV_start:.6f} Y={SCANV_stop:.6f} Z={SCANV_number_of_lines:.6f}', # same for the slow axis
+                    f'SPEED X={SPEED:.8f}']
         
         for command in commands:
             response = serial_port.send_command_response(command, self.port)
+            print(f'[functions SCAN]: command : {command}')
             if response[0:2] == ':A':
                 pass
             else:
@@ -96,11 +102,14 @@ class Stage_ASI:
         or not
         """
         
-        response = serial_port.send_command_response('HALR', self.port)
+        self.set_speed()
+        response = serial_port.send_command_response('HALT', self.port)
         if response == ":A" :
             print("ASI stage: no movement")
         elif response == ":N-21":
             print("ASI stage: movement interupted")
+        else :
+            print(f'ASI stage: stop response {response}')
         
     def set_speed(self, x:int=5.745920, y:int=5.745920, z:int=1.286400) :
         """
@@ -127,6 +136,9 @@ class Stage_ASI:
             return True
         else : 
             return None
+        
+    def _send_command(self, command):
+        return serial_port.send_command_response(command, self.port)
     
 """
 ACCEL :

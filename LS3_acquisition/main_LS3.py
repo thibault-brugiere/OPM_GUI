@@ -6,6 +6,12 @@ Pour l'instant la partie qui a été faite est dans : Tools.signal_generators
 
 @author: tbrugiere
 """
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    message="pkg_resources is deprecated as an API"
+)
+
 if __name__ == "__main__" and (__package__ is None or __package__ == ""):
     # Lancement en script : on relance en module pour activer les imports relatifs
     import sys
@@ -13,8 +19,9 @@ if __name__ == "__main__" and (__package__ is None or __package__ == ""):
 
     pkg_root = Path(__file__).resolve().parent.parent  # dossier qui contient multidimensional_acquisition/
     sys.path.insert(0, str(pkg_root))
-    
+  
 import math
+import numpy as np
 import os
 from PySide6.QtCore import QThread
 import time
@@ -34,7 +41,7 @@ from LS3_acquisition.Tools.signal_generators.single_channel_ls3 import generate_
 
 
 class Light_sheet_stabilized_scanning:
-    def __init__(self, hcams=None, filterwheel = None, frequency=1e5, scanning_axis = "Y"):
+    def __init__(self, hcams=None, filterwheel = None, frequency=1e5, scanning_axis = 'X'):
         
         print('[Main LS3] Start Light sheet stabilized stage scanning')
         
@@ -52,22 +59,11 @@ class Light_sheet_stabilized_scanning:
             raise NameError("LS3 Error: not the right experiment mode")
         
         self.n_channels = len(self.config.channels)
-        self.n_lines = self._get_lines()
+        self._get_lines()
+        self._get_n_steps()
         
         # Generate list of one tension library per channel
-        self.list_volume_tensions_library = []
-        self.volume_duration = 0
-        for idx in range(len(self.config.experiment.channels)) :
-            self.list_volume_tensions_library.append(
-                generate_channel_signals_LS3(self.config.cameras,
-                                             self.config.channels,
-                                             self.config.experiment,
-                                             self.config.microscope,
-                                             idx,
-                                             frequency = self.frequency))
-            self.volume_duration += len(self.list_volume_tensions_library[idx]['tensions_galvo']) / self.frequency
-
-        print("[Main LS3] channel signals generated")
+        self._generate_tension_library()
 
         # Prepare saving directory and metadata
         self.save_dir = prepare_saving_directory(self.config.experiment.data_path,
@@ -86,13 +82,39 @@ class Light_sheet_stabilized_scanning:
                       'stage': 'idle',
                       }
         
+    def _get_n_steps(self):
+        """
+        Calculate number of steps as the original value was for 
+        """        
+        self.config.experiment.n_steps = 1 + int(round(self.config.experiment.stage_scan_range / self.config.experiment.step_size))
+        
     def _get_lines(self):
-        field_size = self.config.cameras[0].pixel_size * self.config.cameras[0].hsize
+        field_size = self.config.cameras[0].pixel_size / self.config.microscope.mag_total * self.config.cameras[0].hsize
         scanV_size = self.config.experiment.scanV_range
         scanV_overlap = self.config.experiment.scanV_overlap
-        fied_overlap = scanV_overlap * field_size
+        fied_overlap = scanV_overlap * field_size / 100
         
-        return math.ceil(scanV_size / (field_size - fied_overlap))
+        self.n_lines = math.ceil(scanV_size / (field_size - fied_overlap))
+    
+    def _generate_tension_library(self):
+        """
+        Generate liste of tension libraries per channel for ni-dac controll
+        Also set the duration of one volume (not counting the return bach of the stage)
+        """
+        self.list_volume_tensions_library = []
+        self.volume_duration = 0
+        for idx in range(len(self.config.experiment.channels)) :
+            self.list_volume_tensions_library.append(
+                generate_channel_signals_LS3(self.config.cameras,
+                                             self.config.channels,
+                                             self.config.experiment,
+                                             self.config.microscope,
+                                             idx,
+                                             frequency = self.frequency))
+            self.volume_duration += len(self.list_volume_tensions_library[idx]['tensions_galvo']) / self.frequency
+            
+        print(f'[MAIN LS3] SPEED for the first channel : {self.list_volume_tensions_library[0]["stage_speed_mm_s"]:4f} mm/s')
+        print("[Main LS3] channel signals generated")
         
     def initialize_cameras(self):
         for i, cam_cfg in enumerate(self.config.cameras):
@@ -140,7 +162,8 @@ class Light_sheet_stabilized_scanning:
                 n_lines = self.n_lines,
                 n_channels = self.n_channels,
                 channel_names = [ch.channel_id for ch in self.config.channels],
-                mode = self.config.experiment.mode
+                mode = self.config.experiment.mode,
+                max_volume_queue = 10
             )
             self.acquisition_workers.append(worker)
             
@@ -178,10 +201,10 @@ class Light_sheet_stabilized_scanning:
         If there is only one axis, the scanning wil be made in one time
         """
         return {"n_lines" : 1 if self.n_channels == 1 else self.n_lines,
-                "SCANR_start" : 0,
-                "SCANR_stop" : self.config.experiment.stage_scan_range,
-                "SCANV_start" : 0 if self.n_channels == 1 else 0,
-                "SCANV_stop" : 0 if self.n_channels == 1 else 0,
+                "SCANR_start" : 0.0 / 1000,
+                "SCANR_stop" : self.config.experiment.stage_scan_range / 1000, #en mm
+                "SCANV_start" : 0.0 / 1000 if self.n_channels == 1 else 0.0 / 1000,
+                "SCANV_stop" : self.config.experiment.scanV_range / 1000 if self.n_channels == 1 else 0.0 / 1000,
                 "SCANV_lines" : self.n_lines if self.n_channels == 1 else 1,
                 "axis": self.scanning_axis
                 }
@@ -209,6 +232,9 @@ class Light_sheet_stabilized_scanning:
         
         scan_parameters = self._prepare_scan_parameters()
         
+        for key, val in scan_parameters.items():
+            print(f'scan param : {key} = {val}')
+        
         for line in range(scan_parameters["n_lines"]) :
             
             for chan in range(self.n_channels) :
@@ -222,7 +248,7 @@ class Light_sheet_stabilized_scanning:
                 self.scan_duration = len(tensions_library["tensions_galvo"]) / self.frequency
                 
                 self.daq.send_signals_to_daq_single_channel(
-                    self.tensions_library,
+                    tensions_library,
                     1, # experiment.timepoints
                     self.config.experiment.time_intervals,
                     self.config.microscope.daq_channels,
@@ -231,9 +257,7 @@ class Light_sheet_stabilized_scanning:
                     self.frequency)
                 
                 self.daq.arm_task()
-                
-                self.daq.trigger_acquisition()
-                
+                                
                 # set scanning parameters and start scan
                 SPEED = tensions_library["stage_speed_mm_s"]
                 
@@ -284,7 +308,7 @@ class Light_sheet_stabilized_scanning:
             self.daq.stop()
             self.daq.close()
 
-        print("[Main MDA] Acquisition stopped and hardware released.")
+        print("[Main LS3] Acquisition stopped and hardware released.")
         
         self.state = {'camera': 'idle',
                       'acquisition_workers' : 'idle',

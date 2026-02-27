@@ -22,10 +22,9 @@ def _drain_queue(q: "queue.Queue"):
     
 # Container class for a single image frame, with optional timestamp and metadata
 class ImageFrame:
-    def __init__(self, buffer, volume_id, channel):
+    def __init__(self, buffer, file_data):
         self.buffer = buffer
-        self.volume_id = volume_id
-        self.channel = channel
+        self.file_data = file_data
 
 # Main class that handles image acquisition, saving, and live viewing in parallel threads
 class AcquisitionWorker(QObject):
@@ -105,7 +104,7 @@ class AcquisitionWorker(QObject):
 
         for _ in range(max_volume_queue):
             for _ in self.channel_names:
-                buffer = np.empty((self.images_per_files, *self.image_shape), dtype=np.uint16)
+                buffer = np.empty((self.images_per_file, *self.image_shape), dtype=np.uint16)
                 self.buffer_pool.put(buffer)
 
     def start(self):
@@ -217,10 +216,11 @@ class AcquisitionWorker(QObject):
                         # si c'est le dernier volume, il faut passer au channel suivant
                         if self.preview_callback:
                             self.new_volume_ready.emit(current_buffer[0:expected_slices-1], file_data)
-                        channel_index = (channel_index + 1) % len(self.channel_names)
                     else :
                         if self.preview_callback:
                             self.new_volume_ready.emit(current_buffer.copy(), file_data)
+                    
+                    channel_index = (channel_index + 1) % len(self.channel_names)
                             
                     self.queue_to_save.put(ImageFrame(current_buffer, file_data))
                     
@@ -282,7 +282,10 @@ class AcquisitionWorker(QObject):
                 with open(json_path, 'w') as jf:
                     json.dump(metadata, jf, indent=4)
 
-            self.total_volumes += 1
+            self.total_files += 1
+            self.file_bar.update(1)
+            
+            self.total_volumes = math.floor(self.total_files / self.file_per_channel)
             self.volume_bar.update(1)
                 
             self.buffer_pool.put(frame.buffer)   # recycle the buffer

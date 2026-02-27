@@ -4,10 +4,11 @@ Created on Wed Mar 12 10:45:10 2025
 
 @author: tbrugiere
 """
+import math
 import numpy as np
 import matplotlib.pyplot as plt
  
-def generate_channel_signals(cameras, channels, experiment, microscope, channel_index = 1, frequency = 1e5):
+def generate_channel_signals(cameras, channels, experiment, microscope, channel_index = 0, frequency = 1e5):
     """
     Generate voltage and logic signals required to acquire a single channel of an experiment
     using a Light-sheet stabilized scanning (LS3) algorythme
@@ -87,12 +88,11 @@ def generate_channel_signals(cameras, channels, experiment, microscope, channel_
         # --- Experiment parameters ----
     n_steps = experiment.n_steps # Number of image per channel
     
-    scan_range_um = experiment.scan_range
+    stage_scan_range_um = experiment.stage_scan_range
     
     
         # ---- Microscope parameters ----
     volts_per_um = microscope.volts_per_um
-    galvo_response_time_s = microscope.galvo_response_time /1000 # To get response_time in seconds
     laser_response_time_s = microscope.laser_response_time /1000
     
         # ---- Channel-Camera parameters -----
@@ -129,7 +129,7 @@ def generate_channel_signals(cameras, channels, experiment, microscope, channel_
     
         # Galvo
         
-    stage_speed_um_s = scan_range_um / (n_steps * step_duration_s) # en µm / s
+    stage_speed_um_s = stage_scan_range_um / (n_steps * step_duration_s) # en µm / s
 
     galvo_tensions_amplitude = stage_speed_um_s * step_duration_s * volts_per_um #Amplitude of the triangle signal of the galvo
     
@@ -231,7 +231,7 @@ def mouvement_sequence(filters, filterseq):
     return mouvements
 
 ###############################################################################
-def plot_tension_vectors(tensions_library):
+def plot_tension_vectors(tensions_library, samples = 50000):
     """
     Plot each vector in the tensions library as a graph.
 
@@ -256,15 +256,15 @@ def plot_tension_vectors(tensions_library):
         if key == 'tensions_lasers' or key == 'tensions_laser_blanking':
             # Plot each laser channel separately
             for j in range(value.shape[0]):
-                axs[i].plot(value[j], label=f'Laser {j+1}')
+                axs[i].plot(value[j][0:samples], label=f'Laser {j+1}')
             axs[i].legend()
             
         elif key == "tensions_filters":
             for j in range(value.shape[0]):
-                axs[i].plot(value[j], label=f'Filter trig {j+1}')
+                axs[i].plot(value[j][0:samples], label=f'Filter trig {j+1}')
             axs[i].legend()
-        else:
-            axs[i].plot(value)
+        elif key == 'tensions_camera' or key =='tensions_galvo':
+            axs[i].plot(value[0:samples])
 
         axs[i].set_title(key)
         axs[i].set_ylabel('Amplitude')
@@ -292,7 +292,9 @@ if __name__ == '__main__':
     
     start_time = time.time()
         
-    microscope_config = config(filename = 'GUI_parameters_double.json')
+    microscope_config = config(filename = 'GUI_parameters.json')
+    
+    microscope_config.experiment.n_steps = 1 + int(round(microscope_config.experiment.stage_scan_range / microscope_config.experiment.step_size))
         
     frequency = 1e5
     print(microscope_config.experiment.exp_name)
@@ -303,6 +305,10 @@ if __name__ == '__main__':
                                                    frequency = frequency)
     
     end_time = time.time()
+    
+    stage_speed_mm_s = tension_library["stage_speed_mm_s"]
+    
+    print(f'ls3 signal generation: stage speed : {stage_speed_mm_s}')
 
     print(f"Temps pour créer le vecteur : {end_time - start_time:.6f} secondes")
     
@@ -310,4 +316,4 @@ if __name__ == '__main__':
     
     print(f'Temps / volume = {time} secondes')
         
-    plot_tension_vectors(tension_library)
+    plot_tension_vectors(tension_library, 50000)

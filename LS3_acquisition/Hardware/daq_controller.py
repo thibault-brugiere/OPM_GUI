@@ -117,7 +117,6 @@ class NIDAQ_Acquisition_ls3:
         self.task_ao = nidaqmx.Task() # galvo
         self.task_do = nidaqmx.Task() # Camera + lasers
         self.task_di = nidaqmx.Task() # Signal à la fin de chaque volume
-        self.task_co = nidaqmx.Task() # trigger start of each volume
         
         self.volume_duration = len(self.tensions_library['tensions_galvo'])
         
@@ -148,8 +147,9 @@ class NIDAQ_Acquisition_ls3:
         
             # Configure trigger: AO task starts on rising edge of CO terminal signal, and is retriggerable
         self.task_ao.triggers.start_trigger.retriggerable = True
-        self.task_ao.triggers.start_trigger.cfg_dig_edge_start_trig(self.daq_channels["stage_triger"],
-                                                                    trigger_edge=nidaqmx.constants.Edge(10280)) #10280 => Rising Edge
+        self.task_ao.triggers.start_trigger.cfg_dig_edge_start_trig(
+            self.daq_channels["stage_triger"],
+            trigger_edge=nidaqmx.constants.Edge.RISING)
             # Send analog waveforms (stack galvo + first 3 lasers)
         self.task_ao.write(np.vstack([self.tensions_library["tensions_galvo"],
                                       self.tensions_lasers]))
@@ -166,12 +166,15 @@ class NIDAQ_Acquisition_ls3:
             self.task_do.do_channels.add_do_chan(out)
         
             # Set timing and synchronization identical to AO
-        self.task_do.timing.cfg_samp_clk_timing(self.frequency, samps_per_chan=self.volume_duration)
+        self.task_do.timing.cfg_samp_clk_timing(self.frequency,
+                                                source = "/Dev1/ao/SampleClock",
+                                                samps_per_chan=self.volume_duration)
         
             # Configure trigger: AO task starts on rising edge of CO terminal signal, and is retriggerable
         self.task_do.triggers.start_trigger.retriggerable = True
-        self.task_do.triggers.start_trigger.cfg_dig_edge_start_trig(self.daq_channels["stage_triger"],
-                                                                    trigger_edge=nidaqmx.constants.Edge(10280)) #10280 => Rising Edge
+        self.task_do.triggers.start_trigger.cfg_dig_edge_start_trig(
+            self.daq_channels["stage_triger"],
+            trigger_edge=nidaqmx.constants.Edge.RISING)
         
             # Send digital waveforms (camera trigger and laser blanking signals)
         self.task_do.write(np.vstack([self.tensions_library['tensions_camera'],
@@ -200,27 +203,6 @@ class NIDAQ_Acquisition_ls3:
         except AttributeError:
             print("⚠️ Filtre numérique non disponible via ces propriétés (ou non supporté par le device).")
         
-        #
-        # Number of volumes counter
-        #
-        
-            # Configure CO (Counter Output) to emit periodic TTL pulses
-            # Pulse frequency = 1 / time_intervals
-            # low_ticks = duration of LOW state (100 ticks = 1 ms at 100 kHz)
-            # high_ticks = duration of HIGH state (rest of the interval)
-
-        self.channel_co = self.task_co.co_channels.add_co_pulse_chan_ticks( # co : Counter Output
-            counter=self.daq_channels["co_channel"],
-            source_terminal="/Dev1/100kHzTimebase",
-            low_ticks=int(100),
-            high_ticks=int((self.time_intervals * 1e5 )-100))
-        
-            # Specify where the TTL pulse is sent
-        self.channel_co.co_pulse_term = self.daq_channels["stage_triger"]
-        
-            # Set implicit timing to repeat the pulse signal for the number of timepoints
-        self.task_co.timing.cfg_implicit_timing(samps_per_chan = self.timepoints)
-        
         self.state = "ready"
         
         self._last_count = 0
@@ -232,21 +214,10 @@ class NIDAQ_Acquisition_ls3:
         
     def arm_task(self):
         """Prepare AO and DO tasks. They will wait for a trigger to begin output."""
-        if self.state != "ready":
-            raise RuntimeError(f"Cannot start acquisition from state '{self.state}'. Must be 'armed'.")
             
         self.task_ao.start()
         self.task_do.start()
         self.task_di.start()
-        
-        self.state = "armed"
-        
-    def trigger_acquisition(self):
-        """Start the CO task that triggers all other tasks periodically."""
-        if self.state != "armed":
-            raise RuntimeError(f"Cannot start acquisition from state '{self.state}'. Must be 'armed'.")
-            
-        self.task_co.start()
         
         self.state = "running"
         
@@ -260,7 +231,6 @@ class NIDAQ_Acquisition_ls3:
 
         self.task_ao.stop()
         self.task_do.stop()
-        self.task_co.stop()
         self.task_di.stop()
 
         self.state = "ready"
@@ -274,11 +244,8 @@ class NIDAQ_Acquisition_ls3:
             self.task_ao.close()
         if self.task_do:
             self.task_do.close()
-        if self.task_co:
-            self.task_co.close()
 
         self.task_ao = None
         self.task_do = None
-        self.task_co = None
 
         self.state = "idle"

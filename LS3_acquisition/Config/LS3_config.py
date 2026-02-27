@@ -94,7 +94,7 @@ class config():
             cam = camera(camera_id=cam_data["camera_id"])
             cam.hchipsize = cam_data["hchipsize"]
             cam.vchipsize = cam_data["vchipsize"]
-            cam.pixel_size = 0.155 #cam_data["pixel_size"]
+            cam.pixel_size = cam_data["pixel_size"]
             cam.sample_pixel_size = cam_data["sample_pixel_size"]
             cam.hsize = cam_data["hsize"]
             cam.hpos = cam_data["hpos"]

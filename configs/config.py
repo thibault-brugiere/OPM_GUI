@@ -60,8 +60,8 @@ class experiment(object):
         
         self.scanner_position = 0
         self.scan_range = 20
-        self.stage_scan_range = 300 # scan range for LS3 acquisition
-        self.scanV_range = 0 # scan range for slow axis for LS3 acquisition
+        self.stage_scan_range = 300 # scan range for LS3 acquisition in µm
+        self.scanV_range = 0 # scan range for slow axis for LS3 acquisition in µm
         self.scanV_overlap = 0.25 # in ratio
         self.aspect_ratio = 3
         self.n_steps = 0 # Calculé plus tard
