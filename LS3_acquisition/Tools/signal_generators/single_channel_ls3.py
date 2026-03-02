@@ -126,12 +126,14 @@ def generate_channel_signals(cameras, channels, experiment, microscope, channel_
     #
     # Values that will be use to calculate vectors
     #
+    # Duration of a single step = galvo settle + exposure + readout
+    step_duration = int(np.ceil(step_duration_s * frequency))
     
         # Galvo
         
-    stage_speed_um_s = stage_scan_range_um / (n_steps * step_duration_s) # en µm / s
+    stage_speed_um_s = stage_scan_range_um / (n_steps * step_duration / frequency) # en µm / s
 
-    galvo_tensions_amplitude = stage_speed_um_s * step_duration_s * volts_per_um #Amplitude of the triangle signal of the galvo
+    galvo_tensions_amplitude = stage_speed_um_s * step_duration / frequency * volts_per_um #Amplitude of the triangle signal of the galvo
     
         # Get laser powers in % for each laser channel (405, 488, 561, 640), and laser active
         
@@ -141,11 +143,17 @@ def generate_channel_signals(cameras, channels, experiment, microscope, channel_
     laser_active = [channel.laser_is_active['405'],channel.laser_is_active['488'],
                     channel.laser_is_active['561'],channel.laser_is_active['640']]
     
-    # Duration of a single step = galvo settle + exposure + readout
-    step_duration = int(np.ceil(step_duration_s * frequency))
+    
 
     # Total number of timepoints in the signal
     channel_duration = int(pre_volume_wait + post_volume_wait + n_steps * step_duration)
+    
+    print(f'[sg] stage_speed_um_s : {stage_speed_um_s}')
+    print(f'[sg] step_duration_s : {step_duration_s}')
+    print(f'[sg] step_duration : {step_duration}')
+    print(f'[sg] n_steps : {n_steps}')
+    print(f'[sg] channel_duration : {channel_duration}')
+    print(f'[sg] total_duration : {channel_duration / frequency}')
     
     #
     # Create vectors
@@ -316,4 +324,4 @@ if __name__ == '__main__':
     
     print(f'Temps / volume = {time} secondes')
         
-    plot_tension_vectors(tension_library, 50000)
+    plot_tension_vectors(tension_library, 10000)

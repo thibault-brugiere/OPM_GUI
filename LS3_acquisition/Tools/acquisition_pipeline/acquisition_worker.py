@@ -43,7 +43,7 @@ class AcquisitionWorker(QObject):
             Path to the directory where TIFF stacks (volumes) will be saved on disk.
         
         - n_steps: int
-            Number of image frames per volume (typically corresponding to Z-slices in a 3D acquisition).
+            Number of image frames per lines
         
         - n_lines: int
             Number of lines to acquire during scanning.
@@ -70,18 +70,26 @@ class AcquisitionWorker(QObject):
         self.save_dir = save_dir
         self.n_steps = n_steps
         self.n_lines = n_lines
-        self.n_channels = n_channels
+        self.n_channels = n_channels # The final number of channel will be multiply by the number of lines
         self.channel_names = channel_names or ["CH"]
         self.mode = mode
         self.images_per_file = images_per_file
         self.max_volume_queue = max_volume_queue
         self.save_type = save_type.upper()
 
-        self.n_frames = self.n_steps * self.n_lines * len(self.channel_names)
-        self.n_volumes = self.n_lines * len(self.channel_names)
-        self.file_per_channel = math.ceil(self.n_steps / self.images_per_file)
-        self.n_files = self.file_per_channel * self.n_channels * self.n_lines
-        self.images_in_last_file = self.n_steps - (self.file_per_channel - 1) * self.images_per_file
+        self.n_volumes = self.n_channels * self.n_lines
+        self.n_frames = self.n_steps * self.n_volumes
+        self.file_per_volume = math.ceil(self.n_steps / self.images_per_file)
+        self.n_files = self.file_per_volume * self.n_volumes
+        self.images_in_last_file = self.n_steps - (self.file_per_volume - 1) * self.images_per_file #TODO a orriger ici
+        
+        print(f'[AW] n_steps : {self.n_steps}')
+        print(f'[AW] n_lines : {self.n_lines}')
+        print(f'[AW] n_channels : {self.n_channels}')
+        print(f'[AW] n_volumes : {self.n_volumes}')
+        print(f'[AW] n_frames : {self.n_frames}')
+        print(f'[AW] file_per_volume : {self.file_per_volume}')
+        print(f'[AW] n_files : {self.n_files}')
 
         self.stop_event = threading.Event()
         self.threads = []
@@ -190,7 +198,7 @@ class AcquisitionWorker(QObject):
                 
                 # --------- Calcul du nombre d'images attendues pour ce volume ----------
                 # Dernier volume : ne contiendra pas le même nombre d'images
-                if file_id == self.file_per_channel - 1 :
+                if file_id == self.file_per_volume - 1 :
                     expected_slices = self.images_in_last_file
                 else:
                     expected_slices = self.images_per_file
@@ -212,20 +220,22 @@ class AcquisitionWorker(QObject):
                         
                     # EMIT the volume as soon as it's filled
                             
-                    if file_id == self.file_per_channel - 1:
+                    if file_id == self.file_per_volume - 1:
                         # si c'est le dernier volume, il faut passer au channel suivant
+                        if channel_index == len(self.channel_names) - 1:
+                            volume_id += 1
+                        channel_index = (channel_index + 1) % len(self.channel_names)
+                        file_id = 0
+
                         if self.preview_callback:
                             self.new_volume_ready.emit(current_buffer[0:expected_slices-1], file_data)
                     else :
                         if self.preview_callback:
                             self.new_volume_ready.emit(current_buffer.copy(), file_data)
-                    
-                    channel_index = (channel_index + 1) % len(self.channel_names)
+                        file_id +=1
                             
                     self.queue_to_save.put(ImageFrame(current_buffer, file_data))
                     
-                    if channel_index == 0:
-                        volume_id += 1
                     current_channel = self.channel_names[channel_index]
                     actual_volume += 1
                     if not self.buffer_pool.empty():
@@ -260,7 +270,7 @@ class AcquisitionWorker(QObject):
             channel = frame.file_data["channel"]
             
             # Pour le dernier fichier, on ne récupérer qu'une partie des images du buffer
-            if file_id == self.file_per_channel - 1 :
+            if file_id == self.file_per_volume - 1 :
                 file = frame.buffer[0:self.images_per_file-1]
             else:
                 file = frame.buffer
@@ -285,8 +295,9 @@ class AcquisitionWorker(QObject):
             self.total_files += 1
             self.file_bar.update(1)
             
-            self.total_volumes = math.floor(self.total_files / self.file_per_channel)
-            self.volume_bar.update(1)
+            if self.total_volumes != math.floor(self.total_files / self.file_per_volume) :
+                self.total_volumes = math.floor(self.total_files / self.file_per_volume)
+                self.volume_bar.update(1)
                 
             self.buffer_pool.put(frame.buffer)   # recycle the buffer
             

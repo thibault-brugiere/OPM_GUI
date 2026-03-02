@@ -185,8 +185,7 @@ class NIDAQ_Acquisition_ls3:
         # Digital input for volume measurement
         #
         
-        self.task_di.ci_channels.add_ci_count_edges_chan(
-                                                         counter='Dev1/ctr1', 
+        self.task_di.ci_channels.add_ci_count_edges_chan(counter='Dev1/ctr1', 
                                                          edge = Edge.RISING,
                                                          initial_count = 0,
                                                          count_direction=CountDirection.COUNT_UP
@@ -199,7 +198,7 @@ class NIDAQ_Acquisition_ls3:
         try:
             ch.ci_count_edges_dig_fltr_enable = True
             ch.ci_count_edges_dig_fltr_min_pulse_width = 5e-6  # 5 µs (ajuste si besoin: 10–50 µs)
-            # ch.ci_count_edges_dig_sync_enable = True  # parfois utile si dispo
+            
         except AttributeError:
             print("⚠️ Filtre numérique non disponible via ces propriétés (ou non supporté par le device).")
         

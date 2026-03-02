@@ -68,7 +68,6 @@ class Stage_ASI:
         
         for command in commands:
             response = serial_port.send_command_response(command, self.port)
-            print(f'[functions SCAN]: command : {command}')
             if response[0:2] == ':A':
                 pass
             else:
@@ -137,7 +136,7 @@ class Stage_ASI:
         else : 
             return None
         
-    def _send_command(self, command):
+    def send_command(self, command):
         return serial_port.send_command_response(command, self.port)
     
 """

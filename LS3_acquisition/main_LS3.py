@@ -61,6 +61,7 @@ class Light_sheet_stabilized_scanning:
         self.n_channels = len(self.config.channels)
         self._get_lines()
         self._get_n_steps()
+        self.n_frames = self.config.experiment.n_steps * self.n_lines * self.n_channels
         
         # Generate list of one tension library per channel
         self._generate_tension_library()
@@ -89,12 +90,12 @@ class Light_sheet_stabilized_scanning:
         self.config.experiment.n_steps = 1 + int(round(self.config.experiment.stage_scan_range / self.config.experiment.step_size))
         
     def _get_lines(self):
-        field_size = self.config.cameras[0].pixel_size / self.config.microscope.mag_total * self.config.cameras[0].hsize
+        field_size = self.config.cameras[0].sample_pixel_size * self.config.cameras[0].hsize
         scanV_size = self.config.experiment.scanV_range
         scanV_overlap = self.config.experiment.scanV_overlap
         fied_overlap = scanV_overlap * field_size / 100
         
-        self.n_lines = math.ceil(scanV_size / (field_size - fied_overlap))
+        self.n_lines = math.ceil(scanV_size / (field_size - fied_overlap))        
     
     def _generate_tension_library(self):
         """
@@ -175,7 +176,8 @@ class Light_sheet_stabilized_scanning:
         if self.filterwheel is None :
             self.filterwheel = FilterWheel()
             self.filterwheel.connect()
-            self.filterwheel.home()
+            # self.filterwheel.home()
+            # TODO à décommenter ensuite
             print("[Main LS3] filter wheel initialized")
         else:
             if not self.filterwheel.connected :
@@ -228,12 +230,7 @@ class Light_sheet_stabilized_scanning:
                       'stage': 'moving'
                       }
         
-        expected_volume_images = self.config.experiment.n_steps
-        
         scan_parameters = self._prepare_scan_parameters()
-        
-        for key, val in scan_parameters.items():
-            print(f'scan param : {key} = {val}')
         
         for line in range(scan_parameters["n_lines"]) :
             
@@ -244,8 +241,6 @@ class Light_sheet_stabilized_scanning:
                 
                 # Prepare ni-daq
                 tensions_library = self.list_volume_tensions_library[chan]
-                
-                self.scan_duration = len(tensions_library["tensions_galvo"]) / self.frequency
                 
                 self.daq.send_signals_to_daq_single_channel(
                     tensions_library,
@@ -270,7 +265,7 @@ class Light_sheet_stabilized_scanning:
                 try:
                     while True:
                         images = [w.total_images for w in self.acquisition_workers]
-                        if all(v >= expected_volume_images for v in images):
+                        if all(v >= self.n_frames for v in images):
                             break
                         time.sleep(0.5)
 
@@ -281,9 +276,7 @@ class Light_sheet_stabilized_scanning:
                 
                 self.daq.stop()
                 self.daq.close()
-                
-                expected_volume_images += self.config.experiment.n_steps
-        
+                      
         self.stop_all()
         
     def _all_ready(self):
@@ -327,8 +320,8 @@ if __name__ == "__main__":
     LS3 = Light_sheet_stabilized_scanning()
     LS3.initialize_cameras()
     LS3.initialize_laser()
-    LS3.initialize_acquisition_workers()
     LS3.initialize_filterwheel()
     LS3.configure_daq()
     LS3.configure_stage()
+    LS3.initialize_acquisition_workers()
     LS3.run_acquisition()
