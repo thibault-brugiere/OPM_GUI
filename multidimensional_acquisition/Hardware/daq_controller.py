@@ -149,8 +149,7 @@ class NIDAQ_Acquisition:
             # Configure trigger: AO task starts on rising edge of CO terminal signal, and is retriggerable
         self.task_ao.triggers.start_trigger.retriggerable = True
         self.task_ao.triggers.start_trigger.cfg_dig_edge_start_trig(self.daq_channels["co_terminal"],
-                                                                    trigger_edge=nidaqmx.constants.Edge(10280)) #10280 => Rising Edge
-                                                                    # trigger_edge=nidaqmx.constants.Edge.RISING) # TODO à ajouter ici
+                                                                    trigger_edge=nidaqmx.constants.Edge.RISING)
             # Send analog waveforms (stack galvo + first 3 lasers)
         self.task_ao.write(np.vstack([self.tensions_library["tensions_galvo"],
                                       self.tensions_lasers]))
@@ -169,17 +168,16 @@ class NIDAQ_Acquisition:
             # Set timing and synchronization identical to AO
         self.task_do.timing.cfg_samp_clk_timing(self.frequency, samps_per_chan=self.volume_duration)
         
-        # TODO ajouter ici
-        #     # Set timing and synchronization from ao
-        # self.task_do.timing.cfg_samp_clk_timing(self.frequency,
-        #                                         source = "/Dev1/ao/SampleClock",
-        #                                         samps_per_chan=self.volume_duration)
+            # Set timing and synchronization from ao
+        self.task_do.timing.cfg_samp_clk_timing(self.frequency,
+                                                source = "/Dev1/ao/SampleClock",
+                                                samps_per_chan=self.volume_duration)
         
             # Configure trigger: AO task starts on rising edge of CO terminal signal, and is retriggerable
         self.task_do.triggers.start_trigger.retriggerable = True
-        self.task_do.triggers.start_trigger.cfg_dig_edge_start_trig(self.daq_channels["co_terminal"],
-                                                                    trigger_edge=nidaqmx.constants.Edge(10280)) #10280 => Rising Edge
-                                                                    # trigger_edge=nidaqmx.constants.Edge.RISING) # TODO à ajouter ici
+        self.task_do.triggers.start_trigger.cfg_dig_edge_start_trig(
+            self.daq_channels["co_terminal"],
+            trigger_edge=nidaqmx.constants.Edge.RISING)
         
             # Send digital waveforms (camera trigger and laser blanking signals)
         self.task_do.write(np.vstack([self.tensions_library['tensions_camera'],
