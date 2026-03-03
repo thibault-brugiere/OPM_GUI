@@ -26,7 +26,7 @@ Created on Tue Sep  2 09:03:43 2025
     pour accéder au nouveau channel ajouté
 # TODO : pourquoi les lasers ne s'allument pas si je lance directement le main_MDA ?
 # TODO : Ajouter le raise error experiment.mode (comme LS3)
-
+# TODO : supprimer la fonction worker ?
     #-----------
     #MDA_manager
     #-----------

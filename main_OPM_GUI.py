@@ -263,6 +263,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         # Modifications d'élements de l'interface
         #
         # TODO a modifier via le fichier .ui
+        self.spinBox_scanV_overlap.setValue(25)
         
         ##############################################
         ## Connection between functions and buttons ##

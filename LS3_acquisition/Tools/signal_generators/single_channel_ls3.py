@@ -4,7 +4,6 @@ Created on Wed Mar 12 10:45:10 2025
 
 @author: tbrugiere
 """
-import math
 import numpy as np
 import matplotlib.pyplot as plt
  
@@ -147,13 +146,6 @@ def generate_channel_signals(cameras, channels, experiment, microscope, channel_
 
     # Total number of timepoints in the signal
     channel_duration = int(pre_volume_wait + post_volume_wait + n_steps * step_duration)
-    
-    print(f'[sg] stage_speed_um_s : {stage_speed_um_s}')
-    print(f'[sg] step_duration_s : {step_duration_s}')
-    print(f'[sg] step_duration : {step_duration}')
-    print(f'[sg] n_steps : {n_steps}')
-    print(f'[sg] channel_duration : {channel_duration}')
-    print(f'[sg] total_duration : {channel_duration / frequency}')
     
     #
     # Create vectors

@@ -82,14 +82,6 @@ class AcquisitionWorker(QObject):
         self.file_per_volume = math.ceil(self.n_steps / self.images_per_file)
         self.n_files = self.file_per_volume * self.n_volumes
         self.images_in_last_file = self.n_steps - (self.file_per_volume - 1) * self.images_per_file #TODO a orriger ici
-        
-        print(f'[AW] n_steps : {self.n_steps}')
-        print(f'[AW] n_lines : {self.n_lines}')
-        print(f'[AW] n_channels : {self.n_channels}')
-        print(f'[AW] n_volumes : {self.n_volumes}')
-        print(f'[AW] n_frames : {self.n_frames}')
-        print(f'[AW] file_per_volume : {self.file_per_volume}')
-        print(f'[AW] n_files : {self.n_files}')
 
         self.stop_event = threading.Event()
         self.threads = []
@@ -123,9 +115,9 @@ class AcquisitionWorker(QObject):
         self.frame_bar = tqdm(total=self.n_frames,
                               desc="Frames Acquired", position=0)
         self.file_bar = tqdm(total=self.n_files,
-                             desc="Files Saved", position=1)
+                             desc="Files Saved    ", position=1)
         self.volume_bar = tqdm(total=self.n_volumes,
-                               desc="Volumes Saved   ", position=2)
+                               desc="Volumes Saved  ", position=2)
         
         self.stop_event.clear()
         self.start_time = time.time()

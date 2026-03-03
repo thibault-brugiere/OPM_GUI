@@ -139,14 +139,14 @@ if __name__ == '__main__':
     channels_list = ["BFP","GFP", "CY3.5", "TexRed"]
     
     # experiment_path = "D:/Projets_Python/OPM_GUI/Images/20260206_LipidDroplets"
-    experiment_path = Path(r"D:\Projets_Python\OPM_GUI\Images\20260210_NS_synapsin_map2_Louis")
+    experiment_path = Path(r"D:\Projets_Python\OPM_GUI\Images\20260302_OPM_NS_DIV16_SHGFP_NBA643_Dapi")
     
-    folders= ['20260210_145132_NS_synapsin_map2',
-              '20260210_145933_NS_synapsin_map2',
-              '20260210_150404_NS_synapsin_map2',
-              '20260210_150950_NS_synapsin_map2']
+    folders= ['20260302_153947_NS_DIV16_SHGFP_NBA643_Dapi',
+              '20260302_154241_NS_DIV16_SHGFP_NBA643_Dapi',
+              '20260302_154546_NS_DIV16_SHGFP_NBA643_Dapi',
+              ]
     
-    channels = ["TexRed","GFP","BFP"]
+    channels = ["BFP","GFP", "CY3.5","TexRed"]
     
     for folder in folders :
         print(f'FOLDER : {folder}')
@@ -165,32 +165,38 @@ if __name__ == '__main__':
                 # Opening Image
                 #
                 
-                file_path = os.path.join(path, f'{name}.tif')
+                try :
                 
-                image = tifffile.imread(file_path)
-                
-                print("oppened")
-                
-                #
-                # Deskew
-                #
-                
-                px_shift = px_shift_calculation(aspect_ratio, angle = 40, angle_unit = "deg")
-                
-                deskew_image = deskew_numpy(image,px_shift_y=px_shift)
-                
-                print("deskewed")
-                
-                #
-                # Saving
-                #
-                
-                os.makedirs(f'{path}/deskew', exist_ok=True)
-                
-                save_image(deskew_image, f'deskew_{name}', f'{path}/deskew/')
-                
-                print(f"deskew_{name} saved")
-                
-                print(f"Duration: {time.perf_counter() - t0:.3f} s")
-                print(" ")
+                    file_path = os.path.join(path, f'{name}.tif')
+                    
+                    image = tifffile.imread(file_path)
+                    
+                    print("oppened")
+                    
+                    #
+                    # Deskew
+                    #
+                    
+                    px_shift = px_shift_calculation(aspect_ratio, angle = 40, angle_unit = "deg")
+                    
+                    deskew_image = deskew_numpy(image,px_shift_y=px_shift)
+                    
+                    print("deskewed")
+                    
+                    #
+                    # Saving
+                    #
+                    
+                    os.makedirs(f'{path}/deskew', exist_ok=True)
+                    
+                    save_image(deskew_image, f'deskew_{name}', f'{path}/deskew/')
+                    
+                    print(f"deskew_{name} saved")
+                    
+                    print(f"Duration: {time.perf_counter() - t0:.3f} s")
+                    print(" ")
+                    
+                except:
+                    print("File doesn't exist")
+                    print(" ")
         

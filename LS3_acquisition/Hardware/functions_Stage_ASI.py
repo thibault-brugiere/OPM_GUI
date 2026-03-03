@@ -57,14 +57,14 @@ class Stage_ASI:
         """
         if axis != 'X' and axis != 'Y' :
             raise NameError("ASI stage: scanning axis not X or Y : {axis}")
-            
-        scan = f'SCAN X={1 if axis == "X" else 2} Y={1 if axis == "Y" else 2} Z=0 F=0'
+        
+        speed = f'{SPEED:.6f}'
         
         commands = ['SCAN X=0 Y=0 Z=0 F=0',
-                    scan,
-                    f'SCANR X={SCANR_start:.6f} Y=-{SCANR_stop:.6f}  R={retrace:.6f}', # Set the start and stop position and the speed for the fast scanning axis
+                    f'SCAN X={1 if axis == "X" else 2} Y={1 if axis == "Y" else 2} Z=0 F=0',
+                    f'SCANR X={SCANR_start:.6f} Y={SCANR_stop:.6f}  R={retrace}', # Set the start and stop position and the speed for the fast scanning axis
                     f'SCANV X={SCANV_start:.6f} Y={SCANV_stop:.6f} Z={SCANV_number_of_lines:.6f}', # same for the slow axis
-                    f'SPEED X={SPEED:.8f}']
+                    f'SPEED X={speed if axis == "X" else 5.745920} Y={speed if axis == "Y" else 5.745920}']
         
         for command in commands:
             response = serial_port.send_command_response(command, self.port)
@@ -75,12 +75,7 @@ class Stage_ASI:
                 
     def start_scan(self):
         """
-        Star the scan if it is not running, stop ifit is
-
-        Returns
-        -------
-        None.
-
+        Start the scan if it is not running
         """
         if not self._is_moving() :
             response = serial_port.send_command_response('SCAN', self.port)
@@ -90,6 +85,10 @@ class Stage_ASI:
             raise NameError("ASI stage is actually moving")
             
     def stop_scan(self):
+        """
+        Stop the scan if it is running
+        """
+        
         if self._is_moving():
             response = serial_port.send_command_response('SCAN')
             if not response == ":A" :
@@ -101,8 +100,8 @@ class Stage_ASI:
         or not
         """
         
-        self.set_speed()
         response = serial_port.send_command_response('HALT', self.port)
+        self.set_speed()
         if response == ":A" :
             print("ASI stage: no movement")
         elif response == ":N-21":

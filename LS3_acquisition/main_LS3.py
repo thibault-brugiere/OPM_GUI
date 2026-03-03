@@ -21,9 +21,7 @@ if __name__ == "__main__" and (__package__ is None or __package__ == ""):
     sys.path.insert(0, str(pkg_root))
   
 import math
-import numpy as np
 import os
-from PySide6.QtCore import QThread
 import time
 
 from LS3_acquisition.Config.LS3_config import config
@@ -41,7 +39,7 @@ from LS3_acquisition.Tools.signal_generators.single_channel_ls3 import generate_
 
 
 class Light_sheet_stabilized_scanning:
-    def __init__(self, hcams=None, filterwheel = None, frequency=1e5, scanning_axis = 'X'):
+    def __init__(self, hcams=None, filterwheel = None, frequency=1e5, scanning_axis = 'Y'):
         
         print('[Main LS3] Start Light sheet stabilized stage scanning')
         
@@ -104,6 +102,7 @@ class Light_sheet_stabilized_scanning:
         """
         self.list_volume_tensions_library = []
         self.volume_duration = 0
+        speeds = []
         for idx in range(len(self.config.experiment.channels)) :
             self.list_volume_tensions_library.append(
                 generate_channel_signals_LS3(self.config.cameras,
@@ -113,8 +112,10 @@ class Light_sheet_stabilized_scanning:
                                              idx,
                                              frequency = self.frequency))
             self.volume_duration += len(self.list_volume_tensions_library[idx]['tensions_galvo']) / self.frequency
-            
-        print(f'[MAIN LS3] SPEED for the first channel : {self.list_volume_tensions_library[0]["stage_speed_mm_s"]:4f} mm/s')
+            speeds.append(f'{self.list_volume_tensions_library[idx]["stage_speed_mm_s"]:5f}')
+        
+        print(f'[MAIN LS3] SPEED for channels are : {speeds} mm/s')
+        # print(f'[MAIN LS3] SPEED for the first channel : {self.list_volume_tensions_library[0]["stage_speed_mm_s"]:4f} mm/s')
         print("[Main LS3] channel signals generated")
         
     def initialize_cameras(self):
@@ -176,8 +177,7 @@ class Light_sheet_stabilized_scanning:
         if self.filterwheel is None :
             self.filterwheel = FilterWheel()
             self.filterwheel.connect()
-            # self.filterwheel.home()
-            # TODO à décommenter ensuite
+            self.filterwheel.home()
             print("[Main LS3] filter wheel initialized")
         else:
             if not self.filterwheel.connected :
@@ -197,20 +197,36 @@ class Light_sheet_stabilized_scanning:
         self.stage = Stage_ASI(port = self.config.microscope.stage_port)
         self.state['stage'] = 'ready'
     
-    def _prepare_scan_parameters(self):
+    def _prepare_scan_parameters(self, v_pos = 0.0):
         """
         Prepare variables for scanning
         If there is only one axis, the scanning wil be made in one time
+        
+        Parameters
+        ----------
+        v_pos : float, optionnal
+            position of the stage if there is only one line at a time (for multicolors)
+            
         """
         return {"n_lines" : 1 if self.n_channels == 1 else self.n_lines,
-                "SCANR_start" : 0.0 / 1000,
-                "SCANR_stop" : self.config.experiment.stage_scan_range / 1000, #en mm
-                "SCANV_start" : 0.0 / 1000 if self.n_channels == 1 else 0.0 / 1000,
-                "SCANV_stop" : self.config.experiment.scanV_range / 1000 if self.n_channels == 1 else 0.0 / 1000,
+                "SCANR_start" : - self.config.experiment.stage_scan_range / 2000,
+                "SCANR_stop" : self.config.experiment.stage_scan_range / 2000, #en mm
+                "SCANV_start" : - self.config.experiment.scanV_range / 2000 if self.n_channels == 1 else v_pos / 1000,
+                "SCANV_stop" : self.config.experiment.scanV_range / 2000 if self.n_channels == 1 else v_pos / 1000,
                 "SCANV_lines" : self.n_lines if self.n_channels == 1 else 1,
                 "axis": self.scanning_axis
                 }
-        
+    
+    def _get_v_pos(self):
+        SCANV_start = - self.config.scanV_range / 2
+        SCANV_stop = self.config.scanV_range / 2
+        SCANV_range = SCANV_stop - SCANV_start # Je fais ici comme ça pour si un momejt la fonction fonctionne avec un début et une fin
+        step = SCANV_range / self.n_lines
+        v_positions = []
+        for k in range(self.n_lines):
+            v_positions.append(SCANV_start + step * k)
+        return v_positions
+    
     def run_acquisition(self):    
         if not self._all_ready():
             print(f"[Main LS3] Not ready to start : {self.state}")
@@ -230,14 +246,17 @@ class Light_sheet_stabilized_scanning:
                       'stage': 'moving'
                       }
         
-        scan_parameters = self._prepare_scan_parameters()
-        
-        for line in range(scan_parameters["n_lines"]) :
+        n_lines_at_time = self.n_lines if self.n_channels == 1 else 1
+        v_positions = self._get_v_pos()
+
+        for line in range(n_lines_at_time) :
             
             for chan in range(self.n_channels) :
                 
+                scan_parameters = self._prepare_scan_parameters()
+                
                 # go to the right filter
-                self.filterwheel.moveToFilter(self.config.experiment.channels[chan].filter)
+                self.filterwheel.moveToFilter(self.config.experiment.channels[chan].filter, v_positions[line])
                 
                 # Prepare ni-daq
                 tensions_library = self.list_volume_tensions_library[chan]
@@ -262,21 +281,21 @@ class Light_sheet_stabilized_scanning:
                 
                 self.stage.start_scan()
                 
+                
+                
                 try:
                     while True:
                         images = [w.total_images for w in self.acquisition_workers]
                         if all(v >= self.n_frames for v in images):
                             break
                         time.sleep(0.5)
-
+                        
                 except:
                     print("[INFO] Acquisition interrupted by user.")
                     
-                self.stage.set_speed()
-                
-                self.daq.stop()
-                self.daq.close()
-                      
+        self.stage.set_speed()
+        self.daq.stop()
+        self.daq.close()
         self.stop_all()
         
     def _all_ready(self):
@@ -307,12 +326,6 @@ class Light_sheet_stabilized_scanning:
                       'acquisition_workers' : 'idle',
                       'daq': 'idle'
                       }
-        
-    def worker(self,i):
-        """
-        Return the acquisition worker i to use in other processes
-        """
-        return self.acquisition_workers[i]
 
 ##############################################################################
 
