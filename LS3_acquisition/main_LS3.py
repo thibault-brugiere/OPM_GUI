@@ -177,7 +177,7 @@ class Light_sheet_stabilized_scanning:
         if self.filterwheel is None :
             self.filterwheel = FilterWheel()
             self.filterwheel.connect()
-            self.filterwheel.home()
+            # self.filterwheel.home()
             print("[Main LS3] filter wheel initialized")
         else:
             if not self.filterwheel.connected :
@@ -218,16 +218,35 @@ class Light_sheet_stabilized_scanning:
                 }
     
     def _get_v_pos(self):
-        SCANV_start = - self.config.scanV_range / 2
-        SCANV_stop = self.config.scanV_range / 2
-        SCANV_range = SCANV_stop - SCANV_start # Je fais ici comme ça pour si un momejt la fonction fonctionne avec un début et une fin
-        step = SCANV_range / self.n_lines
-        v_positions = []
-        for k in range(self.n_lines):
-            v_positions.append(SCANV_start + step * k)
+        """
+        For multi color acquisition, calculate oll the position in the slow axis
+        
+
+        Returns
+        -------
+        v_positions : list
+            Positions of the stage in the slow axis
+
+        """
+        if self.n_lines > 1 :
+            SCANV_start = - self.config.experiment.scanV_range / 2
+            SCANV_stop = self.config.experiment.scanV_range / 2
+            SCANV_range = SCANV_stop - SCANV_start # Je fais ici comme ça pour si un momejt la fonction fonctionne avec un début et une fin
+            step = SCANV_range / (self.n_lines - 1)
+            v_positions = []
+            for k in range(self.n_lines):
+                v_positions.append(SCANV_start + step * k)
+        else :
+            v_positions = [0.0]
         return v_positions
     
-    def run_acquisition(self):    
+    def run_acquisition(self):
+        """
+        There are two possibility for the running of the acquisition :
+            -If there is only on channel, the stage scans the entire field of view
+            and trig the ni-dac at each lines
+            -If there are more than 1 channels, the function sets the scan line by line
+        """
         if not self._all_ready():
             print(f"[Main LS3] Not ready to start : {self.state}")
             return
@@ -246,17 +265,18 @@ class Light_sheet_stabilized_scanning:
                       'stage': 'moving'
                       }
         
-        n_lines_at_time = self.n_lines if self.n_channels == 1 else 1
+        lines_to_set = self.n_lines if self.n_channels != 1 else 1
         v_positions = self._get_v_pos()
+        total_volumes = 0
 
-        for line in range(n_lines_at_time) :
+        for line in range(lines_to_set) :
             
             for chan in range(self.n_channels) :
                 
-                scan_parameters = self._prepare_scan_parameters()
+                scan_parameters = self._prepare_scan_parameters(v_positions[line])
                 
                 # go to the right filter
-                self.filterwheel.moveToFilter(self.config.experiment.channels[chan].filter, v_positions[line])
+                self.filterwheel.moveToFilter(self.config.experiment.channels[chan].filter)
                 
                 # Prepare ni-daq
                 tensions_library = self.list_volume_tensions_library[chan]
@@ -281,21 +301,28 @@ class Light_sheet_stabilized_scanning:
                 
                 self.stage.start_scan()
                 
+                # Calculate the number of the volume and the expected frames
                 
+                total_volumes += 1
+                
+                expected_frames = self.config.experiment.n_steps * total_volumes
                 
                 try:
-                    while True:
+                    while True: # Wait until it reach the right number of frames 
                         images = [w.total_images for w in self.acquisition_workers]
-                        if all(v >= self.n_frames for v in images):
+                        if all(v >= expected_frames for v in images):
                             break
-                        time.sleep(0.5)
+                        time.sleep(0.05)
+                    while self.stage._is_moving(): # Wait until stage stops moving 
+                        time.sleep(0.05)
                         
                 except:
                     print("[INFO] Acquisition interrupted by user.")
+                
+                self.daq.close()
+                self.daq.stop()
                     
-        self.stage.set_speed()
-        self.daq.stop()
-        self.daq.close()
+        self.stage.set_speed() # Put back the stage to riginal speed
         self.stop_all()
         
     def _all_ready(self):

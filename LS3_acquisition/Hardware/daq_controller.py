@@ -225,7 +225,7 @@ class NIDAQ_Acquisition_ls3:
         Stops all tasks. Can be restarted by calling arm_task again.
         """
         if self.state != "running" and self.state != "armed":
-            print(f"DAQ not running or armed. Current state: '{self.state}'. Nothing to stop.")
+            # print(f"DAQ not running or armed. Current state: '{self.state}'. Nothing to stop.")
             return
 
         self.task_ao.stop()
@@ -243,8 +243,11 @@ class NIDAQ_Acquisition_ls3:
             self.task_ao.close()
         if self.task_do:
             self.task_do.close()
+        if self.task_di:
+            self.task_di.close()
 
         self.task_ao = None
         self.task_do = None
+        self.task_di = None
 
         self.state = "idle"
