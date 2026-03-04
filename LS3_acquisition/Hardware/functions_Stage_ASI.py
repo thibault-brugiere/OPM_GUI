@@ -77,7 +77,7 @@ class Stage_ASI:
         """
         Start the scan if it is not running
         """
-        if not self._is_moving() :
+        if not self.is_moving() :
             response = serial_port.send_command_response('SCAN', self.port)
             if not response == ":A" :
                 raise NameError(f"ASI stage: scan didn't start: {response}")
@@ -89,7 +89,7 @@ class Stage_ASI:
         Stop the scan if it is running
         """
         
-        if self._is_moving():
+        if self.is_moving():
             response = serial_port.send_command_response('SCAN')
             if not response == ":A" :
                 raise NameError(f"ASI stage: scan stop didn't work: {response}")
@@ -126,7 +126,7 @@ class Stage_ASI:
         command = f'S X={x} Y={y} Z= {z}'
         serial_port.send_command(command, self.port)
     
-    def _is_moving(self):
+    def is_moving(self):
         response = serial_port.send_command_response("STATUS", self.port)
         if response == "N" :
             return False
@@ -137,6 +137,76 @@ class Stage_ASI:
         
     def send_command(self, command):
         return serial_port.send_command_response(command, self.port)
+    
+    def get_position(self):
+        """
+        Return the actual position X Y Z of the stage in µm
+
+        Raises
+        ------
+        NameError
+            If the response from the stage is not in the proper format
+
+        Returns
+        -------
+        TYPE list of float
+            list of the position in X Y Z order
+
+        """
+        response = serial_port.send_command_response("W X Y Z",self.port)
+        pos = response.split()
+        if pos[0] == ":A" :
+            try :
+                for k in range(3):
+                    pos[k+1] = float(pos[k+1]) / 10 #The original position is in 1/10 of a micron
+            except:
+                axis = ["X","Y","Z"]
+                raise NameError(f"ASI stage: {axis[k]} axis position is not a float : -{pos[k+1]}-{type(pos[k+1])}")
+        else:
+            raise NameError("ASI stage: error getting position")
+        
+        return pos[1:4]
+    
+    def go_to_position(self, positions = [0.0,0.0,0.0]):
+        """
+        Go the defined position
+
+        Parameters
+        ----------
+        position : list of float, optional
+            Position to set in X Y Z coordinates in µm. The default is [0.0,0.0,0.0].
+        """
+        if self._test_positions(positions):
+            for k in range(3) : positions[k] *= 10 # The command is in 1/10th of microns
+            serial_port.send_command(f"H X={positions[0]:.6f} Y={positions[1]:.6f} Z={positions[2]:.6f}",
+                                     self.port)
+        else:
+            print("[ASI stage]: wrong position argument")
+        
+    def _test_positions(self, positions):
+        """
+        Test if the posistions argument is the right type and length
+
+        Parameters
+        ----------
+        positions : TYPE
+            positions argument to test, should be list of 3 float of int
+
+        Returns
+        -------
+        bool
+
+        """
+        if type(positions) == list and len(positions) == 3 :
+            for k in range(len(positions)):
+                if type(positions[k]) in [float,int] :
+                    pass
+                else:
+                    return False
+        else:
+            return False
+        
+        return True
     
 """
 ACCEL :

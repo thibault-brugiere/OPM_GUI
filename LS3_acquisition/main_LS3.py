@@ -39,7 +39,7 @@ from LS3_acquisition.Tools.signal_generators.single_channel_ls3 import generate_
 
 
 class Light_sheet_stabilized_scanning:
-    def __init__(self, hcams=None, filterwheel = None, frequency=1e5, scanning_axis = 'Y'):
+    def __init__(self, hcams=None, filterwheel = None, frequency=1e5, scan_axis = 'Y'):
         
         print('[Main LS3] Start Light sheet stabilized stage scanning')
         
@@ -47,7 +47,8 @@ class Light_sheet_stabilized_scanning:
         self.filterwheel = filterwheel
         self.fw_None = True if self.filterwheel is None else False # To properly close the filterwheel
         self.frequency = frequency
-        self.scanning_axis = scanning_axis
+        self.scan_axis = scan_axis
+        self.v_axis = "Y" if self.scan_axis == "X" else "Y"
         
         # Load configuration and get values
         config_path = os.path.join(os.path.dirname(__file__), "Config")
@@ -60,6 +61,7 @@ class Light_sheet_stabilized_scanning:
         self._get_lines()
         self._get_n_steps()
         self.n_frames = self.config.experiment.n_steps * self.n_lines * self.n_channels
+        self.stage_position = [0.0,0.0,0.0]
         
         # Generate list of one tension library per channel
         self._generate_tension_library()
@@ -195,12 +197,14 @@ class Light_sheet_stabilized_scanning:
         
     def configure_stage(self):
         self.stage = Stage_ASI(port = self.config.microscope.stage_port)
+        self.stage_position = self.stage.get_position() # Actual position in XYZ
         self.state['stage'] = 'ready'
     
     def _prepare_scan_parameters(self, v_pos = 0.0):
         """
         Prepare variables for scanning
         If there is only one axis, the scanning wil be made in one time
+        The scanning is made around the center of the stage position when the experiment starts
         
         Parameters
         ----------
@@ -208,19 +212,25 @@ class Light_sheet_stabilized_scanning:
             position of the stage if there is only one line at a time (for multicolors)
             
         """
-        return {"n_lines" : 1 if self.n_channels == 1 else self.n_lines,
-                "SCANR_start" : - self.config.experiment.stage_scan_range / 2000,
-                "SCANR_stop" : self.config.experiment.stage_scan_range / 2000, #en mm
-                "SCANV_start" : - self.config.experiment.scanV_range / 2000 if self.n_channels == 1 else v_pos / 1000,
-                "SCANV_stop" : self.config.experiment.scanV_range / 2000 if self.n_channels == 1 else v_pos / 1000,
+        # Get the original position for each axis
+        v_origin = self.stage_position[["X","Y","Z"].index(self.v_axis)]
+        scan_origin = self.stage_position[["X","Y","Z"].index(self.scan_axis)]
+        
+        # for each axis, the scan is made in the original position +/- the scan_range / 2 
+        
+        return {
+                "SCANR_start" : (- self.config.experiment.stage_scan_range / 2 + scan_origin) / 1000,
+                "SCANR_stop" : (self.config.experiment.stage_scan_range / 2 + scan_origin) / 1000, #en mm
+                "SCANV_start" : (- self.config.experiment.scanV_range / 2 + v_origin) / 1000 if self.n_channels == 1 else v_pos / 1000,
+                "SCANV_stop" : (self.config.experiment.scanV_range / 2 + v_origin) / 1000 if self.n_channels == 1 else v_pos / 1000,
                 "SCANV_lines" : self.n_lines if self.n_channels == 1 else 1,
-                "axis": self.scanning_axis
+                "axis": self.scan_axis
                 }
     
     def _get_v_pos(self):
         """
         For multi color acquisition, calculate oll the position in the slow axis
-        
+        The scanning is made around the center of the stage position when the experiment starts
 
         Returns
         -------
@@ -229,8 +239,9 @@ class Light_sheet_stabilized_scanning:
 
         """
         if self.n_lines > 1 :
-            SCANV_start = - self.config.experiment.scanV_range / 2
-            SCANV_stop = self.config.experiment.scanV_range / 2
+            v_origin = self.stage_position[["X","Y","Z"].index(self.v_axis)]
+            SCANV_start = - self.config.experiment.scanV_range / 2 + v_origin
+            SCANV_stop = self.config.experiment.scanV_range / 2 + v_origin
             SCANV_range = SCANV_stop - SCANV_start # Je fais ici comme ça pour si un momejt la fonction fonctionne avec un début et une fin
             step = SCANV_range / (self.n_lines - 1)
             v_positions = []
@@ -265,7 +276,7 @@ class Light_sheet_stabilized_scanning:
                       'stage': 'moving'
                       }
         
-        lines_to_set = self.n_lines if self.n_channels != 1 else 1
+        lines_to_set = self.n_lines if self.n_channels != 1 else 1 #If the is only one channel, the scanning is made in one step
         v_positions = self._get_v_pos()
         total_volumes = 0
 
@@ -313,7 +324,7 @@ class Light_sheet_stabilized_scanning:
                         if all(v >= expected_frames for v in images):
                             break
                         time.sleep(0.05)
-                    while self.stage._is_moving(): # Wait until stage stops moving 
+                    while self.stage.is_moving(): # Wait until stage stops moving 
                         time.sleep(0.05)
                         
                 except:
@@ -323,6 +334,7 @@ class Light_sheet_stabilized_scanning:
                 self.daq.stop()
                     
         self.stage.set_speed() # Put back the stage to riginal speed
+        self.stage.go_to_position(self.stage_position)
         self.stop_all()
         
     def _all_ready(self):
