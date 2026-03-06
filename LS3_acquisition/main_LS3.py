@@ -48,7 +48,7 @@ class Light_sheet_stabilized_scanning:
         self.fw_None = True if self.filterwheel is None else False # To properly close the filterwheel
         self.frequency = frequency
         self.scan_axis = scan_axis
-        self.v_axis = "Y" if self.scan_axis == "X" else "Y"
+        self.v_axis = "Y" if self.scan_axis == "X" else "X"
         
         # Load configuration and get values
         config_path = os.path.join(os.path.dirname(__file__), "Config")
@@ -219,8 +219,8 @@ class Light_sheet_stabilized_scanning:
         # for each axis, the scan is made in the original position +/- the scan_range / 2 
         
         return {
-                "SCANR_start" : (- self.config.experiment.stage_scan_range / 2 + scan_origin) / 1000,
-                "SCANR_stop" : (self.config.experiment.stage_scan_range / 2 + scan_origin) / 1000, #en mm
+                "SCANR_start" : (self.config.experiment.stage_scan_range / 2 + scan_origin) / 1000,
+                "SCANR_stop" : (-self.config.experiment.stage_scan_range / 2 + scan_origin) / 1000, #en mm
                 "SCANV_start" : (- self.config.experiment.scanV_range / 2 + v_origin) / 1000 if self.n_channels == 1 else v_pos / 1000,
                 "SCANV_stop" : (self.config.experiment.scanV_range / 2 + v_origin) / 1000 if self.n_channels == 1 else v_pos / 1000,
                 "SCANV_lines" : self.n_lines if self.n_channels == 1 else 1,
@@ -238,8 +238,8 @@ class Light_sheet_stabilized_scanning:
             Positions of the stage in the slow axis
 
         """
+        v_origin = self.stage_position[["X","Y","Z"].index(self.v_axis)]
         if self.n_lines > 1 :
-            v_origin = self.stage_position[["X","Y","Z"].index(self.v_axis)]
             SCANV_start = - self.config.experiment.scanV_range / 2 + v_origin
             SCANV_stop = self.config.experiment.scanV_range / 2 + v_origin
             SCANV_range = SCANV_stop - SCANV_start # Je fais ici comme ça pour si un momejt la fonction fonctionne avec un début et une fin
@@ -248,7 +248,7 @@ class Light_sheet_stabilized_scanning:
             for k in range(self.n_lines):
                 v_positions.append(SCANV_start + step * k)
         else :
-            v_positions = [0.0]
+            v_positions = [v_origin]
         return v_positions
     
     def run_acquisition(self):
