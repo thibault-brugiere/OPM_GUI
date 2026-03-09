@@ -6,17 +6,37 @@
             "vchipsize": 2368,
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
-            "hsize": 1024,
-            "hpos": 1704,
-            "vsize": 1024,
-            "vpos": 672,
+            "hsize": 2048,
+            "hpos": 1192,
+            "vsize": 2048,
+            "vpos": 160,
             "exposure_time": 0.01,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
-            "image_readout_time": 0.003800727272727273
+            "image_readout_time": 0.007542981818181819
         }
     },
     "channels": {
+        "channel_BFP": {
+            "channel_id": "BFP",
+            "is_active": true,
+            "channel_order": null,
+            "laser_is_active": {
+                "405": true,
+                "488": false,
+                "561": false,
+                "640": false
+            },
+            "laser_power": {
+                "405": 11,
+                "488": 0,
+                "561": 0,
+                "640": 0
+            },
+            "filter": "BFP",
+            "camera": 0,
+            "exposure_time": 10.0
+        },
         "channel_GFP": {
             "channel_id": "GFP",
             "is_active": true,
@@ -34,26 +54,6 @@
                 "640": 0
             },
             "filter": "GFP",
-            "camera": 0,
-            "exposure_time": 10.0
-        },
-        "channel_CY3.5": {
-            "channel_id": "CY3.5",
-            "is_active": true,
-            "channel_order": null,
-            "laser_is_active": {
-                "405": false,
-                "488": false,
-                "561": true,
-                "640": false
-            },
-            "laser_power": {
-                "405": 0,
-                "488": 0,
-                "561": 5,
-                "640": 0
-            },
-            "filter": "CY3.5",
             "camera": 0,
             "exposure_time": 10.0
         }
