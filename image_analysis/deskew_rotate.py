@@ -55,6 +55,7 @@ def rotate_about_x_physical(volume_zyx: np.ndarray,
                             dy_um: float,
                             dz_um: float,
                             theta_deg: float,
+                            y_original_size: float = None,
                             order: int = 1,
                             cval: float = 0.0) -> np.ndarray:
     """
@@ -73,6 +74,8 @@ def rotate_about_x_physical(volume_zyx: np.ndarray,
         Spacing between Z planes in micrometers.
     theta_deg : float
         Rotation angle in degrees (positive/negative per your convention).
+    y_original_size: int, optionnal
+        Original Y size before deskew.
     order : int
         Interpolation order for ndimage.affine_transform (1 = linear, 3 = cubic).
         For speed + low ringing, order=1 is recommended.
@@ -140,8 +143,11 @@ def rotate_about_x_physical(volume_zyx: np.ndarray,
     max_zy = rotated_corners.max(axis=0)
     
     # out_Z = int(np.ceil(max_zy[0] - min_zy[0] + 1))
-    out_Z = int(np.ceil(((Y - 1) * dy_um * abs(np.cos(theta))) / dz_um)) + 1
-    print(f'out_Z : {out_Z}')
+    if y_original_size is not None :
+        out_Z = int(np.ceil(((y_original_size - 1) * dy_um * abs(np.cos(theta))) / dz_um)) + 1
+    else:
+        out_Z = Z
+        
     out_Y = int(np.ceil(max_zy[1] - min_zy[1] + 1))
     out_X = X
     
@@ -196,10 +202,13 @@ def deskew_and_rotate_opm(volume_zyx: np.ndarray,
     np.ndarray
         Deskewed + rotated volume.
     """
+    
+    _, size_y, _ = volume_zyx.shape
+    
     v = _shear_integer_y(volume_zyx, shift_y_px_per_plane)
     # Rotation changes the "apparent" FOV; keeping same shape is simplest/fastest.
     # If you want a larger canvas to avoid cropping, tell me and I’ll adapt.
-    v = rotate_about_x_physical(v, dy_um=dy_um, dz_um=dz_um, theta_deg=theta_deg, order=order, cval=0.0)
+    v = rotate_about_x_physical(v, dy_um=dy_um, dz_um=dz_um, theta_deg=theta_deg, order=order, cval=0.0, y_original_size = size_y)
     return v
 
 
@@ -216,7 +225,7 @@ if __name__ == '__main__':
     theta = -40
 
     folder = Path(r"D:\Projets_Python\OPM_GUI\Images\20260304_115005_LS3_Beads_170µm_GFP")
-    filename = "Position_0000_GFP_file_"
+    filename = "Position_0001_GFP_file_"
     
     for k in range(4):
         file_path = os.path.join(folder, f'{filename}{k:04d}.tif')
@@ -225,21 +234,16 @@ if __name__ == '__main__':
         else:
             volume_zyx = np.concatenate((volume_zyx, tifffile.imread(file_path)))
     
-    print("Images readed")
-    
-    
     # volume_zyx = tifffile.imread(file_path)
-    # print("image oppened")
-    
-    # shear_volume = _shear_integer_y(volume_zyx, shift)
+    print("Images oppened")
+
     out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, dz_um, shift, theta)
-    
     
     print("image deskewed_rotated")
     
     # out_volume = shear_volume
     print("image deskew resampled")
     
-    output_file_path = f'{folder}/test_04_{filename}.tif'
+    output_file_path = f'{folder}/dekew-rotate_{filename}.tif'
     tifffile.imwrite(output_file_path, out_volume, compression='zlib')
     print("image saved")
