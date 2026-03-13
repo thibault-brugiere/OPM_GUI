@@ -71,32 +71,31 @@ def _shear_integer_y(volume: np.ndarray, shift_y_px_per_plane: int) -> np.ndarra
     np.ndarray
         Sheared volume of shape (Z, Y + (Z - 1)*abs(shift), X).
     """
-    
-    if volume_zyx.ndim != 3:
+    if volume.ndim != 3:
         raise ValueError("Expected a 3D array (Z, Y, X).")
 
-    z_size, y_size, x_size = volume_zyx.shape
+    z_size, y_size, x_size = volume.shape
     shift = int(shift_y_px_per_plane)
     if  shift == 0:
-        return volume_zyx.copy()
+        return volume.copy()
 
     pad_y = z_size * abs(shift)
-    out = np.zeros((z_size, y_size + pad_y, x_size), dtype=volume_zyx.dtype)
+    out = np.zeros((z_size, y_size + pad_y, x_size), dtype=volume.dtype)
 
     if shift > 0:
         for z in range(z_size):
             y0 = z * shift
-            out[z, y0:y0 + y_size, :] = volume_zyx[z]
+            out[z, y0:y0 + y_size, :] = volume[z]
     else:
         # shift negative: start near the bottom
         shift = -shift
         for z in range(z_size):
             y0 = pad_y - z * shift
-            out[z, y0:y0 + y_size, :] = volume_zyx[z]
+            out[z, y0:y0 + y_size, :] = volume[z]
 
     return out
 
-def rotate_about_x_physical(volume_zyx: np.ndarray,
+def rotate_about_x_physical(volume: np.ndarray,
                             dy_um: float,
                             dz_um: float,
                             theta_deg: float,
@@ -148,7 +147,7 @@ def rotate_about_x_physical(volume_zyx: np.ndarray,
         Rotated volume with tight output canvas.
     """
     
-    if volume_zyx.ndim != 3:
+    if volume.ndim != 3:
         raise ValueError("Expected a 3D array with shape (Z, Y, X).")
     if dy_um <= 0 :
         raise ValueError("dy_um must be > 0.")
@@ -157,7 +156,7 @@ def rotate_about_x_physical(volume_zyx: np.ndarray,
     if order not in (0, 1, 2, 3, 4, 5):
         raise ValueError("order must be an integer between 0 and 5.")    
         
-    z_size, y_size, x_size = volume_zyx.shape
+    z_size, y_size, x_size = volume.shape
     theta = np.deg2rad(-theta_deg)
 
     cos_theta = np.cos(theta)
@@ -221,7 +220,7 @@ def rotate_about_x_physical(volume_zyx: np.ndarray,
     offset = center_in - forward_3d  @ center_out
     
     rotated = ndimage.affine_transform(
-        volume_zyx,
+        volume,
         matrix=forward_3d ,
         offset=offset,
         output_shape=output_shape,
@@ -234,7 +233,7 @@ def rotate_about_x_physical(volume_zyx: np.ndarray,
     return rotated
 
 def deskew_and_rotate_opm(
-        volume_zyx: np.ndarray,
+        volume: np.ndarray,
         dy_um: float,
         aspect_ratio : float,
         theta_deg: float,
@@ -246,7 +245,7 @@ def deskew_and_rotate_opm(
 
     Parameters
     ----------
-    volume_zyx : np.ndarray
+    volume : np.ndarray
         Input volume of shape (Z, Y, X).
     dy_um : float
         Pixel size along Y in micrometers.
@@ -267,13 +266,14 @@ def deskew_and_rotate_opm(
         Deskewed and rotated volume.
     """
     
-    _, size_y, _ = volume_zyx.shape
+    _, size_y, _ = volume.shape
+    
     
     dz_um = dy_um * aspect_ratio
     
     shift_y_px_per_plane = _px_shift_calculation(aspect_ratio, theta_deg, angle_unit = "deg")
     
-    sheared = _shear_integer_y(volume_zyx, shift_y_px_per_plane)
+    sheared = _shear_integer_y(volume, shift_y_px_per_plane)
 
     rotated = rotate_about_x_physical(
         sheared,
@@ -295,7 +295,7 @@ if __name__ == '__main__':
     theta = 40
     aspect_ratio = 3.3564
 
-    folder = Path(r"D:\Projets_Python\OPM_GUI\Images\20260304_115005_LS3_Beads_170µm_GFP")
+    folder = Path(r"D:\Projets_Python\OPM_GUI\Images\20260313_TestLS_Grid\20260313_115359_Billes_170nm_LS3_300um")
     filename = "Position_0000_GFP_file_"
     
     for k in range(4):
@@ -304,17 +304,26 @@ if __name__ == '__main__':
             volume_zyx = tifffile.imread(file_path)
         else:
             volume_zyx = np.concatenate((volume_zyx, tifffile.imread(file_path)))
+            
+        print(f'\rImage {k:04d} / 36 oppened', end = " ")
+            
+    # filename = "GFP_volume_0000"
+    # file_path = os.path.join(folder, f'{filename}.tif')
+    # volume_zyx = tifffile.imread(file_path)
     
     # volume_zyx = tifffile.imread(file_path)
     print("Images oppened")
+    
+    for k in range(2):
+        volume_zyx_deskew = volume_zyx[:, :, k*256:(k+1)*256]
 
-    out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
-    
-    print("image deskewed_rotated")
-    
-    # out_volume = shear_volume
-    print("image deskew resampled")
-    
-    output_file_path = f'{folder}/dekew-rotate_{filename}.tif'
-    tifffile.imwrite(output_file_path, out_volume, compression='zlib')
+        if k == 0 :
+            out_volume = deskew_and_rotate_opm(volume_zyx_deskew, dy_um, aspect_ratio, theta)
+        else:
+            out_volume = np.concat((out_volume, deskew_and_rotate_opm(volume_zyx_deskew, dy_um, aspect_ratio, theta)),axis=2)
+        
+        print(f"image deskewed_rotated : {k}/7")
+        
+    output_file_path = f'{folder}/dekew-rotate_{filename}total.tif'
+    tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
     print("image saved")
