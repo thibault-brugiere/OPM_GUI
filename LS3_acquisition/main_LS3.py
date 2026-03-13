@@ -90,12 +90,19 @@ class Light_sheet_stabilized_scanning:
         self.config.experiment.n_steps = 1 + int(round(self.config.experiment.stage_scan_range / self.config.experiment.step_size))
         
     def _get_lines(self):
-        field_size = self.config.cameras[0].sample_pixel_size * self.config.cameras[0].hsize
+        sample_pixel_size = self.config.cameras[0].sample_pixel_size
+        hsize = self.config.cameras[0].hsize
+        field_size = sample_pixel_size * hsize
         scanV_size = self.config.experiment.scanV_range
         scanV_overlap = self.config.experiment.scanV_overlap
-        fied_overlap = scanV_overlap * field_size / 100
+        fied_overlap = scanV_overlap * field_size
         
-        self.n_lines = math.ceil(scanV_size / (field_size - fied_overlap))        
+        self.n_lines = math.ceil(scanV_size / (field_size - fied_overlap))
+        
+        if self.n_lines >= 2 : # Calculate the final overlap between two frames
+            final_field_overlap = (field_size * self.n_lines - scanV_size) / (self.n_lines - 1)
+            self.config.experiment.scanV_overlap = final_field_overlap / hsize
+            
     
     def _generate_tension_library(self):
         """

@@ -7,7 +7,6 @@ Created on Wed Jul 16 16:30:29 2025
 pyside6-uic widget/ui_mda.ui -o widget/ui_mda.py
 """
 from collections import deque
-import cv2
 import numpy as np
 import os
 import sys
@@ -24,13 +23,12 @@ if __name__ == "__main__":
     parent_dir = os.path.dirname(current_dir)
     sys.path.append(parent_dir)
 
-from image_analysis.Deskew_Numpy import deskew_numpy, compute_px_shift, mean_projection_ignore_zeros
-from multidimensional_acquisition.Live_Viewer.mda_manager_functions import update_timelapse_strip
-from multidimensional_acquisition.Live_Viewer.mda_manager_functions import auto_contrast
-from multidimensional_acquisition.Live_Viewer.mda_manager_functions import get_timeline_frame_width
-from multidimensional_acquisition.Live_Viewer.mda_manager_functions import LookUpTables
+from image_analysis.Deskew_Numpy import deskew_numpy, compute_px_shift
+from LS3_acquisition.Live_Viewer.ls3_manager_functions import auto_contrast
+from LS3_acquisition.Live_Viewer.ls3_manager_functions import LookUpTables
+from LS3_acquisition.Live_Viewer.ls3_manager_functions import create_ls3_image, add_image, crop_zoom_image
 
-from widget.ui_mda import Ui_Form
+from widget.ui_ls3 import Ui_Form
 
 
 class mda_mannager(QWidget, Ui_Form):
@@ -39,11 +37,11 @@ class mda_mannager(QWidget, Ui_Form):
     """
     channel_received = Signal(tuple)
     
-    def __init__(self, mda, parent=None, max_preview_size = 2):
+    def __init__(self, ls3, parent=None, max_preview_size = 2):
         
         super().__init__(parent)
         self.setupUi(self)
-        self.mda = mda
+        self.ls3 = ls3
         self.max_preview_size = max_preview_size # Maximum size of preview image in gigabite 
         self.on_init()
         
@@ -108,12 +106,7 @@ class mda_mannager(QWidget, Ui_Form):
         # Images to display
         #
         
-        self.project_max_front = {key: None for key in self.channel_names}
-        self.project_max_side  = {key: None for key in self.channel_names}
-        self.project_mean_front = {key: None for key in self.channel_names}
-        self.project_mean_side  = {key: None for key in self.channel_names}
-        self.strip_max = {key: None for key in self.channel_names}
-        self.strip_mean = {key: None for key in self.channel_names}
+        self.create_preview_image()
         
         #
         # Values for the interface
@@ -123,8 +116,6 @@ class mda_mannager(QWidget, Ui_Form):
         self.min_grayscale = {key : 0 for key in self.channel_names}
         self.max_grayscale = {key : 65535 for key in self.channel_names}
         
-        self.zoom = 1
-        self.projection = "max"
         self.timeline_position = 1
         self.timeline_frame_width = 128 # width of an image for the
         self.palettes = LookUpTables().palettes
@@ -151,8 +142,9 @@ class mda_mannager(QWidget, Ui_Form):
         ## Connection between functions and buttons ##
         ##############################################
         
-        self.cb_projection.currentIndexChanged.connect(self.cb_projection_index_changed)
         self.cb_lut.currentIndexChanged.connect(self.cb_lut_index_changed)
+        self.sb_image_zoom.currentValieChanged.connect(self.sb_image_zoom_value_changed)
+        
         self.cb_image_channel.currentIndexChanged.connect(self.cb_image_channel_index_changed)
         
         self.pb_grayscale_min_max.clicked.connect(self.pb_grayscale_min_max_clicked)
@@ -161,7 +153,9 @@ class mda_mannager(QWidget, Ui_Form):
         self.sb_grayscale_min.valueChanged.connect(self.sb_grayscale_value_changed)
         self.sb_grayscale_max.valueChanged.connect(self.sb_grayscale_value_changed)
         
-        self.sb_timeline.valueChanged.connect(self.sb_timeline_value_changed)
+        self.slider_x_position.valueChanged.connect(self.slider_x_position_value_changed)
+        self.slider_y_position.valueChanged.connect(self.slider_y_position_value_cganged)
+        self.label_mainImage.wheelScrolled.connect(self.label_mainImage_scrolled)
         
         self.pb_stop.clicked.connect(self.pb_stop_clicked)
         self.pb_hold.clicked.connect(self.pb_hold_clicked)
@@ -200,16 +194,11 @@ class mda_mannager(QWidget, Ui_Form):
         self.cb_lut.setCurrentText(self.LUT[self.channel_display])
         self.cb_lut.blockSignals(False)
         
-    def cb_projection_index_changed(self):
-        if self.cb_projection.currentText() == "Mean":
-            self.projection = "mean"
-        elif self.cb_projection.currentText() == "Maximum":
-            self.projection= "max"
-            
-        self.update_preview()
-        
     def cb_lut_index_changed(self):
         self.LUT[self.channel_display] = self.cb_lut.currentText()
+        self.update_preview()
+        
+    def image_zoom_value_changed(self):
         self.update_preview()
         
     def cb_image_channel_index_changed(self):
@@ -218,22 +207,12 @@ class mda_mannager(QWidget, Ui_Form):
         self.update_preview()
 
     def pb_grayscale_min_max_clicked(self):
-        if self.project_mean_front[self.channel_display] is not None and self.project_max_front[self.channel_display] is not None :
-            if self.projection == "mean" :
-                self.slider_grayscale_min.setValue(np.min(self.project_mean_front[self.channel_display]))
-                self.slider_grayscale_max.setValue(np.max(self.project_mean_front[self.channel_display]))
-                
-            elif self.projection == "max" :
-                self.slider_grayscale_min.setValue(np.min(self.project_max_front[self.channel_display]))
-                self.slider_grayscale_max.setValue(np.max(self.project_max_front[self.channel_display]))
+            self.slider_grayscale_min.setValue(np.min(self.project_max_front[self.channel_display]))
+            self.slider_grayscale_max.setValue(np.max(self.project_max_front[self.channel_display]))
                 
     def pb_grayscale_auto_clicked(self):
-        if self.project_mean_front[self.channel_display] is not None and self.project_max_front[self.channel_display] is not None :
-            if self.projection == "mean" :
-                min_gray, max_gray = auto_contrast(self.project_mean_front[self.channel_display])
-                
-            elif self.projection == "max" :
-                min_gray, max_gray = auto_contrast(self.project_max_front[self.channel_display])
+        if self.project_max_front[self.channel_display] is not None :
+            min_gray, max_gray = auto_contrast(self.project_max_front[self.channel_display])
                 
             self.slider_grayscale_min.setValue(min_gray)
             self.slider_grayscale_max.setValue(max_gray)
@@ -270,14 +249,14 @@ class mda_mannager(QWidget, Ui_Form):
             
         self.update_preview()
         
-    def sb_timeline_value_changed(self):
-        self.timeline_position = self.sb_timeline.value()
+    def slider_x_position_value_changed(self):
+        self.update_preview()
+    
+    def slider_y_position_value_cganged(self):
+        self.update_preview()
         
-        if self.projection == "max":
-            self.display_timelapse_strip(self.strip_max[self.channel_display], self.label_timeline)
-            
-        elif self.projection == "mean":
-            self.display_timelapse_strip(self.strip_mean[self.channel_display], self.label_timeline)
+    def label_mainImage_scrolled(self, delta, x, y):
+        print(f'{delta} {x} {y}')
             
     def pb_stop_clicked(self):
         self.mda.stop_all()
@@ -288,22 +267,22 @@ class mda_mannager(QWidget, Ui_Form):
     def pb_pause_clicked(self):
         self.button_message = "Pause button hasen't been implemented yet"
         
-        
         ###########################################
         ## Functions for displaying informations ##
         ###########################################
         
     def start_acquisition(self):
-        self.mda.initialize_cameras()
-        self.mda.initialize_laser()
-        self.mda.initialize_acquisition_workers()
-        self.mda.initialize_filterwheel()
+        self.ls3.initialize_cameras()
+        self.ls3.initialize_laser()
+        self.ls3.initialize_filterwheel()
         self.set_controller()
-        self.mda.configure_daq()
-        self.mda.initialize_count_worker()
+        self.ls3.configure_daq()
+        self.LS3.configure_stage()
+        self.ls3.initialize_acquisition_workers()
+        self.ls3.initialize_count_worker()
         
         # Lancer l'acquisition dans un thread à part
-        threading.Thread(target=self.mda.run, daemon=True).start()
+        threading.Thread(target=self.ls3.run, daemon=True).start()
         self.info_timer.start(30)
         
         #
@@ -403,7 +382,6 @@ Preview volumes dropped: {self.preview_dropped}
             # Store the latest payload (channel volume + metadata)
             self._pending_payload = (channel, metadata)
             
-    
         # Try to start processing if the worker thread is idle
         self._try_dispatch_processing()
         
@@ -443,20 +421,6 @@ Preview volumes dropped: {self.preview_dropped}
         # Mark busy BEFORE emitting (avoid race if another volume arrives immediately)
         self._processor_busy = True
         self.channel_received.emit(payload)  # queued to ChannelProcessor thread
-        
-    def _append_dropped_placeholders_if_any(self, channel: str):
-        """
-        Append black placeholder frames into the timeline strips for dropped volumes.
-    
-        Notes:
-        - We only append placeholders to the channel that is currently producing projections
-          (because we need the projection shape to create the placeholder).
-        - This is a deliberate simplification for debug: it visually shows that something was missed.
-        """
-        # Determine current projection reference for shape (max/mean front)
-        ref = self.project_max_front.get(channel) if self.project_max_front else None
-        if ref is None:
-            return
     
         # Drain dropped meta queue
         drained = 0
@@ -467,45 +431,10 @@ Preview volumes dropped: {self.preview_dropped}
     
         if drained == 0:
             return
-    
-        # Create one black placeholder (2D) and append it "drained" times
-        placeholder = np.zeros_like(ref, dtype=ref.dtype)
-    
-        for _ in range(drained):
-            self.strip_max[channel] = update_timelapse_strip(self.strip_max[channel], placeholder)
-            self.strip_mean[channel] = update_timelapse_strip(self.strip_mean[channel], placeholder)
-    
+        
     def receive_projections(self, data):
-        # Get the four projections
-        channel = data["metadata"]["channel"]
-        self.project_max_front[channel] = data["max_front"]
-        self.project_max_side[channel]  = data["max_side"]
-        self.project_mean_front[channel] = data["mean_front"]
-        self.project_mean_side[channel]  = data["mean_side"]
-        
-        if self.volumes_recived == 1:
-            self.timeline_frame_width = get_timeline_frame_width(self.project_max_front[channel]) + 2
-        
-        # Calculate the timelaps strip
-        self.strip_max[channel] = update_timelapse_strip(self.strip_max[channel], self.project_max_front[channel])
-        self.strip_mean[channel] = update_timelapse_strip(self.strip_mean[channel], self.project_mean_front[channel])
-        
-        # Mets à jour les réglages de la timeline
-            
-        self.sb_timeline.setMaximum(int(self.volumes_recived))
-        self.slider_timeline.setMaximum(int(self.volumes_recived))
-        
-        if self.timeline_position == int(self.volumes_recived) - 1:
-            self.sb_timeline.setValue(int(self.volumes_recived))
-            
-        # -------------------------------------------
-        # Handle dropped volumes: add black placeholders
-        # -------------------------------------------
-        # If volumes were dropped while processing was busy, we add black frames
-        # to the timeline strip so the user can SEE the drop (debug-friendly).
-        self._append_dropped_placeholders_if_any(channel)
-    
         # Update UI preview
+        self.update_image(data)
         self.update_preview()
     
         # Mark processor idle and immediately process the latest pending volume (if any)
@@ -515,80 +444,14 @@ Preview volumes dropped: {self.preview_dropped}
         self.update_preview()
         
     def update_preview(self):
-        if self.projection == "max":
-            self.display_image(self.project_max_front[self.channel_display])
-            self.display_side_view(self.project_max_side[self.channel_display])
-            self.display_timelapse_strip(self.strip_max[self.channel_display], self.label_timeline)
-            
-        elif self.projection == "mean":
-            self.display_image(self.project_mean_front[self.channel_display])
-            self.display_side_view(self.project_mean_side[self.channel_display])
-            self.display_timelapse_strip(self.strip_mean[self.channel_display], self.label_timeline)
-        
-        
-    def display_image(self, img: np.ndarray):
-        qimg = self.create_preview(img)
-        scaled_qimg = qimg.scaled(self.label_mainImage.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        self.label_mainImage.setPixmap(QPixmap.fromImage(scaled_qimg))
-
-    def display_side_view(self, img: np.ndarray):
-        qimg = self.create_preview(img)
-        scaled_qimg = qimg.scaled(self.label_Image_side.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        self.label_Image_side.setPixmap(QPixmap.fromImage(scaled_qimg))
-    
-    def display_timelapse_strip(self, strip: np.ndarray,label: QObject):
-        """
-        Affiche une portion de la frise temporelle centrée autour de self.timeline_position.
-    
-        strip : np.ndarray
-            Frise entière (hauteur fixe, largeur variable)
-        """
-        if strip is None:
-            return
-    
-        max_display_width = self.label_timeline.width()
-        
-        h, w = strip.shape
-    
-        # Taille d'une "image" dans la frise (en px)
-        image_width = self.timeline_frame_width  # ou fixe à 10 par exemple
-        
-        # Position du bord droit en px (clampée)
-        right_px = min(w, (int(self.timeline_position) + 1) * image_width)
-        left_px  = max(0, right_px - max_display_width)
-    
-        # Tronque la frise à la fenêtre visible
-        visible_strip = strip[:, left_px:right_px]
-        vis_w = visible_strip.shape[1]
-    
-        # Si la bande est trop petite, on complète à gauche avec du noir
-        if vis_w < max_display_width:
-            padded = np.zeros((h, max_display_width), dtype=strip.dtype)
-            if vis_w > 0 :
-                padded[:, -visible_strip.shape[1]:] = visible_strip
-            visible_strip = padded
-    
-        visible_strip = np.ascontiguousarray(visible_strip)
-        qimg = self.create_preview(visible_strip)
-    
-        pixmap = QPixmap.fromImage(qimg)
-        scaled = pixmap.scaled(self.label_timeline.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        self.label_timeline.setPixmap(scaled)
+        qimg = self.create_qimage()
+        qimg.scaled(self.label_mainImage.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.label_mainImage.setPixmap(QPixmap.fromImage(qimg))
         
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        # if self.strip_mean[self.channel_display] is not None:
-        #     self.display_timelapse_strip(self.strip_mean[self.channel_display], self.label_timeline)
-        if self.projection == "max":
-            if (self.project_max_front[self.channel_display] is not None
-                and self.project_max_side[self.channel_display] is not None
-                and self.strip_max[self.channel_display] is not None ):
-                    self.update_preview()
-        if self.projection == "mean":
-            if (self.project_mean_front[self.channel_display] is not None
-                and self.project_mean_side[self.channel_display] is not None
-                and self.strip_mean[self.channel_display] is not None ):
-                    self.update_preview()
+        if self.project_max_front[self.channel_display] is not None :
+                self.update_preview()
     
         #################################
         ## Functions for the interface ##
@@ -607,27 +470,42 @@ Preview volumes dropped: {self.preview_dropped}
     
         # Retourner le temps formaté
         return f"{hours:02d}h {minutes:02d}min {seconds:02d}s {ms:02d} ms"
-        
-    def create_preview(self, frame: np.ndarray, zoom = 1):
-                
-        h , w = frame.shape # get dimensions of the image
+    
+    def create_preview_image(self):
+        preview_image, self.px_shift, self.scanV_overlap = create_ls3_image(self.ls3)
+        self.preview_images = {key: preview_image for key in self.channel_names}
+    
+    def update_image(self, data):
+            
+        self.preview_images[data["channel"]] = add_image(self.preview_image,
+                                                        data["max_front"],
+                                                        data["metadata"],
+                                                        self.px_shift,
+                                                        self.scanV_overlap)
+
+    def create_qimage(self):
+        h_label = self.label_mainImage.height()
+        w_label = self.label_mainImage.width()
         
         #Remove grey value bellow and above a certain value
-        frame = np.clip(frame,self.min_grayscale[self.channel_display] , self.max_grayscale[self.channel_display] )
+        frame = np.clip(self.preview_images[self.channel_display], self.min_grayscale[self.channel_display] , self.max_grayscale[self.channel_display] )
         #Change values between 0 and 255 for displaying
         frame = ((frame - self.min_grayscale[self.channel_display] )* (255/(self.max_grayscale[self.channel_display] - self.min_grayscale[self.channel_display])) ).astype(np.uint8)
         
-        h , w = int(h * zoom ) , int (w * zoom)
-        
-        frame = cv2.resize(frame, (w, h), interpolation=cv2.INTER_LINEAR)
+        frame = crop_zoom_image(frame, # Create the image fitting in the window
+                                self.slider_x_position.value(),
+                                self.slider_y_position.value(),
+                                self.sb_image_zoom.value() / 100,
+                                h_label,
+                                w_label)
 
-        qt_image = QImage(frame.data, w, h, w, QImage.Format_Indexed8)
+        qt_image = QImage(frame.data, w_label, h_label, w_label, QImage.Format_Indexed8)
         qt_image.setColorTable(self.palettes[self.LUT[self.channel_display]])
         return qt_image
     
     
 class ChannelProcessor(QObject):
-    processed = Signal(dict)  # front, side
+    processed = Signal(dict)
 
     def __init__(self, pixel_shift):
         super().__init__()
@@ -638,9 +516,6 @@ class ChannelProcessor(QObject):
         channel, metadata = images
         deskewed_channel = deskew_numpy(channel, px_shift_y=self.pixel_shift)
         data = {"max_front" : np.max(deskewed_channel, axis = 0),
-            "max_side" : np.max(deskewed_channel, axis = 2),
-            "mean_front" : mean_projection_ignore_zeros(deskewed_channel, axis=0),
-            "mean_side" : mean_projection_ignore_zeros(deskewed_channel, axis=2),
             "metadata" : metadata,
         }
         
@@ -657,13 +532,13 @@ if __name__ == '__main__':
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
         
-    from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
+    from LS3_acquisition.main_LS3 import Light_sheet_stabilized_scanning
 
         
-    MDA = MultidimensionalAcquisition()
+    LS3 = Light_sheet_stabilized_scanning()
     app = QApplication(sys.argv)
     
-    editor = mda_mannager(MDA)
+    editor = mda_mannager(LS3)
     editor.show()
-    editor.start_acquisition()
+    # editor.start_acquisition()
     sys.exit(app.exec())
