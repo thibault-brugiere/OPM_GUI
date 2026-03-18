@@ -182,7 +182,7 @@ def generate_channel_signals(cameras, channels, experiment, microscope, channel_
         # Turn laser on during exposure time if it is on
         for i in range(len(laser_active)):
             if laser_active[i]:
-                tensions_laser_blanking_channel[i,start_index : start_index + exposure_time] = True
+                tensions_laser_blanking_channel[i,start_index + step_duration - exposure_time : start_index + step_duration] = True
         
         # Trigger camera during exposure window
         tensions_camera_channel[start_index + step_duration - exposure_time : start_index + step_duration] = True
