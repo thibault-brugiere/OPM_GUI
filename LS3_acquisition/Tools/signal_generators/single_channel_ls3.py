@@ -110,8 +110,8 @@ def generate_channel_signals(cameras, channels, experiment, microscope, channel_
     #
     
         # Convert times to sample units based on the sampling frequency
-    pre_volume_wait = int(np.ceil(laser_response_time_s*frequency)) # Time before the volume in unit of time
-    post_volume_wait = int(np.ceil(max(laser_response_time_s, image_readout_time_s)*frequency)) # Time after the volume in unit of time
+    pre_volume_wait = int(max(np.ceil(laser_response_time_s*frequency),np.ceil(image_readout_time_s*frequency))) # Time before the volume in unit of time
+    post_volume_wait = int(np.ceil(laser_response_time_s*frequency)) # Time after the volume in unit of time
     
     exposure_time = int(np.ceil(channel.exposure_time / 1000 * frequency)) # en unité de temps
     
@@ -185,7 +185,7 @@ def generate_channel_signals(cameras, channels, experiment, microscope, channel_
                 tensions_laser_blanking_channel[i,start_index : start_index + exposure_time] = True
         
         # Trigger camera during exposure window
-        tensions_camera_channel[start_index : start_index + exposure_time] = True
+        tensions_camera_channel[start_index + step_duration - exposure_time : start_index + step_duration] = True
     
     tensions_galvo = np.append(tensions_galvo, tensions_galvo_channel)
     tensions_camera = np.append(tensions_camera, tensions_camera_channel)
