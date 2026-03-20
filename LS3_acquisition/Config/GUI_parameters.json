@@ -7,9 +7,9 @@
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
             "hsize": 2048,
-            "hpos": 1192,
-            "vsize": 2048,
-            "vpos": 160,
+            "hpos": 1000,
+            "vsize": 1024,
+            "vpos": 660,
             "exposure_time": 0.01,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
@@ -35,7 +35,7 @@
             },
             "filter": "BFP",
             "camera": 0,
-            "exposure_time": 10.0
+            "exposure_time": 20.0
         },
         "channel_GFP": {
             "channel_id": "GFP",
@@ -55,7 +55,7 @@
             },
             "filter": "GFP",
             "camera": 0,
-            "exposure_time": 10.0
+            "exposure_time": 20.0
         }
     },
     "experiment": {
@@ -67,8 +67,8 @@
         "mode": "LS3",
         "scanner_position": 0,
         "scan_range": 20.279883589761845,
-        "stage_scan_range": 300,
-        "scanV_range": 300,
+        "stage_scan_range": 500,
+        "scanV_range": 500,
         "scanV_overlap": 0.25,
         "aspect_ratio": 3.3563985247091197,
         "n_steps": 26,

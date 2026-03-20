@@ -4,7 +4,7 @@ Created on Wed Jul 16 16:30:29 2025
 
 @author: tbrugiere
 
-pyside6-uic widget/ui_mda.ui -o widget/ui_mda.py
+pyside6-uic widget/ui_ls3.ui -o widget/ui_ls3.py
 """
 from collections import deque
 import numpy as np
@@ -31,7 +31,10 @@ from LS3_acquisition.Live_Viewer.ls3_manager_functions import create_ls3_image, 
 from widget.ui_ls3 import Ui_Form
 
 
-class mda_mannager(QWidget, Ui_Form):
+# TODO : ajouter le zoom dans l'interface
+# TODO : ajouterun cache 8 bits pour la navigation
+
+class ls3_mannager(QWidget, Ui_Form):
     """
     Show the window to follow rhe multidimensionnal acquisition.
     """
@@ -46,6 +49,7 @@ class mda_mannager(QWidget, Ui_Form):
         self.on_init()
         
     def on_init(self):
+        
         self.setWindowTitle('Multidimensionnal Acquisition')
         self.setWindowFlag(Qt.Window) 
         
@@ -81,10 +85,10 @@ class mda_mannager(QWidget, Ui_Form):
         # Values for displaying, calculation
         #
         
-        self.total_timepoints = self.mda.config.experiment.timepoints
-        self.total_images = self.total_timepoints * self.mda.config.experiment.n_steps * len(self.mda.config.channels)
-        self.total_channels = len(self.mda.config.channels)
-        self.channel_names = [ch.channel_id for ch in self.mda.config.channels]
+        self.total_timepoints = self.ls3.config.experiment.timepoints
+        self.total_images = self.total_timepoints * self.ls3.config.experiment.n_steps * len(self.ls3.config.channels)
+        self.total_channels = len(self.ls3.config.channels)
+        self.channel_names = [ch.channel_id for ch in self.ls3.config.channels]
         self.channel_display = self.channel_names[0]
         
         self._cb_image_channel_set()
@@ -96,8 +100,8 @@ class mda_mannager(QWidget, Ui_Form):
         self.volumes_recived = 0
         
             # Pixel shift between two images of the volume for deskewing
-        self.pixel_shift = compute_px_shift(self.mda.config.experiment.aspect_ratio,
-                                            self.mda.config.microscope.tilt_angle,
+        self.pixel_shift = compute_px_shift(self.ls3.config.experiment.aspect_ratio,
+                                            self.ls3.config.microscope.tilt_angle,
                                             unit = "deg")
         
         self.ellapsed_time = time.time()
@@ -127,6 +131,7 @@ class mda_mannager(QWidget, Ui_Form):
         self._set_progress_bar()
         self._cb_lut_set()
         
+        
         #
         # Connect to the parallel thread that calculate projections
         #
@@ -143,7 +148,7 @@ class mda_mannager(QWidget, Ui_Form):
         ##############################################
         
         self.cb_lut.currentIndexChanged.connect(self.cb_lut_index_changed)
-        self.sb_image_zoom.currentValieChanged.connect(self.sb_image_zoom_value_changed)
+        # self.sb_image_zoom.currentValueChanged.connect(self.sb_image_zoom_value_changed) # TODO à corriger ici
         
         self.cb_image_channel.currentIndexChanged.connect(self.cb_image_channel_index_changed)
         
@@ -160,6 +165,12 @@ class mda_mannager(QWidget, Ui_Form):
         self.pb_stop.clicked.connect(self.pb_stop_clicked)
         self.pb_hold.clicked.connect(self.pb_hold_clicked)
         self.pb_pause.clicked.connect(self.pb_pause_clicked)
+        
+        # Make the preview image updating only after the user finished the change
+        self.update_preview_timer = QTimer(self)
+        self.update_preview_timer.setSingleShot(True)
+        self.update_preview_timer.timeout.connect(self.update_preview)
+        
         
         #####################################
         ## Functions called by the buttons ##
@@ -199,7 +210,7 @@ class mda_mannager(QWidget, Ui_Form):
         self.update_preview()
         
     def image_zoom_value_changed(self):
-        self.update_preview()
+        self.update_preview_timer.start(50)
         
     def cb_image_channel_index_changed(self):
         self.channel_display = self.cb_image_channel.currentText()
@@ -207,12 +218,23 @@ class mda_mannager(QWidget, Ui_Form):
         self.update_preview()
 
     def pb_grayscale_min_max_clicked(self):
-            self.slider_grayscale_min.setValue(np.min(self.project_max_front[self.channel_display]))
-            self.slider_grayscale_max.setValue(np.max(self.project_max_front[self.channel_display]))
+            self.slider_grayscale_min.setValue(np.min(self.preview_images[self.channel_display]))
+            self.slider_grayscale_max.setValue(np.max(self.preview_images[self.channel_display]))
+            
+            # image = self.preview_images[self.channel_display]
+
+            # min_val = np.min(image)
+            # max_val = np.max(image)
+            
+            # print(type(min_val), min_val)
+            # print(type(max_val), max_val)
+            
+            # self.slider_grayscale_min.setValue(int(min_val))
+            # self.slider_grayscale_max.setValue(int(max_val))
                 
     def pb_grayscale_auto_clicked(self):
-        if self.project_max_front[self.channel_display] is not None :
-            min_gray, max_gray = auto_contrast(self.project_max_front[self.channel_display])
+        if self.preview_images[self.channel_display] is not None :
+            min_gray, max_gray = auto_contrast(self.preview_images[self.channel_display])
                 
             self.slider_grayscale_min.setValue(min_gray)
             self.slider_grayscale_max.setValue(max_gray)
@@ -247,19 +269,19 @@ class mda_mannager(QWidget, Ui_Form):
             self.slider_grayscale_min.setValue(self.min_grayscale[self.channel_display])
             self.slider_grayscale_min.blockSignals(False)
             
-        self.update_preview()
+        self.update_preview_timer.start(50)
         
     def slider_x_position_value_changed(self):
-        self.update_preview()
+        self.update_preview_timer.start(50)
     
     def slider_y_position_value_cganged(self):
-        self.update_preview()
+        self.update_preview_timer.start(50)
         
     def label_mainImage_scrolled(self, delta, x, y):
         print(f'{delta} {x} {y}')
             
     def pb_stop_clicked(self):
-        self.mda.stop_all()
+        self.ls3.stop_all()
         
     def pb_hold_clicked(self):
         self.button_message = "Hold button hasen't been implemented yet"
@@ -275,15 +297,15 @@ class mda_mannager(QWidget, Ui_Form):
         self.ls3.initialize_cameras()
         self.ls3.initialize_laser()
         self.ls3.initialize_filterwheel()
-        self.set_controller()
         self.ls3.configure_daq()
-        self.LS3.configure_stage()
+        self.ls3.configure_stage()
         self.ls3.initialize_acquisition_workers()
-        self.ls3.initialize_count_worker()
+        # self.ls3.initialize_count_worker() # TODO ajouter le count_worker
+        self.set_controller()
         
         # Lancer l'acquisition dans un thread à part
-        threading.Thread(target=self.ls3.run, daemon=True).start()
-        self.info_timer.start(30)
+        threading.Thread(target=self.ls3.run_acquisition, daemon=True).start()
+        self.info_timer.start(100)
         
         #
         # Get informations and update the progress bar
@@ -291,22 +313,22 @@ class mda_mannager(QWidget, Ui_Form):
         
     def update_infos(self):
         # try:
-        if self.mda.acquisition_workers[0].start_time is not None :
-            if self.mda.state["daq"] == "idle":
+        if self.ls3.acquisition_workers[0].start_time is not None :
+            if self.ls3.state["daq"] == "idle":
                 pass
             else:
-                self.ellapsed_time = time.time() - self.mda.acquisition_workers[0].start_time
+                self.ellapsed_time = time.time() - self.ls3.acquisition_workers[0].start_time
         else:
             self.ellapsed_time = 0
         # except:
         #     return
             
-        self.images_acquired = self.mda.acquisition_workers[0].total_images
-        self.frames_acquired = self.mda.acquisition_workers[0].total_frames
-        self.frames_dropped = self.mda.acquisition_workers[0].total_dropped
-        self.channels_saved = self.mda.acquisition_workers[0].total_volumes
+        self.images_acquired = self.ls3.acquisition_workers[0].total_images
+        self.frames_acquired = self.ls3.acquisition_workers[0].total_frames
+        self.frames_dropped = self.ls3.acquisition_workers[0].total_dropped
+        self.channels_saved = self.ls3.acquisition_workers[0].total_volumes
         self.label_informations.setText(f"""
-Camera : {self.mda.state["camera"]}, DAQ : {self.mda.state["daq"]}
+Camera : {self.ls3.state["camera"]}, DAQ : {self.ls3.state["daq"]}
 Frames Acquired: {self.frames_acquired}/{self.total_images}
 Frames Dropped: {self.frames_dropped}/{self.total_images}
 Channels Saved: {self.channels_saved}/{self.total_timepoints * self.total_channels}
@@ -336,7 +358,7 @@ Preview volumes dropped: {self.preview_dropped}
         """
         Connect the main acquisition worker to the GUI preview.
         """
-        worker = self.mda.acquisition_workers[0]
+        worker = self.ls3.acquisition_workers[0]
         worker.new_volume_ready.connect(self.handle_new_channel)
         worker.set_preview_callback()
         
@@ -435,7 +457,6 @@ Preview volumes dropped: {self.preview_dropped}
     def receive_projections(self, data):
         # Update UI preview
         self.update_image(data)
-        self.update_preview()
     
         # Mark processor idle and immediately process the latest pending volume (if any)
         self._processor_busy = False
@@ -445,13 +466,12 @@ Preview volumes dropped: {self.preview_dropped}
         
     def update_preview(self):
         qimg = self.create_qimage()
-        qimg.scaled(self.label_mainImage.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.label_mainImage.setPixmap(QPixmap.fromImage(qimg))
         
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        if self.project_max_front[self.channel_display] is not None :
-                self.update_preview()
+        if self.label_mainImage is not None :
+                self.update_preview_timer.start(50)
     
         #################################
         ## Functions for the interface ##
@@ -472,16 +492,18 @@ Preview volumes dropped: {self.preview_dropped}
         return f"{hours:02d}h {minutes:02d}min {seconds:02d}s {ms:02d} ms"
     
     def create_preview_image(self):
-        preview_image, self.px_shift, self.scanV_overlap = create_ls3_image(self.ls3)
-        self.preview_images = {key: preview_image for key in self.channel_names}
+        preview_image, self.px_shift, self.scanV_overlap_px = create_ls3_image(self.ls3)
+        self.preview_images = {key: preview_image.copy() for key in self.channel_names}
     
     def update_image(self, data):
+        
+        channel = data["metadata"]["channel"]
             
-        self.preview_images[data["channel"]] = add_image(self.preview_image,
+        self.preview_images[channel] = add_image(self.preview_images[channel],
                                                         data["max_front"],
                                                         data["metadata"],
                                                         self.px_shift,
-                                                        self.scanV_overlap)
+                                                        self.scanV_overlap_px)
 
     def create_qimage(self):
         h_label = self.label_mainImage.height()
@@ -489,19 +511,20 @@ Preview volumes dropped: {self.preview_dropped}
         
         #Remove grey value bellow and above a certain value
         frame = np.clip(self.preview_images[self.channel_display], self.min_grayscale[self.channel_display] , self.max_grayscale[self.channel_display] )
+
         #Change values between 0 and 255 for displaying
+
         frame = ((frame - self.min_grayscale[self.channel_display] )* (255/(self.max_grayscale[self.channel_display] - self.min_grayscale[self.channel_display])) ).astype(np.uint8)
-        
         frame = crop_zoom_image(frame, # Create the image fitting in the window
                                 self.slider_x_position.value(),
-                                self.slider_y_position.value(),
-                                self.sb_image_zoom.value() / 100,
+                                100 - self.slider_y_position.value(), # To inverse the axis
+                                0.1, #self.sb_image_zoom.value() / 100, # TODO rempler ici quand la sb sera bonne
                                 h_label,
                                 w_label)
-
+        
         qt_image = QImage(frame.data, w_label, h_label, w_label, QImage.Format_Indexed8)
         qt_image.setColorTable(self.palettes[self.LUT[self.channel_display]])
-        return qt_image
+        return qt_image.copy()
     
     
 class ChannelProcessor(QObject):
@@ -516,10 +539,19 @@ class ChannelProcessor(QObject):
         channel, metadata = images
         deskewed_channel = deskew_numpy(channel, px_shift_y=self.pixel_shift)
         data = {"max_front" : np.max(deskewed_channel, axis = 0),
-            "metadata" : metadata,
-        }
+                "metadata" : metadata,
+                }
         
         self.processed.emit(data)
+        
+"""
+metadata = {
+    "file_id" : file_id,
+    "volume_id": volume_id,
+    "channel": current_channel,
+    "shape": current_buffer.shape
+}
+"""
         
         
 ###############################################################################
@@ -538,7 +570,9 @@ if __name__ == '__main__':
     LS3 = Light_sheet_stabilized_scanning()
     app = QApplication(sys.argv)
     
-    editor = mda_mannager(LS3)
+    editor = ls3_mannager(LS3)
+
     editor.show()
-    # editor.start_acquisition()
+    
+    editor.start_acquisition()
     sys.exit(app.exec())

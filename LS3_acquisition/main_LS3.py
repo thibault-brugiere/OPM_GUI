@@ -97,13 +97,13 @@ class Light_sheet_stabilized_scanning:
         scanV_overlap = self.config.experiment.scanV_overlap
         fied_overlap = scanV_overlap * field_size
         
-        self.n_lines = math.ceil(scanV_size / (field_size - fied_overlap))
-        
-        if self.n_lines >= 2 : # Calculate the final overlap between two frames
+        if field_size < scanV_size :
+            self.n_lines = math.ceil(scanV_size / (field_size - fied_overlap))
             final_field_overlap = (field_size * self.n_lines - scanV_size) / (self.n_lines - 1)
             self.config.experiment.scanV_overlap = final_field_overlap / hsize
-            
-    
+        else :
+            self.n_lines = 1
+
     def _generate_tension_library(self):
         """
         Generate liste of tension libraries per channel for ni-dac controll

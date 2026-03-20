@@ -15,6 +15,8 @@ def _calculate_image_size(camera_vsize: int,
                           camera_pixel_size: int,
                           experiment_scan_range: int,
                           experiment_scanV_range: int,
+                          scanV_overlap: float,
+                          n_lines: int,
                           experiment_aspect_ratio: float,
                           microscope_tilt_angle: float,
                           ):
@@ -36,6 +38,10 @@ def _calculate_image_size(camera_vsize: int,
         size of the imaging field in the scanning axis (scanR axis)
     experiment_scanV_range : int
         size of the imaging field orthogonal to the scanning axis (scanV axis)
+    scanV_overlap : float between 0 and 1
+        percentage of overlapping between two lines
+    n_lines : int
+        number of lines in the experiment
     experiment_aspect_ratio : float
         pixel ratio between the z axis and xy axis of the image voxels
     microscope_tilt_angle : float (in degrees)
@@ -47,6 +53,10 @@ def _calculate_image_size(camera_vsize: int,
         horizontal size of the preview imahe
     image_vsize : int
         vertical size of the preview imahe
+    px_shift : int
+        shift in pixels between two images
+    scanV_overlap_px: int
+        overlap between two lines in pixels during the acquisition
     """
     
     angle_rad = np.deg2rad(microscope_tilt_angle)
@@ -55,11 +65,16 @@ def _calculate_image_size(camera_vsize: int,
     step_size = camera_pixel_size * experiment_aspect_ratio / np.sin(angle_rad)
     n_steps = experiment_scan_range / step_size
     
-    image_vsize = camera_vsize + n_steps * px_shift
+    image_vsize = int(camera_vsize + n_steps * px_shift + 1)
     
-    image_hsize= max(math.ceil(experiment_scanV_range / camera_pixel_size), camera_hsize)
+    scanV_overlap_px = scanV_overlap * camera_vsize
     
-    return image_hsize, image_vsize, px_shift
+    if n_lines == 1 :
+        image_hsize = camera_hsize
+    else:
+        image_hsize = (camera_hsize - scanV_overlap_px) * n_lines + scanV_overlap_px
+    
+    return int(image_hsize), int(image_vsize), int(px_shift), int(scanV_overlap_px)
 
 def create_ls3_image(ls3):
     """
@@ -78,24 +93,25 @@ def create_ls3_image(ls3):
     px_shift : int
         distance in pixels between two consecutive image during acquisition
         in the plan of the camera
-    scanV_overlap : float
+    scanV_overlap : int
         overlapping distance between two lines during ls3 acquisition
 
     """
-    hsize, vsize, px_shift = _calculate_image_size(
-        ls3.config.camera.vsize,
-        ls3.congig.camera.hsize,
-        ls3.config.camera.sample_pixel_size,
-        ls3.experiment.stage_scan_range,
-        ls3.experiment.scanV_range,
-        ls3.experiment.aspect_ratio,
-        ls3.microscope.tilt_angle)
     
-    scanV_overlap = ls3.experiment.scanV_overlap
+    hsize, vsize, px_shift, scanV_overlap_px = _calculate_image_size(
+        ls3.config.cameras[0].vsize,
+        ls3.config.cameras[0].hsize,
+        ls3.config.cameras[0].sample_pixel_size,
+        ls3.config.experiment.stage_scan_range,
+        ls3.config.experiment.scanV_range,
+        ls3.config.experiment.scanV_overlap,
+        ls3.n_lines,
+        ls3.config.experiment.aspect_ratio,
+        ls3.config.microscope.tilt_angle)
     
     empty_image = np.zeros((vsize, hsize), dtype=int)
     
-    return empty_image, px_shift, scanV_overlap
+    return empty_image, px_shift, scanV_overlap_px
 
 def _past_max_project(base_image, add_image, x , y):
     """
@@ -112,12 +128,25 @@ def _past_max_project(base_image, add_image, x , y):
     x : int
         Coordonnée X (haut gauche).
     """
-    vsize , hsize = add_image.shape 
+    vsize , hsize = add_image.shape
     
-    base_image[y:y+vsize, x:x+hsize] = np.maximum(
-        base_image[y:y+vsize, x:x+hsize],
-        add_image
-        )
+    x_end = min((x + hsize), base_image.shape[1])
+    y_end = min((y + vsize), base_image.shape[0])
+    
+    copy_h = y_end - y
+    copy_w = x_end - x
+    
+    if copy_h <=0 or copy_w <=0:
+        return base_image
+    
+    # base_image[y:y_end, x:x_end] = np.maximum( # TODO A supprimer
+    #     base_image[y:y_end, x:x_end],
+    #     add_image[:copy_h, :copy_w]
+    #     )
+    
+    dst = base_image[y:y_end, x:x_end]
+    src = add_image[:copy_h, :copy_w]
+    np.maximum(dst, src, out=dst)
     
     return base_image
 
@@ -142,6 +171,8 @@ def add_image(preview_image: np.ndarray,
     px_shift : int
         pixel_shif between two frames of the stack (to calculate the position
                                                     of the image)
+    overlap : int
+        pixels overlapping between the volumes
 
     Returns
     -------
@@ -151,10 +182,9 @@ def add_image(preview_image: np.ndarray,
     """
     # There is 100 images per file, to the total shift is 100 * file_id (file number) * px_shift
     vsize, hsize = image.shape
-    y = px_shift * metadata["file_id"] * px_shift * 100 if "file_id" in metadata else 0
-    x = metadata["volume_id"] * (hsize - overlap) if "vomule_id" in metadata else 0
-    
-    x, y = 0,0
+    y = int(px_shift * metadata["file_id"] * 100) if "file_id" in metadata else 0
+    x = int(metadata["volume_id"] * (hsize - overlap)) #if "vomule_id" in metadata else 0
+
     preview_image = _past_max_project(preview_image, image, x, y)
     return preview_image
 
@@ -164,6 +194,7 @@ def crop_zoom_image(image: np.ndarray,
                     zoom: float,
                     h_label: int,
                     w_label: int,
+                    pad_value:int = 50,
                     ):
     """
     Zoom and crop an image so it fits inside a display window, using normalized
@@ -183,6 +214,8 @@ def crop_zoom_image(image: np.ndarray,
         Height of the target window
     w_label : int
         Width of the target window
+    pad_value : int default 50
+        value between 0 and 250 around the image
 
     Returns
     -------
@@ -190,32 +223,72 @@ def crop_zoom_image(image: np.ndarray,
         Zoomed and Cropped image.
     """
     
+    # Output canvas
+    output = np.full((h_label, w_label), pad_value, dtype=np.uint8)
+    
+    if image is None or image.size == 0:
+        return output
+    
+    if zoom <= 0:
+        zoom = 1
+    
     x_position = max(0, min(99, x_position))
     y_position = max(0, min(99, y_position))
 
     h, w = image.shape
-    h, w = int(h * zoom ) , int (w * zoom) # Calculate after zoom
-    crop_w, crop_h = min(w_label, w), min(h_label, h)
     
-    max_x0 = w - crop_w
-    max_y0 = h - crop_h
+    # Size of the image after zoom, in display coordinates
+    h_zoom = max(1, int(round(h * zoom)))
+    w_zoom = max(1, int(round(w * zoom)))
+    
+    # Visible area inside the zoomed image
+    crop_h =min(h_label, h_zoom)
+    crop_w = min(w_label, w_zoom)
+    
+    if crop_w <= 0 or crop_h <= 0:
+        return output
+
+    # Top-left corner in the zoomed-image coordinates
+    max_x0 = w_zoom - crop_w
+    max_y0 = h_zoom - crop_h
     
     if max_x0 <= 0:
-        x0 = 0
+        x0_zoom = 0
     else:
-        x0 = round((x_position / 99) * max_x0)
-    
+        x0_zoom = math.floor((x_position / 99) * max_x0)
+        
     if max_y0 <= 0:
-        y0 = 0
+        y0_zoom = 0
     else:
-        y0 = round((y_position / 99) * max_y0)
+        y0_zoom = math.floor((y_position / 99) * max_y0)
     
-    x1 = x0 + crop_w
-    y1 = y0 + crop_h
-
-    image = cv2.resize(image, (w, h), interpolation=cv2.INTER_LINEAR)
-
-    return image[y0:y1, x0:x1]
+    x1_zoom = x0_zoom + crop_w
+    y1_zoom = y0_zoom + crop_h
+    
+    # Convert the visible rectangle back to source-image coordinates
+    x0_src = max(0, min(w, int(np.floor(x0_zoom / zoom))))
+    y0_src = max(0, min(h, int(np.floor(y0_zoom / zoom))))
+    x1_src = max(x0_src + 1, min(w, int(np.ceil(x1_zoom / zoom))))
+    y1_src = max(y0_src + 1, min(h, int(np.ceil(y1_zoom / zoom))))
+    
+    roi = image[y0_src:y1_src, x0_src:x1_src]
+    
+    if roi.size == 0 :
+        return output
+    
+    # Resize only the useful ROI to the visible output size
+    if roi.shape[0] == crop_h and roi.shape[1] == crop_w:
+        crop_image = roi
+    else:
+        crop_image = cv2.resize(
+            roi,
+            (crop_w, crop_h),
+            interpolation=cv2.INTER_LINEAR
+        )
+    
+    output[:crop_h, :crop_w] = crop_image
+    
+    return output
     
 def auto_contrast(image: np.ndarray, low_perc: float = 0.5, high_perc: float = 99.5):
     """
