@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'ui_ls3.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.1
+## Created by: Qt User Interface Compiler version 6.9.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -26,17 +26,13 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(876, 754)
+        Form.resize(1147, 1042)
         self.verticalLayout_4 = QVBoxLayout(Form)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
-        self.horizontalSpacer = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.gridLayout.addItem(self.horizontalSpacer, 1, 0, 1, 1)
-
         self.slider_x_position = QSlider(Form)
         self.slider_x_position.setObjectName(u"slider_x_position")
         self.slider_x_position.setMinimum(0)
@@ -56,15 +52,15 @@ class Ui_Form(object):
         self.label_mainImage.setMinimumSize(QSize(512, 256))
         palette = QPalette()
         brush = QBrush(QColor(255, 255, 255, 255))
-        brush.setStyle(Qt.SolidPattern)
-        palette.setBrush(QPalette.Active, QPalette.Base, brush)
+        brush.setStyle(Qt.BrushStyle.SolidPattern)
+        palette.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
         brush1 = QBrush(QColor(76, 76, 76, 255))
-        brush1.setStyle(Qt.SolidPattern)
-        palette.setBrush(QPalette.Active, QPalette.Window, brush1)
-        palette.setBrush(QPalette.Inactive, QPalette.Base, brush)
-        palette.setBrush(QPalette.Inactive, QPalette.Window, brush1)
-        palette.setBrush(QPalette.Disabled, QPalette.Base, brush1)
-        palette.setBrush(QPalette.Disabled, QPalette.Window, brush1)
+        brush1.setStyle(Qt.BrushStyle.SolidPattern)
+        palette.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush1)
+        palette.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
+        palette.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush1)
+        palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush1)
+        palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush1)
         self.label_mainImage.setPalette(palette)
         self.label_mainImage.setAutoFillBackground(True)
         self.label_mainImage.setAlignment(Qt.AlignCenter)
@@ -73,10 +69,6 @@ class Ui_Form(object):
 
 
         self.horizontalLayout.addLayout(self.gridLayout)
-
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout.addItem(self.horizontalSpacer_2)
 
 
         self.verticalLayout_4.addLayout(self.horizontalLayout)
@@ -88,8 +80,8 @@ class Ui_Form(object):
 
         self.verticalLayout_4.addWidget(self.line_4)
 
-        self.horizontalLayout_11 = QHBoxLayout()
-        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
+        self.horizontalLayout_8 = QHBoxLayout()
+        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.verticalLayout_3 = QVBoxLayout()
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.horizontalLayout_6 = QHBoxLayout()
@@ -107,7 +99,23 @@ class Ui_Form(object):
 
         self.horizontalLayout_6.addWidget(self.cb_lut)
 
+        self.label_image_zoom = QLabel(Form)
+        self.label_image_zoom.setObjectName(u"label_image_zoom")
+        self.label_image_zoom.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_6.addWidget(self.label_image_zoom)
+
         self.cb_image_zoom = QComboBox(Form)
+        self.cb_image_zoom.addItem("")
+        self.cb_image_zoom.addItem("")
+        self.cb_image_zoom.addItem("")
+        self.cb_image_zoom.addItem("")
+        self.cb_image_zoom.addItem("")
+        self.cb_image_zoom.addItem("")
+        self.cb_image_zoom.addItem("")
+        self.cb_image_zoom.addItem("")
+        self.cb_image_zoom.addItem("")
+        self.cb_image_zoom.addItem("")
         self.cb_image_zoom.addItem("")
         self.cb_image_zoom.setObjectName(u"cb_image_zoom")
 
@@ -240,7 +248,7 @@ class Ui_Form(object):
         self.verticalLayout_3.addLayout(self.horizontalLayout_5)
 
 
-        self.horizontalLayout_11.addLayout(self.verticalLayout_3)
+        self.horizontalLayout_8.addLayout(self.verticalLayout_3)
 
         self.verticalLayout_7 = QVBoxLayout()
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
@@ -290,10 +298,14 @@ class Ui_Form(object):
         self.verticalLayout_7.addLayout(self.verticalLayout_6)
 
 
-        self.horizontalLayout_11.addLayout(self.verticalLayout_7)
+        self.horizontalLayout_8.addLayout(self.verticalLayout_7)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_8.addItem(self.horizontalSpacer)
 
 
-        self.verticalLayout_4.addLayout(self.horizontalLayout_11)
+        self.verticalLayout_4.addLayout(self.horizontalLayout_8)
 
 
         self.retranslateUi(Form)
@@ -319,11 +331,20 @@ class Ui_Form(object):
 
         self.cb_lut.setItemText(0, QCoreApplication.translate("Form", u"Grayscale", None))
 
-        self.cb_image_zoom.setItemText(0, QCoreApplication.translate("Form", u"zoom", None))
+        self.label_image_zoom.setText(QCoreApplication.translate("Form", u"Zoom", None))
+        self.cb_image_zoom.setItemText(0, QCoreApplication.translate("Form", u"6.2 %", None))
+        self.cb_image_zoom.setItemText(1, QCoreApplication.translate("Form", u"8.3  %", None))
+        self.cb_image_zoom.setItemText(2, QCoreApplication.translate("Form", u"12.5 %", None))
+        self.cb_image_zoom.setItemText(3, QCoreApplication.translate("Form", u"16.5 %", None))
+        self.cb_image_zoom.setItemText(4, QCoreApplication.translate("Form", u"25 %", None))
+        self.cb_image_zoom.setItemText(5, QCoreApplication.translate("Form", u"33.3 %", None))
+        self.cb_image_zoom.setItemText(6, QCoreApplication.translate("Form", u"50 %", None))
+        self.cb_image_zoom.setItemText(7, QCoreApplication.translate("Form", u"75 %", None))
+        self.cb_image_zoom.setItemText(8, QCoreApplication.translate("Form", u"100 %", None))
+        self.cb_image_zoom.setItemText(9, QCoreApplication.translate("Form", u"150 %", None))
+        self.cb_image_zoom.setItemText(10, QCoreApplication.translate("Form", u"200%", None))
 
-#if QT_CONFIG(tooltip)
-        self.cb_image_zoom.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Set zoom level for image display.</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
+        self.cb_image_zoom.setCurrentText(QCoreApplication.translate("Form", u"100 %", None))
 #if QT_CONFIG(tooltip)
         self.slider_image_channel.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Select the active channel to display.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)

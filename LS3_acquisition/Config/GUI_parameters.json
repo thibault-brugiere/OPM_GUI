@@ -68,7 +68,7 @@
         "scanner_position": 0,
         "scan_range": 20.279883589761845,
         "stage_scan_range": 500,
-        "scanV_range": 500,
+        "scanV_range": 200,
         "scanV_overlap": 0.25,
         "aspect_ratio": 3.3563985247091197,
         "n_steps": 26,

@@ -7,6 +7,7 @@ Created on Wed Jul 16 16:30:29 2025
 pyside6-uic widget/ui_ls3.ui -o widget/ui_ls3.py
 """
 from collections import deque
+import math
 import numpy as np
 import os
 import sys
@@ -40,12 +41,13 @@ class ls3_mannager(QWidget, Ui_Form):
     """
     channel_received = Signal(tuple)
     
-    def __init__(self, ls3, parent=None, max_preview_size = 2):
+    def __init__(self, ls3, parent=None, max_preview_size = 2, zoom_list = [0]):
         
         super().__init__(parent)
         self.setupUi(self)
         self.ls3 = ls3
         self.max_preview_size = max_preview_size # Maximum size of preview image in gigabite 
+        self.zoom_list = zoom_list
         self.on_init()
         
     def on_init(self):
@@ -57,6 +59,7 @@ class ls3_mannager(QWidget, Ui_Form):
         ###############################
         ## Creation of the Variables ##
         ###############################
+        
         
         # -------------------------------
         # "Latest-only" preview pipeline
@@ -80,6 +83,9 @@ class ls3_mannager(QWidget, Ui_Form):
         
         self.info_timer = QTimer() # Timer to update informations
         self.info_timer.timeout.connect(self.update_infos) # Connected to update informations
+            
+        self._set_cb_image_zoom()
+        self.zoom_percent = 100.00
         
         #
         # Values for displaying, calculation
@@ -148,7 +154,7 @@ class ls3_mannager(QWidget, Ui_Form):
         ##############################################
         
         self.cb_lut.currentIndexChanged.connect(self.cb_lut_index_changed)
-        # self.sb_image_zoom.currentValueChanged.connect(self.sb_image_zoom_value_changed) # TODO à corriger ici
+        self.cb_image_zoom.currentIndexChanged.connect(self.image_zoom_value_changed)
         
         self.cb_image_channel.currentIndexChanged.connect(self.cb_image_channel_index_changed)
         
@@ -175,6 +181,29 @@ class ls3_mannager(QWidget, Ui_Form):
         #####################################
         ## Functions called by the buttons ##
         #####################################
+    def _set_cb_image_zoom(self):
+        
+        test_zoom_list = all((isinstance(x, float) or isinstance(x, int))  and x > 0 for x in self.zoom_list)
+        if self.zoom_list is None or not test_zoom_list :
+            self.zoom_list = [6.2 , 8.3 , 12.5 , 16.5 , 25 , 33.3 ,
+                              50.0 , 75.0 , 100.0 , 150.0 , 200.0]
+        else :
+            self.zoom_list = [float(x) for x in self.zoom_list]
+            if not 100.0 in self.zoom_list :
+                self.zoom_list.append(100.0)
+            self.zoom_list.sort()
+            
+        
+        self.cb_image_zoom.clear()
+        self.cb_image_zoom.addItems([f"{x:.2f} %" for x in self.zoom_list])
+        self.cb_image_zoom.setCurrentText("100.00 %")
+    
+    def _get_zoom(self):
+        # try : # TODO a remettre
+            text = self.cb_image_zoom.currentText()
+            self.zoom_percent = float(text.split(" ",2)[0])
+        # except :
+        #     pass
         
     def _cb_image_channel_set(self):
         self.cb_image_channel.clear()
@@ -211,6 +240,7 @@ class ls3_mannager(QWidget, Ui_Form):
         
     def image_zoom_value_changed(self):
         self.update_preview_timer.start(50)
+        self._get_zoom()
         
     def cb_image_channel_index_changed(self):
         self.channel_display = self.cb_image_channel.currentText()
@@ -220,17 +250,6 @@ class ls3_mannager(QWidget, Ui_Form):
     def pb_grayscale_min_max_clicked(self):
             self.slider_grayscale_min.setValue(np.min(self.preview_images[self.channel_display]))
             self.slider_grayscale_max.setValue(np.max(self.preview_images[self.channel_display]))
-            
-            # image = self.preview_images[self.channel_display]
-
-            # min_val = np.min(image)
-            # max_val = np.max(image)
-            
-            # print(type(min_val), min_val)
-            # print(type(max_val), max_val)
-            
-            # self.slider_grayscale_min.setValue(int(min_val))
-            # self.slider_grayscale_max.setValue(int(max_val))
                 
     def pb_grayscale_auto_clicked(self):
         if self.preview_images[self.channel_display] is not None :
@@ -278,7 +297,33 @@ class ls3_mannager(QWidget, Ui_Form):
         self.update_preview_timer.start(50)
         
     def label_mainImage_scrolled(self, delta, x, y):
-        print(f'{delta} {x} {y}')
+       
+        x_point = x / self.label_mainImage.width() - 0.5
+        y_point = y / self.label_mainImage.height() - 0.5
+        
+        x_rel = math.floor(x_point * self.label_mainImage.width()  / (self.preview_dimensions[1] * self.zoom_percent / 100) * 100)
+        y_rel = math.floor(y_point * self.label_mainImage.height() / (self.preview_dimensions[0] * self.zoom_percent / 100) * 100)
+        
+        x_position = max(0,min(99, self.slider_x_position.value() + x_rel))
+        y_position = max(0,min(99, self.slider_y_position.value() - y_rel))
+        
+        self.slider_x_position.blockSignals(True)
+        self.slider_x_position.setValue(x_position)
+        self.slider_x_position.blockSignals(False)
+        self.slider_y_position.blockSignals(True)
+        self.slider_y_position.setValue(y_position)
+        self.slider_y_position.blockSignals(False)
+        
+        index = self.cb_image_zoom.currentIndex()
+        max_index = self.cb_image_zoom.count() - 1
+        self.cb_image_zoom.blockSignals(True)
+        if delta > 0 and index < max_index :
+            self.cb_image_zoom.setCurrentIndex(index + 1)
+        if delta < 0 and index > 0:
+            self.cb_image_zoom.setCurrentIndex(index - 1)
+        self.cb_image_zoom.blockSignals(False)
+        
+        self.image_zoom_value_changed()
             
     def pb_stop_clicked(self):
         self.ls3.stop_all()
@@ -492,8 +537,9 @@ Preview volumes dropped: {self.preview_dropped}
         return f"{hours:02d}h {minutes:02d}min {seconds:02d}s {ms:02d} ms"
     
     def create_preview_image(self):
-        preview_image, self.px_shift, self.scanV_overlap_px = create_ls3_image(self.ls3)
+        preview_image, self.px_shift, self.scanV_overlap_px, hsize, vsize = create_ls3_image(self.ls3)
         self.preview_images = {key: preview_image.copy() for key in self.channel_names}
+        self.preview_dimensions = [vsize, hsize]
     
     def update_image(self, data):
         
@@ -517,8 +563,8 @@ Preview volumes dropped: {self.preview_dropped}
         frame = ((frame - self.min_grayscale[self.channel_display] )* (255/(self.max_grayscale[self.channel_display] - self.min_grayscale[self.channel_display])) ).astype(np.uint8)
         frame = crop_zoom_image(frame, # Create the image fitting in the window
                                 self.slider_x_position.value(),
-                                100 - self.slider_y_position.value(), # To inverse the axis
-                                0.1, #self.sb_image_zoom.value() / 100, # TODO rempler ici quand la sb sera bonne
+                                99 - self.slider_y_position.value(), # To inverse the axis
+                                self.zoom_percent / 100,
                                 h_label,
                                 w_label)
         

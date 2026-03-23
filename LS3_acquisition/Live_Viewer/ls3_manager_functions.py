@@ -95,6 +95,10 @@ def create_ls3_image(ls3):
         in the plan of the camera
     scanV_overlap : int
         overlapping distance between two lines during ls3 acquisition
+    hsize : int
+        horizontal size of the image in pixels
+    vsize : int
+        vertical size of the image in pixels
 
     """
     
@@ -111,7 +115,7 @@ def create_ls3_image(ls3):
     
     empty_image = np.zeros((vsize, hsize), dtype=int)
     
-    return empty_image, px_shift, scanV_overlap_px
+    return empty_image, px_shift, scanV_overlap_px, hsize, vsize
 
 def _past_max_project(base_image, add_image, x , y):
     """
@@ -138,11 +142,6 @@ def _past_max_project(base_image, add_image, x , y):
     
     if copy_h <=0 or copy_w <=0:
         return base_image
-    
-    # base_image[y:y_end, x:x_end] = np.maximum( # TODO A supprimer
-    #     base_image[y:y_end, x:x_end],
-    #     add_image[:copy_h, :copy_w]
-    #     )
     
     dst = base_image[y:y_end, x:x_end]
     src = add_image[:copy_h, :copy_w]

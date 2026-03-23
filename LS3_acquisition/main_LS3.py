@@ -247,8 +247,8 @@ class Light_sheet_stabilized_scanning:
         """
         v_origin = self.stage_position[["X","Y","Z"].index(self.v_axis)]
         if self.n_lines > 1 :
-            SCANV_start = - self.config.experiment.scanV_range / 2 + v_origin
-            SCANV_stop = self.config.experiment.scanV_range / 2 + v_origin
+            SCANV_start =self.config.experiment.scanV_range / 2 + v_origin
+            SCANV_stop = - self.config.experiment.scanV_range / 2 + v_origin
             SCANV_range = SCANV_stop - SCANV_start # Je fais ici comme ça pour si un momejt la fonction fonctionne avec un début et une fin
             step = SCANV_range / (self.n_lines - 1)
             v_positions = []
