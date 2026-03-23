@@ -31,8 +31,6 @@ from LS3_acquisition.Live_Viewer.ls3_manager_functions import create_ls3_image, 
 
 from widget.ui_ls3 import Ui_Form
 
-
-# TODO : ajouter le zoom dans l'interface
 # TODO : ajouterun cache 8 bits pour la navigation
 
 class ls3_mannager(QWidget, Ui_Form):
@@ -180,7 +178,7 @@ class ls3_mannager(QWidget, Ui_Form):
         
         
         #####################################
-        ## Functions called by the buttons ##
+        ## Functions to prepare the interface ##
         #####################################
     def _set_cb_image_zoom(self):
         
@@ -200,11 +198,11 @@ class ls3_mannager(QWidget, Ui_Form):
         self.cb_image_zoom.setCurrentText("100.00 %")
     
     def _get_zoom(self):
-        # try : # TODO a remettre
+        try :
             text = self.cb_image_zoom.currentText()
             self.zoom_percent = float(text.split(" ",2)[0])
-        # except :
-        #     pass
+        except :
+            pass
         
     def _cb_image_channel_set(self):
         self.cb_image_channel.clear()
@@ -235,6 +233,10 @@ class ls3_mannager(QWidget, Ui_Form):
         self.cb_lut.setCurrentText(self.LUT[self.channel_display])
         self.cb_lut.blockSignals(False)
         
+        #####################################
+        ## Functions called by the buttons ##
+        #####################################
+        
     def cb_lut_index_changed(self):
         self.LUT[self.channel_display] = self.cb_lut.currentText()
         self.update_preview()
@@ -246,6 +248,7 @@ class ls3_mannager(QWidget, Ui_Form):
     def cb_image_channel_index_changed(self):
         self.channel_display = self.cb_image_channel.currentText()
         self._set_interface_channel()
+        self.update_8bits_image()
         self.update_preview()
 
     def pb_grayscale_min_max_clicked(self):
@@ -288,6 +291,8 @@ class ls3_mannager(QWidget, Ui_Form):
             self.slider_grayscale_min.blockSignals(True)
             self.slider_grayscale_min.setValue(self.min_grayscale[self.channel_display])
             self.slider_grayscale_min.blockSignals(False)
+            
+        self.update_8bits_image()
             
         self.update_preview_timer.start(50)
         
@@ -346,7 +351,6 @@ class ls3_mannager(QWidget, Ui_Form):
         self.ls3.configure_daq()
         self.ls3.configure_stage()
         self.ls3.initialize_acquisition_workers()
-        # self.ls3.initialize_count_worker() # TODO ajouter le count_worker
         self.set_controller()
         
         # Lancer l'acquisition dans un thread à part
@@ -508,6 +512,7 @@ Preview volumes dropped: {self.preview_dropped}
         self._processor_busy = False
         self._try_dispatch_processing()
         
+        self.update_8bits_image()
         self.update_preview()
         
     def update_preview(self):
@@ -540,6 +545,7 @@ Preview volumes dropped: {self.preview_dropped}
     def create_preview_image(self):
         preview_image, self.px_shift, self.scanV_overlap_px, hsize, vsize = create_ls3_image(self.ls3)
         self.preview_images = {key: preview_image.copy() for key in self.channel_names}
+        self.preview_images_8bits = {key: preview_image.astype(np.uint8) for key in self.channel_names}
         self.preview_dimensions = [vsize, hsize]
     
     def update_image(self, data):
@@ -551,18 +557,25 @@ Preview volumes dropped: {self.preview_dropped}
                                                         data["metadata"],
                                                         self.px_shift,
                                                         self.scanV_overlap_px)
+    def update_8bits_image(self):
+        channel = self.channel_display
+        min_gray = self.min_grayscale[self.channel_display]
+        max_gray = self.max_grayscale[self.channel_display]
+        self.preview_images_8bits[channel] = ((self.preview_images[channel] - min_gray) / (max_gray - min_gray) * 255).astype(np.uint8)
 
     def create_qimage(self):
         h_label = self.label_mainImage.height()
         w_label = self.label_mainImage.width()
+
+        # frame = ((self.preview_images[self.channel_display] - self.min_grayscale[self.channel_display] )* (255/(self.max_grayscale[self.channel_display] - self.min_grayscale[self.channel_display])) ).astype(np.uint8)
+        # frame = crop_zoom_image(frame, # Create the image fitting in the window
+        #                         self.slider_x_position.value(),
+        #                         99 - self.slider_y_position.value(), # To inverse the axis
+        #                         self.zoom_percent / 100,
+        #                         h_label,
+        #                         w_label)
         
-        #Remove grey value bellow and above a certain value
-        frame = np.clip(self.preview_images[self.channel_display], self.min_grayscale[self.channel_display] , self.max_grayscale[self.channel_display] )
-
-        #Change values between 0 and 255 for displaying
-
-        frame = ((frame - self.min_grayscale[self.channel_display] )* (255/(self.max_grayscale[self.channel_display] - self.min_grayscale[self.channel_display])) ).astype(np.uint8)
-        frame = crop_zoom_image(frame, # Create the image fitting in the window
+        frame = crop_zoom_image(self.preview_images_8bits[self.channel_display] , # Create the image fitting in the window
                                 self.slider_x_position.value(),
                                 99 - self.slider_y_position.value(), # To inverse the axis
                                 self.zoom_percent / 100,
@@ -621,5 +634,5 @@ if __name__ == '__main__':
 
     editor.show()
     
-    # editor.start_acquisition()
+    editor.start_acquisition()
     sys.exit(app.exec())
