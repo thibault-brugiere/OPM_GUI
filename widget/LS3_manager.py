@@ -31,8 +31,6 @@ from LS3_acquisition.Live_Viewer.ls3_manager_functions import create_ls3_image, 
 
 from widget.ui_ls3 import Ui_Form
 
-# TODO : ajouterun cache 8 bits pour la navigation
-
 class ls3_mannager(QWidget, Ui_Form):
     """
     Show the window to follow rhe multidimensionnal acquisition.
@@ -91,8 +89,8 @@ class ls3_mannager(QWidget, Ui_Form):
         
         self.total_timepoints = self.ls3.config.experiment.timepoints
         self.total_lines = self.ls3.n_lines
-        self.total_images = self.total_timepoints * self.ls3.config.experiment.n_steps * len(self.ls3.config.channels) * self.total_lines
-        self.total_channels = len(self.ls3.config.channels) * self.total_lines
+        self.total_channels = len(self.ls3.config.channels)
+        self.total_images = self.total_timepoints * self.ls3.config.experiment.n_steps * self.total_channels * self.total_lines
         self.channel_names = [ch.channel_id for ch in self.ls3.config.channels]
         self.channel_display = self.channel_names[0]
         
@@ -566,14 +564,6 @@ Preview volumes dropped: {self.preview_dropped}
     def create_qimage(self):
         h_label = self.label_mainImage.height()
         w_label = self.label_mainImage.width()
-
-        # frame = ((self.preview_images[self.channel_display] - self.min_grayscale[self.channel_display] )* (255/(self.max_grayscale[self.channel_display] - self.min_grayscale[self.channel_display])) ).astype(np.uint8)
-        # frame = crop_zoom_image(frame, # Create the image fitting in the window
-        #                         self.slider_x_position.value(),
-        #                         99 - self.slider_y_position.value(), # To inverse the axis
-        #                         self.zoom_percent / 100,
-        #                         h_label,
-        #                         w_label)
         
         frame = crop_zoom_image(self.preview_images_8bits[self.channel_display] , # Create the image fitting in the window
                                 self.slider_x_position.value(),

@@ -228,8 +228,8 @@ class Light_sheet_stabilized_scanning:
         return {
                 "SCANR_start" : (self.config.experiment.stage_scan_range / 2 + scan_origin) / 1000,
                 "SCANR_stop" : (-self.config.experiment.stage_scan_range / 2 + scan_origin) / 1000, #en mm
-                "SCANV_start" : (- self.config.experiment.scanV_range / 2 + v_origin) / 1000 if self.n_channels == 1 else v_pos / 1000,
-                "SCANV_stop" : (self.config.experiment.scanV_range / 2 + v_origin) / 1000 if self.n_channels == 1 else v_pos / 1000,
+                "SCANV_start" : (self.config.experiment.scanV_range / 2 + v_origin) / 1000 if self.n_channels == 1 else v_pos / 1000,
+                "SCANV_stop" : (-self.config.experiment.scanV_range / 2 + v_origin) / 1000 if self.n_channels == 1 else v_pos / 1000,
                 "SCANV_lines" : self.n_lines if self.n_channels == 1 else 1,
                 "axis": self.scan_axis
                 }
@@ -247,9 +247,9 @@ class Light_sheet_stabilized_scanning:
         """
         v_origin = self.stage_position[["X","Y","Z"].index(self.v_axis)]
         if self.n_lines > 1 :
-            SCANV_start =self.config.experiment.scanV_range / 2 + v_origin
-            SCANV_stop = - self.config.experiment.scanV_range / 2 + v_origin
-            SCANV_range = SCANV_stop - SCANV_start # Je fais ici comme ça pour si un momejt la fonction fonctionne avec un début et une fin
+            SCANV_start = - self.config.experiment.scanV_range / 2 + v_origin
+            SCANV_stop = self.config.experiment.scanV_range / 2 + v_origin
+            SCANV_range = SCANV_stop - SCANV_start # Je fais ici comme ça pour si un moment la fonction fonctionne avec un début et une fin
             step = SCANV_range / (self.n_lines - 1)
             v_positions = []
             for k in range(self.n_lines):
