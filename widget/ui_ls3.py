@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QGridLayout,
     QSizePolicy, QSlider, QSpacerItem, QSpinBox,
     QVBoxLayout, QWidget)
 
-from promoted_Qtclass import WheelLabel
+from .promoted_Qtclass import WheelLabel
 
 class Ui_Form(object):
     def setupUi(self, Form):

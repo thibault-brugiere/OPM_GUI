@@ -92,8 +92,9 @@ class ls3_mannager(QWidget, Ui_Form):
         #
         
         self.total_timepoints = self.ls3.config.experiment.timepoints
-        self.total_images = self.total_timepoints * self.ls3.config.experiment.n_steps * len(self.ls3.config.channels)
-        self.total_channels = len(self.ls3.config.channels)
+        self.total_lines = self.ls3.n_lines
+        self.total_images = self.total_timepoints * self.ls3.config.experiment.n_steps * len(self.ls3.config.channels) * self.total_lines
+        self.total_channels = len(self.ls3.config.channels) * self.total_lines
         self.channel_names = [ch.channel_id for ch in self.ls3.config.channels]
         self.channel_display = self.channel_names[0]
         
@@ -376,7 +377,7 @@ class ls3_mannager(QWidget, Ui_Form):
 Camera : {self.ls3.state["camera"]}, DAQ : {self.ls3.state["daq"]}
 Frames Acquired: {self.frames_acquired}/{self.total_images}
 Frames Dropped: {self.frames_dropped}/{self.total_images}
-Channels Saved: {self.channels_saved}/{self.total_timepoints * self.total_channels}
+Channels Saved: {self.channels_saved}/{self.total_timepoints * self.total_channels * self.total_lines}
 Volumes Recived: {self.volumes_recived}
 Time Ellapsed: {self.format_time(self.ellapsed_time)} s
 
@@ -388,7 +389,7 @@ Preview volumes dropped: {self.preview_dropped}
                                         
     def _set_progress_bar(self):
         self.progressBar_acquisition.setMaximum(self.total_images)
-        self.progressBar_saving.setMaximum(self.total_timepoints * self.total_channels)
+        self.progressBar_saving.setMaximum(self.total_timepoints * self.total_channels * self.total_lines)
     
     def update_progress_bar(self):
         self.progressBar_acquisition.setValue(int(self.images_acquired))
@@ -620,5 +621,5 @@ if __name__ == '__main__':
 
     editor.show()
     
-    editor.start_acquisition()
+    # editor.start_acquisition()
     sys.exit(app.exec())

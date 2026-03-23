@@ -53,6 +53,7 @@ from ui_Control_Microscope_Main import Ui_MainWindow
 from widget.Alignement_O2_O3_Window import alignement_O2_O3_Window
 from widget.Channel_Editor_Window import ChannelEditorWindow
 from widget.MDA_manager import mda_mannager
+from widget.LS3_manager import ls3_mannager
 from widget.Microscope_Settings_Window import microscope_settings_window
 from widget.Preset_ROI_Window import PresetROIWindow
 from widget.Sample_Finder import sample_finder_Window
@@ -1260,16 +1261,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.status_bar.showMessage("start Light_sheet_stabilized_scanning acquisition")
                 
                 LS3 = Light_sheet_stabilized_scanning(self.hcam, self.filterWheel)
-                LS3.initialize_cameras()
-                LS3.initialize_laser()
-                LS3.initialize_acquisition_workers()
-                LS3.initialize_filterwheel()
-                LS3.configure_daq()
-                LS3.configure_stage()
-                LS3.run_acquisition()
-                # self.MDA_manager = mda_mannager(LS3, self)
-                # self.MDA_manager.show()
-                # self.MDA_manager.start_acquisition()
+                
+                self.LS3_manager = ls3_mannager(LS3, self)
+                self.LS3_manager.show()
+                self.LS3_manager.start_acquisition()
                 
             except:
                 self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
