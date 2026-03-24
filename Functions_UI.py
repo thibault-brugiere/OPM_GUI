@@ -318,11 +318,12 @@ class functions_ui():
         - QImage: The processed image, either in grayscale or with a colormap highlighting saturated pixels.
         """
         
+        if zoom <= 0:
+            zoom = 1
+        
         h , w = frame.shape # get dimensions of the image
         
-        
         frame = np.clip(frame,min_grayscale , max_grayscale ) #Remove grey value bellow and above a certain value
-        # frame = ((frame - min_grayscale ) * coef_grayscale ).astype(np.uint8) #Change values between 0 and 255 for displaying
         frame = ((frame - min_grayscale ) * (255/(max_grayscale - min_grayscale)) ).astype(np.uint8) #Change values between 0 and 255 for displaying
         
         h , w = int(h * zoom ) , int (w * zoom)

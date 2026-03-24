@@ -13,7 +13,6 @@ Created on Tue Sep  2 09:03:43 2025
 # TODO : ouvrir laser_GUI depuis l'interface (et autres GUI)
 # TODO : faire un dictionnaire.json dans config pour toute la description du microscope
         Pour qu'elle soit enregistrée lors de l'acquisition
-# TODO : Ajuster la taille du preview pour avoir le champ entier (auto ?)
 # TODO : Avoir plusieurs LUT (Fire ?)
 # TODO : améliorer l'affichage du temps d'acquisition d'un volume.
         

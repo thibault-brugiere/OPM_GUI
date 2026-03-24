@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1880</width>
+    <width>1990</width>
     <height>1174</height>
    </rect>
   </property>
@@ -1971,6 +1971,12 @@ scanning parameters</string>
      <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
        <widget class="QLabel" name="label_image_preview">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
           <width>1108</width>
@@ -2537,8 +2543,8 @@ Acquisition</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1880</width>
-     <height>23</height>
+     <width>1990</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFichier">

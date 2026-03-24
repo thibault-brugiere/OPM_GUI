@@ -28,9 +28,9 @@ import sys
 import tifffile
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import QTimer #, QCoreApplication, QEventLoop
+from PySide6.QtCore import QTimer, Qt  #, QCoreApplication, QEventLoop
 from PySide6.QtGui import QPixmap, QImage
-from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox, QSizePolicy
 
 from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition, send_to_ls3_acquisition
 from acquisition.z_stack import z_stack
@@ -263,9 +263,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_MinMax_grayscale.setText("Min / Max")
         
         #
-        # Modifications d'élements de l'interface
+        # Modifications d'élements de l'interface #TODO a modifier dans Main.ui
         #
         self.spinBox_scanV_overlap.setValue(25)
+        self.comboBox_preview_zoom.setItemText(0, "Zoom Auto")
+        self.label_image_preview.setSizePolicy(QSizePolicy.Policy.Maximum,QSizePolicy.Policy.Maximum)
         
         ##############################################
         ## Connection between functions and buttons ##
@@ -505,6 +507,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #set hpos
         self.spinBox_hpos_value_changed()
         
+        #set zoom
+        self.comboBox_preview_zoom_index_changed()
+        
     def spinBox_hpos_value_changed(self):
         'Horizontal position of the ROI'
         
@@ -533,7 +538,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #set vpos
         self.spinBox_vpos_value_changed()
         
-        self.pb_fast_acquisition_clicked_connect()
+        #set zoom
+        self.comboBox_preview_zoom_index_changed()
         
     def spinBox_vpos_value_changed(self):
         'Vertical position of the ROI'
@@ -992,8 +998,22 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_max_grayscale.setValue(65535)
         self.spinBox_min_grayscale.setValue(0)
             
-    def comboBox_preview_zoom_index_changed(self):
-        self.preview_zoom = [0.25 , 2 , 1 , 0.5 , 1/3 , 0.25][self.comboBox_preview_zoom.currentIndex()]
+    def comboBox_preview_zoom_index_changed(self, label_size = None):
+        self.preview_zoom = [-1 , 2 , 1 , 0.5 , 1/3 , 0.25][self.comboBox_preview_zoom.currentIndex()]
+        if self.preview_zoom == -1 :
+            if label_size is not None and all(type(x) is int for x in label_size) and len(label_size) == 2 :
+                w_label, h_label = label_size[0], label_size[1]
+                print("ok")
+            else:
+                h_label = self.label_image_preview.height()
+                w_label = self.label_image_preview.width()
+            
+            h_camera = self.camera[self.camera_id].hsize
+            w_camera = self.camera[self.camera_id].vsize
+
+            self.preview_zoom = min(h_label/h_camera,w_label/w_camera)
+        print(f'zomm : {self.preview_zoom}')
+            
             
     def pb_snap_clicked_connect(self):
         """
@@ -1175,6 +1195,16 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_channel_add.setDisabled(active)
         self.pb_channel_remove.setDisabled(active)
             #Preview
+            
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # pixel_map = QPixmap(4000,4000)
+        # pixel_map.fill(Qt.GlobalColor.black)
+        # self.label_image_preview.setPixmap(pixel_map)
+        
+        label_size = [self.label_image_preview.width(), self.label_image_preview.height()]
+        
+        self.comboBox_preview_zoom_index_changed(label_size)
 
         #
         # Acquisition
