@@ -39,10 +39,11 @@ from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
 from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
-from hardware.filter_wheel import FilterWheel
+# from hardware.filter_wheel import FilterWheel
 from hardware.Laser_Controller import LaserController
 # from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
 # from mock.DAQ import functions_daq
+from mock.filter_wheel import FilterWheel
 from mock.Null import NullObject
 
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
@@ -144,8 +145,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.filterWheel = FilterWheel(filterList = self.microscope.filters)
             self.filterWheel.connect()
             self.filterWheel.home()
-        except: # TODO ajouter mock filterwheel
+        except:
             print("[WARNING] failled to connect filter wheel")
+            self.status_bar.showMessage("[WARNING] failled to connect filter wheel")
             self.filterWheel = NullObject()
         
         #
@@ -263,7 +265,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         # Modifications d'élements de l'interface
         #
-        # TODO a modifier via le fichier .ui
         self.spinBox_scanV_overlap.setValue(25)
         
         ##############################################
@@ -667,6 +668,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.experiment.slit_aperture = self.spinBox_slit_aperture.value
         
     def label_volume_duration_update(self):
+        if self.n_camera == 0 :
+            return
         message = functions_ui.label_volume_duration(self.experiment.scan_range,
                                                      self.camera[self.camera_id].sample_pixel_size ,
                                                      self.experiment.aspect_ratio,
@@ -821,7 +824,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
             self.label_laser.setText("OFF")
             self.laser_emission = False
-            functions_daq.digital_out(False, self.microscope.daq_channels['laser_blanking'])
+            if len(self.connected_daq) > 0 :
+                functions_daq.digital_out(False, self.microscope.daq_channels['laser_blanking'])
             for laser in self.laser_list:
                 self.state_laser_changed(laser)
                     

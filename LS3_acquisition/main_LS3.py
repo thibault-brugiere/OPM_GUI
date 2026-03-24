@@ -55,7 +55,7 @@ class Light_sheet_stabilized_scanning:
         self.config = config(dirname=config_path)
         
         if self.config.experiment.mode != "LS3":
-            raise NameError("LS3 Error: not the right experiment mode")
+            raise NameError("LS3 Error: not the right experiment mode: {self.config.experiment.mode}")
         
         self.n_channels = len(self.config.channels)
         self._get_lines()

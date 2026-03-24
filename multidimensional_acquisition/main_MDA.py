@@ -55,7 +55,7 @@ class MultidimensionalAcquisition:
         self.n_channels = len(self.config.channels)
         
         if self.config.experiment.mode not in ["fast","standard"]:
-            raise NameError("LS3 Error: not the right experiment mode")
+            raise NameError("LS3 Error: not the right experiment mode: {self.config.experiment.mode}")
         
         self.filterseq = [] # Liste des filtres dans l'ordre utilisé
         for n in range(self.n_channels):
@@ -291,12 +291,6 @@ class MultidimensionalAcquisition:
                       'acquisition_workers' : 'idle',
                       'daq': 'idle'
                       }
-        
-    def worker(self,i):
-        """
-        Return the acquisition worker i to use in other processes
-        """
-        return self.acquisition_workers[i]
 
 ##############################################################################
 
