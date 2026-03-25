@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'ui_microscope_settings.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.1
+## Created by: Qt User Interface Compiler version 6.9.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -23,7 +23,7 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(840, 872)
+        Form.resize(840, 970)
         self.verticalLayout = QVBoxLayout(Form)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout_7 = QHBoxLayout()
@@ -132,6 +132,50 @@ class Ui_Form(object):
         self.line_1.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.verticalLayout.addWidget(self.line_1)
+
+        self.horizontalLayout_22 = QHBoxLayout()
+        self.horizontalLayout_22.setObjectName(u"horizontalLayout_22")
+        self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_22.addItem(self.horizontalSpacer_11)
+
+        self.label_Preview = QLabel(Form)
+        self.label_Preview.setObjectName(u"label_Preview")
+        self.label_Preview.setFont(font)
+        self.label_Preview.setAlignment(Qt.AlignCenter)
+
+        self.horizontalLayout_22.addWidget(self.label_Preview)
+
+        self.horizontalSpacer_12 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_22.addItem(self.horizontalSpacer_12)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_22)
+
+        self.horizontalLayout_23 = QHBoxLayout()
+        self.horizontalLayout_23.setObjectName(u"horizontalLayout_23")
+        self.label_mirror_ser_num = QLabel(Form)
+        self.label_mirror_ser_num.setObjectName(u"label_mirror_ser_num")
+        self.label_mirror_ser_num.setMinimumSize(QSize(122, 0))
+        self.label_mirror_ser_num.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_23.addWidget(self.label_mirror_ser_num)
+
+        self.lineEdit_trans_mirror_ser_num = QLineEdit(Form)
+        self.lineEdit_trans_mirror_ser_num.setObjectName(u"lineEdit_trans_mirror_ser_num")
+
+        self.horizontalLayout_23.addWidget(self.lineEdit_trans_mirror_ser_num)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_23)
+
+        self.line_5 = QFrame(Form)
+        self.line_5.setObjectName(u"line_5")
+        self.line_5.setFrameShape(QFrame.Shape.HLine)
+        self.line_5.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.verticalLayout.addWidget(self.line_5)
 
         self.horizontalLayout_8 = QHBoxLayout()
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
@@ -445,6 +489,8 @@ class Ui_Form(object):
         self.label_mag_total.setText(QCoreApplication.translate("Form", u"Mag Total:", None))
         self.label_stage.setText(QCoreApplication.translate("Form", u"Stage", None))
         self.label_stage_port.setText(QCoreApplication.translate("Form", u"Stage port:", None))
+        self.label_Preview.setText(QCoreApplication.translate("Form", u"Preview", None))
+        self.label_mirror_ser_num.setText(QCoreApplication.translate("Form", u"mirror serial number:", None))
         self.label_galvanometer.setText(QCoreApplication.translate("Form", u"Galvanometer", None))
         self.label_volts_per_um.setText(QCoreApplication.translate("Form", u"Volts per \u00b5m:", None))
         self.label_galvo_response_time.setText(QCoreApplication.translate("Form", u"Response time (ms):", None))

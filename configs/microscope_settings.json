@@ -5,6 +5,7 @@
     "galvo_response_time": 0.3,
     "galvo_flyback_time": 3.0,
     "stage_port": "COM10",
+    "trans_mirror_ser_num": "37009743",
     "filter_port": "COM?",
     "filter_changing_time": [
         55,
@@ -42,6 +43,8 @@
     "daq_channels": {
         "co_channel": "Dev1/ctr0",
         "co_terminal": "/Dev1/PFI0",
+        "transmission_light": "Dev1/port0/line12",
+        "fluo_light": null,
         "galvo": "Dev1/ao0",
         "camera_0": "Dev1/port0/line0",
         "camera_1": "Dev1/port0/line1",

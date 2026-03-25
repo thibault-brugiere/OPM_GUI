@@ -137,7 +137,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         else :
             self.label_daq_detected.setText('WARNING: No ni-DAQ detected ! Please restart the interface.')
             
-        functions_daq.digital_out(False, "Dev1/port0/line12") # Force the transmission light OFF
+        functions_daq.digital_out(False, self.microscope.daq_channels["transmission_light"]) # Force the transmission light OFF
             
         #
         # Connect to the filter wheel
@@ -1416,7 +1416,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.is_preview :
             self.pb_stop_preview_clicked()
             
-        self.sample_finder = sample_finder_Window()
+        self.sample_finder = sample_finder_Window(microscope = self.microscope)
         self.sample_finder.show()
                 
         #

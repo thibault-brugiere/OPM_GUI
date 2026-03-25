@@ -86,6 +86,9 @@ class microscope(object):
         # stage
         self.stage_port = 'COM10'
         
+        # Preview
+        self.trans_mirror_ser_num = 37009743
+        
         # Filters
         self.filter_port = "COM?"
         self.filter_changing_time = [55,70,85] # in ms
@@ -111,7 +114,7 @@ class microscope(object):
         self.daq_channels = {"co_channel": "Dev1/ctr0", # ADD: trigger start of each volume
                              "co_terminal": "/Dev1/PFI0", # ADD: trigger start of each volume
                              "transmission_light": "Dev1/port0/line12",
-                             "fluo_light": "NONA",
+                             "fluo_light": None,
                              "galvo": "Dev1/ao0", # Fait bouger le galvo pour le scanning
                              "camera_0": "Dev1/port0/line0", # Trigger l'exposition de la camera
                              "camera_1": "Dev1/port0/line1", # Trigger l'exposition de la deuxieme camera (si presente)
@@ -217,6 +220,7 @@ class microscope(object):
             
             # stage
             "stage_port" : self.stage_port,
+            "trans_mirror_ser_num" : self.trans_mirror_ser_num,
             
             # Filters
             "filter_port" : self.filter_port,
@@ -246,6 +250,7 @@ class microscope(object):
         self.galvo_response_time = microscope_dict["galvo_response_time"]
         self.galvo_flyback_time = microscope_dict["galvo_flyback_time"]
         self.stage_port = microscope_dict["stage_port"]
+        self.trans_mirror_ser_num = microscope_dict["trans_mirror_ser_num"]
         self.filter_port = microscope_dict["filter_port"]
         self.filter_changing_time = microscope_dict["filter_changing_time"]
         self.filters = microscope_dict["filters"]

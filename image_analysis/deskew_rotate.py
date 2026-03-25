@@ -339,7 +339,7 @@ if __name__ == '__main__':
     theta = 40
     aspect_ratio = 3.3564
 
-    folder = Path(r"C:\Users\tbrugiere\Documents\Images_OPM\20260324_Neurospheres_GFP\20260324_145316_Neurosphere_GFP_DIV7")
+    folder = Path(r"D:\Projets_Python\OPM_GUI\Images\2026_0325_360c_DIV21_NeuN-488_Synapsyn-568_Map2-647\Image")
     # filename = "Position_0000_GFP_file_"
     
     # for k in range(4):
@@ -354,25 +354,28 @@ if __name__ == '__main__':
             
     basename = "GFP_volume_"
     
-    for i in range(40) :
-        k = i + 80
-        filename = f'{basename}{k:04d}'
+    channels = ["BFP","GFP", "CY3.5", "TexRed"]
     
-        file_path = os.path.join(folder, f'{filename}.tif')
-        volume_zyx = tifffile.imread(file_path)
-        print(f"Image {k} oppened")
+    for k in range(1) :
+        for channel in channels :
+
+            filename = f'{channel}_volume_{k:04d}'
         
-        out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
-        
-        print(f"Image {filename} deskewed")
-        
-        out_volume = crop_stack(out_volume[35:112,:,:], 0, 391, 699, 1133)
-        
-        
-        output_file_path = f'{folder}/dekew-rotate_{filename}.tif'
-        tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
-        print(f"""image {filename} saved
-              """)
+            file_path = os.path.join(folder, f'{filename}.tif')
+            volume_zyx = tifffile.imread(file_path)
+            print(f"Image {k} oppened")
+            
+            out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
+            
+            print(f"Image {filename} deskewed")
+            
+            # out_volume = crop_stack(out_volume[35:112,:,:], 0, 391, 699, 1133)
+            
+            
+            output_file_path = f'{folder}/dekew-rotate_{filename}.tif'
+            tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
+            print(f"""image {filename} saved
+                  """)
 
     
     

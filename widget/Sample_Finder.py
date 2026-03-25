@@ -102,7 +102,7 @@ class sample_finder_Window(QWidget, Ui_Form):
                 self.daq_fluo = self.microscope.daq_channels["fluo_light"]
             except:
                 self.daq_transmission = "Dev1/port0/line12"
-                self.daq_fluo = None    
+                self.daq_fluo = None  
                 
         self.mirror = Thorlabs.kinesis.MFF(self.mff_ser_num)
         

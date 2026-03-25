@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'ui_set_DAQ.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.1
+## Created by: Qt User Interface Compiler version 6.9.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -70,6 +70,52 @@ class Ui_Form(object):
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_10)
+
+        self.horizontalLayout_21 = QHBoxLayout()
+        self.horizontalLayout_21.setObjectName(u"horizontalLayout_21")
+        self.label_transmission_light = QLabel(Form)
+        self.label_transmission_light.setObjectName(u"label_transmission_light")
+        self.label_transmission_light.setMinimumSize(QSize(100, 0))
+        self.label_transmission_light.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_21.addWidget(self.label_transmission_light)
+
+        self.lineEdit_transmission_light = QLineEdit(Form)
+        self.lineEdit_transmission_light.setObjectName(u"lineEdit_transmission_light")
+
+        self.horizontalLayout_21.addWidget(self.lineEdit_transmission_light)
+
+        self.label_label_transmission_light_out = QLabel(Form)
+        self.label_label_transmission_light_out.setObjectName(u"label_label_transmission_light_out")
+        self.label_label_transmission_light_out.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_21.addWidget(self.label_label_transmission_light_out)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_21)
+
+        self.horizontalLayout_20 = QHBoxLayout()
+        self.horizontalLayout_20.setObjectName(u"horizontalLayout_20")
+        self.label_fluorescent_light = QLabel(Form)
+        self.label_fluorescent_light.setObjectName(u"label_fluorescent_light")
+        self.label_fluorescent_light.setMinimumSize(QSize(100, 0))
+        self.label_fluorescent_light.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_20.addWidget(self.label_fluorescent_light)
+
+        self.lineEdit_fluo_light = QLineEdit(Form)
+        self.lineEdit_fluo_light.setObjectName(u"lineEdit_fluo_light")
+
+        self.horizontalLayout_20.addWidget(self.lineEdit_fluo_light)
+
+        self.label_fluorescent_light_out = QLabel(Form)
+        self.label_fluorescent_light_out.setObjectName(u"label_fluorescent_light_out")
+        self.label_fluorescent_light_out.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_20.addWidget(self.label_fluorescent_light_out)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_20)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -504,6 +550,16 @@ class Ui_Form(object):
         self.lineEdit_vol_trig_outputt.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Trigger start of each volume</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.label_vol_trig_outputt_out.setText(QCoreApplication.translate("Form", u"PFI", None))
+        self.label_transmission_light.setText(QCoreApplication.translate("Form", u"transmission light", None))
+#if QT_CONFIG(tooltip)
+        self.lineEdit_transmission_light.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Trigger start of each volume</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_label_transmission_light_out.setText(QCoreApplication.translate("Form", u"digital out", None))
+        self.label_fluorescent_light.setText(QCoreApplication.translate("Form", u"fluorescent light", None))
+#if QT_CONFIG(tooltip)
+        self.lineEdit_fluo_light.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Trigger start of each volume</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_fluorescent_light_out.setText(QCoreApplication.translate("Form", u"digital out (None if not connected)", None))
         self.label_galvo.setText(QCoreApplication.translate("Form", u"Galvo", None))
 #if QT_CONFIG(tooltip)
         self.lineEdit_galvo.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Analog Out for galvo scanner movement</p></body></html>", None))

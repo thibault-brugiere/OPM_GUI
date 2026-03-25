@@ -58,6 +58,8 @@ class setDAQWindow(QWidget, Ui_Form):
         
         self.lineEdit = {"co_channel" : self.lineEdit_vol_trig,
                         "co_terminal" : self.lineEdit_vol_trig_outputt,
+                        "transmission_light" : self.lineEdit_transmission_light,
+                        "fluo_light" : self.lineEdit_fluo_light,
                         "galvo": self.lineEdit_galvo,
                         "camera_0": self.lineEdit_camera1,
                         "camera_1": self.lineEdit_camera2,
@@ -131,6 +133,8 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     daq_channels = {"co_channel": "Dev1/ctr0", # ADD: trigger start of each volume
                     "co_terminal": "/Dev1/PFI0", # ADD: trigger start of each volume
+                    "transmission_light": "/Dev1/port0/line12",
+                    "fluo_light": None,
                     "galvo": "Dev1/ao0", # Fait bouger le galvo pour le scanning
                     "camera_0": "Dev1/port0/line0", # Trigger l'exposition de la camera
                     "camera_1": "Dev1/port0/line1", # Trigger l'exposition de la deuxieme camera (si presente)

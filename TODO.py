@@ -32,8 +32,6 @@ Created on Tue Sep  2 09:03:43 2025
     # --------
 # TODO: warning fin acquisition : "Finite acquisition or generation has been stopped before the requested number of samples were acquired or generated."
 
-# TODO Ajout mock filterwheel
-
     #-------------
     # Tools
     #-------------
@@ -48,7 +46,7 @@ Created on Tue Sep  2 09:03:43 2025
     
 # TODO : Save positions for multi-position acquisition
 # TODO : apply selected LUT
-# TODO : controll illuminators using DAQ
+# TODO : ajouter la sortie daq et le numéro de série du mirroir dans les paramétres modifiables par l'utilisateur'
 
     #############
     # Deskewing #

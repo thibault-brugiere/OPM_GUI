@@ -56,6 +56,7 @@ class microscope_settings_window(QWidget, Ui_Form):
         self.lineEdits = {'tilt_angle' : self.lineEdit_tilt_angle,
                      'mag_total' : self.lineEdit_mag_total,
                      'stage_port' : self.lineEdit_stage_port,
+                     'trans_mirror_ser_num' : self.lineEdit_trans_mirror_ser_num,
                      'volts_per_um' : self.lineEdit_volts_per_um,
                      'galvo_response_time' : self.lineEdit_galvo_response_time,
                      'galvo_flyback_time' : self.lineEdit_galvo_flyback_time,
@@ -74,6 +75,7 @@ class microscope_settings_window(QWidget, Ui_Form):
         self.microscope_params = {'tilt_angle' : self.microscope.tilt_angle,
                              'mag_total' : self.microscope.mag_total,
                              'stage_port' : self.microscope.stage_port,
+                             'trans_mirror_ser_num' : self.microscope.trans_mirror_ser_num,
                              'volts_per_um' : self.microscope.volts_per_um,
                              'galvo_response_time' : self.microscope.galvo_response_time,
                              'galvo_flyback_time' : self.microscope.galvo_flyback_time,
@@ -92,6 +94,7 @@ class microscope_settings_window(QWidget, Ui_Form):
         self.param_type = {'tilt_angle' : 'float',
                            'mag_total' : 'float',
                            'stage_port' : 'str',
+                           'trans_mirror_ser_num' : 'int',
                            'volts_per_um' : 'float',
                            'galvo_response_time' : 'float',
                            'galvo_flyback_time' : 'float',
@@ -150,6 +153,7 @@ you have to set changes in channels too"""
         self.microscope.tilt_angle = self.microscope_params['tilt_angle']
         self.microscope.mag_total = self.microscope_params['mag_total']
         self.microscope.stage_port = self.microscope_params['stage_port']
+        self.microscope.trans_mirror_ser_num = self.microscope_params['trans_mirror_ser_num']
         self.microscope.volts_per_um = self.microscope_params['volts_per_um']
         self.microscope.galvo_response_time = self.microscope_params['galvo_response_time']
         self.microscope.galvo_flyback_time = self.microscope_params['galvo_flyback_time']

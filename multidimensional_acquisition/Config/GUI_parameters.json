@@ -6,52 +6,72 @@
             "vchipsize": 2368,
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
-            "hsize": 700,
-            "hpos": 1864,
+            "hsize": 1024,
+            "hpos": 1704,
             "vsize": 1024,
             "vpos": 672,
-            "exposure_time": 0.03,
+            "exposure_time": 0.05,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
             "image_readout_time": 0.003800727272727273
         }
     },
     "channels": {
-        "channel_GFP": {
-            "channel_id": "GFP",
+        "channel_TexRed": {
+            "channel_id": "TexRed",
             "is_active": true,
             "channel_order": null,
             "laser_is_active": {
                 "405": false,
-                "488": true,
+                "488": false,
+                "561": false,
+                "640": true
+            },
+            "laser_power": {
+                "405": 0,
+                "488": 0,
+                "561": 0,
+                "640": 24
+            },
+            "filter": "TexRed",
+            "camera": 0,
+            "exposure_time": 50.0
+        },
+        "channel_BFP": {
+            "channel_id": "BFP",
+            "is_active": true,
+            "channel_order": null,
+            "laser_is_active": {
+                "405": true,
+                "488": false,
                 "561": false,
                 "640": false
             },
             "laser_power": {
-                "405": 0,
-                "488": 16,
+                "405": 15,
+                "488": 0,
                 "561": 0,
                 "640": 0
             },
-            "filter": "GFP",
+            "filter": "BFP",
             "camera": 0,
             "exposure_time": 30.0
         }
     },
     "experiment": {
-        "exp_name": "Neurosphere_GFP_DIV7",
-        "data_path": "C:/Users/tbrugiere/Documents/Images_OPM/20260324_Neurospheres_GFP",
-        "timepoints": 120,
-        "time_intervals": 5.0,
-        "total_duration": 600.0,
+        "exp_name": "NeuN-488_Synapsyn-568_Map2-647",
+        "data_path": "D:/Projets_Python/OPM_GUI/Images/2026_0325_360c_DIV21_NeuN-488_Synapsyn-568_Map2-647",
+        "timepoints": 1,
+        "time_intervals": 1.0,
+        "total_duration": 10.0,
         "mode": "standard",
-        "scanner_position": 0,
-        "scan_range": 99.77702726162828,
+        "scanner_position": -7,
+        "scan_range": 200.36524986684705,
         "stage_scan_range": 300,
         "scanV_range": 0,
         "scanV_overlap": 0.25,
         "aspect_ratio": 3.3563985247091197,
-        "n_steps": 124,
+        "n_steps": 248,
         "step_size": 0.8111953435904738,
         "slit_aperture": 800
     },
