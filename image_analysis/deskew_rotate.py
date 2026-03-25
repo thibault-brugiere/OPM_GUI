@@ -9,6 +9,50 @@ import math
 import numpy as np
 from scipy import ndimage
 
+def crop_stack(arr: np.ndarray, x1: int, y1: int, x2: int, y2: int):
+    """
+    Crop a rectangular region of interest (ROI) from an array.
+    
+    The function supports both 2D images and higher-dimensional stacks.
+    Cropping is always applied to the last two axes, which are assumed to
+    correspond to spatial dimensions (Y, X).
+    
+    Parameters
+    ----------
+    arr : np.ndarray
+        Input array. Can be a 2D image (H, W) or a stack with shape
+        (..., H, W). All leading dimensions are preserved.
+    x1, y1 : int
+        Coordinates of the top-left corner of the ROI (inclusive).
+    x2, y2 : int
+        Coordinates of the bottom-right corner of the ROI (inclusive).
+    
+    Returns
+    -------
+    np.ndarray
+        Cropped view of the input array with shape (..., y2-y1+1, x2-x1+1).
+    """
+    if arr.ndim < 2:
+        raise ValueError(f"Array has ndim={arr.ndim}, expected at least 2.")
+    
+    h = arr.shape[-2]
+    w = arr.shape[-1]
+    
+    for name, v, lo, hi in [
+        ("x1", x1, 0, w - 1),
+        ("x2", x2, 0, w - 1),
+        ("y1", y1, 0, h - 1),
+        ("y2", y2, 0, h - 1),
+        ]:
+        if not (lo <= v <= hi):
+            raise ValueError(f"{name}={v} out of bounds. Valid: [{lo}, {hi}]")
+    
+    if x2 < x1 or y2 < y1:
+        raise ValueError("Invalid ROI: need x2>=x1 and y2>=y1.")
+    
+    # y then x
+    return arr[..., y1 : y2 + 1, x1 : x2 + 1]
+
 def _px_shift_calculation(aspect_ratio:float, angle:float, angle_unit:str = "rad", tolerance = 0.0001) -> int:
     """
     Compute the integer pixel shift per Z step required for OPM deskewing.
@@ -295,35 +339,53 @@ if __name__ == '__main__':
     theta = 40
     aspect_ratio = 3.3564
 
-    folder = Path(r"D:\Projets_Python\OPM_GUI\Images\20260313_TestLS_Grid\20260313_115359_Billes_170nm_LS3_300um")
-    filename = "Position_0000_GFP_file_"
+    folder = Path(r"C:\Users\tbrugiere\Documents\Images_OPM\20260324_Neurospheres_GFP\20260324_145316_Neurosphere_GFP_DIV7")
+    # filename = "Position_0000_GFP_file_"
     
-    for k in range(4):
-        file_path = os.path.join(folder, f'{filename}{k:04d}.tif')
-        if k == 0 :
-            volume_zyx = tifffile.imread(file_path)
-        else:
-            volume_zyx = np.concatenate((volume_zyx, tifffile.imread(file_path)))
+    # for k in range(4):
+    #     file_path = os.path.join(folder, f'{filename}{k:04d}.tif')
+    #     if k == 0 :
+    #         volume_zyx = tifffile.imread(file_path)
+    #     else:
+    #         volume_zyx = np.concatenate((volume_zyx, tifffile.imread(file_path)))
             
-        print(f'\rImage {k:04d} / 36 oppened', end = " ")
+    #     print(f'\rImage {k:04d} / 36 oppened', end = " ")
+    # print("Images oppened")
             
-    # filename = "GFP_volume_0000"
-    # file_path = os.path.join(folder, f'{filename}.tif')
-    # volume_zyx = tifffile.imread(file_path)
+    basename = "GFP_volume_"
     
-    # volume_zyx = tifffile.imread(file_path)
-    print("Images oppened")
+    for i in range(40) :
+        k = i + 80
+        filename = f'{basename}{k:04d}'
     
-    for k in range(2):
-        volume_zyx_deskew = volume_zyx[:, :, k*256:(k+1)*256]
+        file_path = os.path.join(folder, f'{filename}.tif')
+        volume_zyx = tifffile.imread(file_path)
+        print(f"Image {k} oppened")
+        
+        out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
+        
+        print(f"Image {filename} deskewed")
+        
+        out_volume = crop_stack(out_volume[35:112,:,:], 0, 391, 699, 1133)
+        
+        
+        output_file_path = f'{folder}/dekew-rotate_{filename}.tif'
+        tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
+        print(f"""image {filename} saved
+              """)
 
-        if k == 0 :
-            out_volume = deskew_and_rotate_opm(volume_zyx_deskew, dy_um, aspect_ratio, theta)
-        else:
-            out_volume = np.concat((out_volume, deskew_and_rotate_opm(volume_zyx_deskew, dy_um, aspect_ratio, theta)),axis=2)
+    
+    
+    # for k in range(2):
+    #     volume_zyx_deskew = volume_zyx[:, :, k*256:(k+1)*256]
+
+    #     if k == 0 :
+    #         out_volume = deskew_and_rotate_opm(volume_zyx_deskew, dy_um, aspect_ratio, theta)
+    #     else:
+    #         out_volume = np.concat((out_volume, deskew_and_rotate_opm(volume_zyx_deskew, dy_um, aspect_ratio, theta)),axis=2)
         
-        print(f"image deskewed_rotated : {k}/7")
+    #     print(f"image deskewed_rotated : {k}/7")
         
-    output_file_path = f'{folder}/dekew-rotate_{filename}total.tif'
-    tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
-    print("image saved")
+    # output_file_path = f'{folder}/dekew-rotate_{filename}total.tif'
+    # tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
+    # print("image saved")

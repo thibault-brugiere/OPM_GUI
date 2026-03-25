@@ -139,10 +139,9 @@ if __name__ == '__main__':
     channels_list = ["BFP","GFP", "CY3.5", "TexRed"]
     
     # experiment_path = "D:/Projets_Python/OPM_GUI/Images/20260206_LipidDroplets"
-    experiment_path = Path(r"D:\Projets_Python\OPM_GUI\Images\20260305_Louis_Neurosphere_AfterExpansion_DAPI_NHS-488")
+    experiment_path = Path(r"D:\Projets_Python\OPM_GUI\Images")
     
-    folders= ['20260305_155607_Neurosphere_AfterExpansion_DAPI_NHS-488',
-              '20260305_162920_Neurosphere2_AfterExpansion_DAPI_NHS-488'
+    folders= ['20260324_141345_Image'
               ]
     
     channels = ["GFP","BFP"]
@@ -153,7 +152,7 @@ if __name__ == '__main__':
     
         for channel in channels :
             
-            for k in range(4) :
+            for k in range(1) :
                 
                 t0 = time.perf_counter()
                 

@@ -26,6 +26,9 @@
    <layout class="QHBoxLayout" name="horizontalLayout_41">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
       <item>
        <widget class="QLabel" name="label_saving">
         <property name="font">
@@ -1412,6 +1415,9 @@
     </item>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_5">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
       <item>
        <widget class="QLabel" name="label_timelaps_settings">
         <property name="font">
@@ -1969,10 +1975,13 @@ scanning parameters</string>
     </item>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_4">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMaximumSize</enum>
+      </property>
       <item>
        <widget class="QLabel" name="label_image_preview">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -2423,6 +2432,9 @@ Pixels above this value will appear white.</string>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_25">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetMaximumSize</enum>
+        </property>
         <item>
          <spacer name="horizontalSpacer_9">
           <property name="orientation">

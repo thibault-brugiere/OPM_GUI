@@ -5,7 +5,7 @@ Created on Thu Jan 30 14:00:36 2025
 
 Convert file.ui to file.py
 
-pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
+pyside6-uic D:/Projets_Python/OPM_GUI/ui_Control_Microscope_Main.ui -o D:/Projets_Python/OPM_GUI/ui_Control_Microscope_Main.py
 
 Resolved FTDI DLL issue by copying ftd2xx64.dll from Thorlabs software to C:\Windows\System32 and renaming it to ftd2xx.dll
 NOTE : les mocks sont en rempacer dans : * main_OPM_GUI * hardware.Laser_Controller * functions_camera * main_MDA * main_LS3
@@ -39,11 +39,11 @@ from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
 from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
-# from hardware.filter_wheel import FilterWheel
+from hardware.filter_wheel import FilterWheel
 from hardware.Laser_Controller import LaserController
 # from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
 # from mock.DAQ import functions_daq
-from mock.filter_wheel import FilterWheel
+# from mock.filter_wheel import FilterWheel
 from mock.Null import NullObject
 
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
@@ -136,6 +136,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.label_daq_detected.setText(f'{len(self.connected_daq)} ni-DAQ detected : {self.connected_daq[0]}')
         else :
             self.label_daq_detected.setText('WARNING: No ni-DAQ detected ! Please restart the interface.')
+            
+        functions_daq.digital_out(False, "Dev1/port0/line12") # Force the transmission light OFF
             
         #
         # Connect to the filter wheel
@@ -267,7 +269,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         self.spinBox_scanV_overlap.setValue(25)
         self.comboBox_preview_zoom.setItemText(0, "Zoom Auto")
-        self.label_image_preview.setSizePolicy(QSizePolicy.Policy.Maximum,QSizePolicy.Policy.Maximum)
+        # self.label_image_preview.setSizePolicy(QSizePolicy.Policy.Maximum,QSizePolicy.Policy.Maximum)
         
         ##############################################
         ## Connection between functions and buttons ##
@@ -998,21 +1000,30 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_max_grayscale.setValue(65535)
         self.spinBox_min_grayscale.setValue(0)
             
-    def comboBox_preview_zoom_index_changed(self, label_size = None):
+    def comboBox_preview_zoom_index_changed(self):
         self.preview_zoom = [-1 , 2 , 1 , 0.5 , 1/3 , 0.25][self.comboBox_preview_zoom.currentIndex()]
         if self.preview_zoom == -1 :
-            if label_size is not None and all(type(x) is int for x in label_size) and len(label_size) == 2 :
-                w_label, h_label = label_size[0], label_size[1]
-                print("ok")
-            else:
-                h_label = self.label_image_preview.height()
-                w_label = self.label_image_preview.width()
+
+            label_size = [self.label_image_preview.width(), self.label_image_preview.height()]
+            w_label, h_label = label_size[0], label_size[1]
+            
+            # h_label = self.label_image_preview.height()
+            # w_label = self.label_image_preview.width()
             
             h_camera = self.camera[self.camera_id].hsize
             w_camera = self.camera[self.camera_id].vsize
 
             self.preview_zoom = min(h_label/h_camera,w_label/w_camera)
-        print(f'zomm : {self.preview_zoom}')
+        
+    def resizeEvent(self, event): # TODO
+        super().resizeEvent(event)
+        # pixel_map = QPixmap(4000,4000)
+        # pixel_map.fill(Qt.GlobalColor.black)
+        # self.label_image_preview.setPixmap(pixel_map)
+        
+        # label_size = [self.label_image_preview.width(), self.label_image_preview.height()]
+        
+        self.comboBox_preview_zoom_index_changed()
             
             
     def pb_snap_clicked_connect(self):
@@ -1195,16 +1206,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_channel_add.setDisabled(active)
         self.pb_channel_remove.setDisabled(active)
             #Preview
-            
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        # pixel_map = QPixmap(4000,4000)
-        # pixel_map.fill(Qt.GlobalColor.black)
-        # self.label_image_preview.setPixmap(pixel_map)
-        
-        label_size = [self.label_image_preview.width(), self.label_image_preview.height()]
-        
-        self.comboBox_preview_zoom_index_changed(label_size)
 
         #
         # Acquisition

@@ -110,6 +110,8 @@ class microscope(object):
         # DAQ
         self.daq_channels = {"co_channel": "Dev1/ctr0", # ADD: trigger start of each volume
                              "co_terminal": "/Dev1/PFI0", # ADD: trigger start of each volume
+                             "transmission_light": "Dev1/port0/line12",
+                             "fluo_light": "NONA",
                              "galvo": "Dev1/ao0", # Fait bouger le galvo pour le scanning
                              "camera_0": "Dev1/port0/line0", # Trigger l'exposition de la camera
                              "camera_1": "Dev1/port0/line1", # Trigger l'exposition de la deuxieme camera (si presente)
