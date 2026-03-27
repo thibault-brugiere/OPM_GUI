@@ -7,11 +7,8 @@ Created on Thu Mar  5 15:10:54 2026
 
 import math
 import numpy as np
-from scipy import ndimage
 import cupy as cp
 from cupyx.scipy import ndimage as cpx_ndimage
-
-import time as t
 
 def crop_stack(arr: np.ndarray, x1: int, y1: int, x2: int, y2: int):
     """
@@ -24,7 +21,7 @@ def crop_stack(arr: np.ndarray, x1: int, y1: int, x2: int, y2: int):
     
     Parameters
     ----------
-    arr : np.ndarray
+    arr : np.ndarray or CuPy arrays.
         Input array. Can be a 2D image (H, W) or a stack with shape
         (..., H, W). All leading dimensions are preserved.
     x1, y1 : int
@@ -34,7 +31,7 @@ def crop_stack(arr: np.ndarray, x1: int, y1: int, x2: int, y2: int):
     
     Returns
     -------
-    np.ndarray
+    np.ndarray or or CuPy arrays.
         Cropped view of the input array with shape (..., y2-y1+1, x2-x1+1).
     """
     if arr.ndim < 2:
@@ -49,8 +46,10 @@ def crop_stack(arr: np.ndarray, x1: int, y1: int, x2: int, y2: int):
         ("y1", y1, 0, h - 1),
         ("y2", y2, 0, h - 1),
         ]:
-        if not (lo <= v <= hi):
-            raise ValueError(f"{name}={v} out of bounds. Valid: [{lo}, {hi}]")
+        if v > hi:
+            v = hi
+        if v > lo :
+            v = lo
     
     if x2 < x1 or y2 < y1:
         raise ValueError("Invalid ROI: need x2>=x1 and y2>=y1.")
@@ -360,64 +359,26 @@ if __name__ == '__main__':
     aspect_ratio = 3.3564
 
     folder = Path(r"C:\Users\tbrugiere\Documents\Images_OPM\20260324_Neurospheres_GFP\20260324_145316_Neurosphere_GFP_DIV7")
-    # filename = "Position_0000_GFP_file_"
-    
-    # for k in range(4):
-    #     file_path = os.path.join(folder, f'{filename}{k:04d}.tif')
-    #     if k == 0 :
-    #         volume_zyx = tifffile.imread(file_path)
-    #     else:
-    #         volume_zyx = np.concatenate((volume_zyx, tifffile.imread(file_path)))
             
-    #     print(f'\rImage {k:04d} / 36 oppened', end = " ")
-    # print("Images oppened")
-            
-    basename = "GFP_volume_"
+    basename = "_volume_"
     
-    # channels = ["BFP","GFP", "CY3.5", "TexRed"]
+    channels = ["GFP"]
     
     for k in range(21) :
-        # for channel in channels :
+        for channel in channels :
+    
+            filename = f'{channel}{basename}{k:04d}'
+        
+            file_path = os.path.join(folder, f'{filename}.tif')
+            volume_zyx = tifffile.imread(file_path)
             
-        start_time = t.time()
-
-        filename = f'{basename}{k:04d}'
-    
-        file_path = os.path.join(folder, f'{filename}.tif')
-        volume_zyx = tifffile.imread(file_path)
-        
-        volume_zyx = cp.asarray(volume_zyx)
-        # print(f"Image {k} oppened")
-        
-        out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
-        
-        # print(f"Image {filename} deskewed")
-        
-        # out_volume = crop_stack(out_volume[35:112,:,:], 0, 391, 699, 1133)
-        
-        out_volume = cp.asnumpy(out_volume)
-        output_file_path = f'{folder}/test_dekew-rotate_{filename}.tif'
-        tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
-        # print(f"""image {filename} saved
-        #       """)
-              
-        end_time = t.time()
-        
-        print(f'total time for image {k} : {end_time - start_time}')
-        
-
-    
-    
-    # for k in range(2):
-    #     volume_zyx_deskew = volume_zyx[:, :, k*256:(k+1)*256]
-
-    #     if k == 0 :
-    #         out_volume = deskew_and_rotate_opm(volume_zyx_deskew, dy_um, aspect_ratio, theta)
-    #     else:
-    #         out_volume = np.concat((out_volume, deskew_and_rotate_opm(volume_zyx_deskew, dy_um, aspect_ratio, theta)),axis=2)
-        
-    #     print(f"image deskewed_rotated : {k}/7")
-        
-    # output_file_path = f'{folder}/dekew-rotate_{filename}total.tif'
-    # tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
-    # print("image saved")
+            volume_zyx = cp.asarray(volume_zyx)
+            print(f"Image {k} oppened")
+            
+            out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
+            
+            out_volume = cp.asnumpy(out_volume)
+            output_file_path = f'{folder}/test_dekew-rotate_{filename}.tif'
+            tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
+            print(f"""image {filename} saved
+                  """)

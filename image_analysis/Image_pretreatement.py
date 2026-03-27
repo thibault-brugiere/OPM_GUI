@@ -121,7 +121,7 @@ for parameters in experiments:
             #
             if back_ground_substraction :
                 # image = pp.subtract_bg_xy_gpu(image, rolling_ball_radius, gpu_id=1)
-                image = pp.subtract_bg_stack_xy_gpu(image, rolling_ball_radius, gpu_id = 1)
+                image = pp.subtract_bg_stack_xy_gpu(image, rolling_ball_radius, gpu_id = 1, return_numpy = True)
                 
                 print("Background substracted       ")
             

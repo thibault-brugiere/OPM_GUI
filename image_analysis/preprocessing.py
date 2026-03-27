@@ -88,7 +88,7 @@ def rolling_ball_stack(stack: np.ndarray, radius: int):
     out[out < 0] = 0
     return out
 
-def subtract_bg_xy_gpu(stack: np.ndarray, radius_px: int, gpu_id: int = 0):
+def subtract_bg_xy_gpu(stack: np.ndarray, radius_px: int, gpu_id: int = 0, return_numpy: bool = False):
     """
     Perform background subtraction on a 3D stack using 2D grey opening
     (morphological opening) applied slice-by-slice on the GPU.
@@ -113,10 +113,12 @@ def subtract_bg_xy_gpu(stack: np.ndarray, radius_px: int, gpu_id: int = 0):
         while removing slowly varying background.
     gpu_id : int, optional
         CUDA device index to use (default: 0).
+    return_numpy: bool
+        tell if the function returns a numpy or a cupy array
     
     Returns
     -------
-    np.ndarray
+    np.ndarray ot cp.ndaray
         Background-subtracted 3D stack, transferred back to CPU memory.
         All negative values are clipped to zero.
     """
@@ -140,8 +142,10 @@ def subtract_bg_xy_gpu(stack: np.ndarray, radius_px: int, gpu_id: int = 0):
     
         # Subtract background and clip negative values
         out = cp.maximum(out, 0)
+        if return_numpy:
+            return cp.asnumpy(out)
         
-        return cp.asnumpy(out)
+        return out
     
 def subtract_bg_stack_xy_gpu(stack: np.ndarray, radius_px: int, gpu_id: int = 0):
     """
