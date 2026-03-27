@@ -8,12 +8,15 @@ Created on Thu Mar  5 15:10:54 2026
 import math
 import numpy as np
 from scipy import ndimage
+import cupy as cp
+from cupyx.scipy import ndimage as cpx_ndimage
 
 import time as t
 
 def crop_stack(arr: np.ndarray, x1: int, y1: int, x2: int, y2: int):
     """
     Crop a rectangular region of interest (ROI) from an array.
+    Supports NumPy or CuPy arrays.
     
     The function supports both 2D images and higher-dimensional stacks.
     Cropping is always applied to the last two axes, which are assumed to
@@ -98,7 +101,7 @@ def _px_shift_calculation(aspect_ratio:float, angle:float, angle_unit:str = "rad
         
     return int(int_px_shift)
 
-def _shear_integer_y(volume: np.ndarray, shift_y_px_per_plane: int) -> np.ndarray:
+def _shear_integer_y(volume: np.ndarray, shift_y_px_per_plane: int, return_numpy: bool = False) -> np.ndarray:
     """
     Apply an integer shear along Y on a 3D volume of shape (Z, Y, X).
 
@@ -107,26 +110,30 @@ def _shear_integer_y(volume: np.ndarray, shift_y_px_per_plane: int) -> np.ndarra
 
     Parameters
     ----------
-    volume_zyx : np.ndarray
+    volume_zyx : np.ndarray or cp.ndarray
         Input volume of shape (Z, Y, X).
     shift_y_px_per_plane : int
         Integer shift in Y per Z-plane. Can be negative.
+    return_numpy : bool, optional
+        If True, return the result as a NumPy array. Otherwise return a CuPy array.
 
     Returns
     -------
-    np.ndarray
+    np.ndarray or cp.ndarray
         Sheared volume of shape (Z, Y + (Z - 1)*abs(shift), X).
     """
     if volume.ndim != 3:
         raise ValueError("Expected a 3D array (Z, Y, X).")
-
+    
+    volume = cp.asarray(volume)
+    
     z_size, y_size, x_size = volume.shape
     shift = int(shift_y_px_per_plane)
     if  shift == 0:
         return volume.copy()
 
     pad_y = z_size * abs(shift)
-    out = np.zeros((z_size, y_size + pad_y, x_size), dtype=volume.dtype)
+    out = cp.zeros((z_size, y_size + pad_y, x_size), dtype=volume.dtype)
 
     if shift > 0:
         for z in range(z_size):
@@ -138,6 +145,9 @@ def _shear_integer_y(volume: np.ndarray, shift_y_px_per_plane: int) -> np.ndarra
         for z in range(z_size):
             y0 = pad_y - z * shift
             out[z, y0:y0 + y_size, :] = volume[z]
+    
+    if return_numpy :
+        return cp.asnumpy(out)
 
     return out
 
@@ -147,7 +157,8 @@ def rotate_about_x_physical(volume: np.ndarray,
                             theta_deg: float,
                             y_original_size: float = None,
                             order: int = 1,
-                            cval: float = 0.0) -> np.ndarray:
+                            cval: float = 0.0,
+                            return_numpy: bool = True) -> np.ndarray:
     """
     Rotate a 3D volume around X, i.e. in the (Z, Y) plane, while accounting
     for anisotropic voxel size.
@@ -186,6 +197,8 @@ def rotate_about_x_physical(volume: np.ndarray,
         Interpolation order for scipy.ndimage.affine_transform.
     cval : float, optional
         Fill value outside the input volume.
+    return_numpy : bool, optional
+        If True, return the result as a NumPy array. Otherwise return a CuPy array.
 
     Returns
     -------
@@ -200,9 +213,12 @@ def rotate_about_x_physical(volume: np.ndarray,
     if dz_um <= 0:
         raise ValueError("dz_um must be > 0.")
     if order not in (0, 1, 2, 3, 4, 5):
-        raise ValueError("order must be an integer between 0 and 5.")    
+        raise ValueError("order must be an integer between 0 and 5.")
         
-    z_size, y_size, x_size = volume.shape
+    # Accept NumPy or CuPy input, but compute small geometry objects on CPU.
+    volume_gpu = cp.asarray(volume)
+        
+    z_size, y_size, x_size = volume_gpu.shape
     theta = np.deg2rad(-theta_deg)
 
     cos_theta = np.cos(theta)
@@ -265,18 +281,20 @@ def rotate_about_x_physical(volume: np.ndarray,
     
     offset = center_in - forward_3d  @ center_out
     
-    rotated = ndimage.affine_transform(
-        volume,
-        matrix=forward_3d ,
-        offset=offset,
+    rotated_gpu = cpx_ndimage.affine_transform(
+        volume_gpu,
+        matrix=cp.asarray(forward_3d) ,
+        offset=cp.asarray(offset),
         output_shape=output_shape,
         order=order,
         mode="constant",
         cval=cval,
         prefilter=(order > 1)
     )
+    if return_numpy:
+        return cp.asnumpy(rotated_gpu)
 
-    return rotated
+    return rotated_gpu
 
 def deskew_and_rotate_opm(
         volume: np.ndarray,
@@ -320,8 +338,6 @@ def deskew_and_rotate_opm(
     shift_y_px_per_plane = _px_shift_calculation(aspect_ratio, theta_deg, angle_unit = "deg")
     
     sheared = _shear_integer_y(volume, shift_y_px_per_plane)
-
-    start_time = t.time()
     
     rotated = rotate_about_x_physical(
         sheared,
@@ -330,10 +346,6 @@ def deskew_and_rotate_opm(
         theta_deg=theta_deg,
         order=order, cval=0.0,
         y_original_size = size_y)
-    
-    end_time = t.time()
-    
-    print(f'total time for image : {end_time - start_time}')
     
     return rotated
 
@@ -364,7 +376,7 @@ if __name__ == '__main__':
     
     # channels = ["BFP","GFP", "CY3.5", "TexRed"]
     
-    for k in range(5) :
+    for k in range(21) :
         # for channel in channels :
             
         start_time = t.time()
@@ -373,6 +385,8 @@ if __name__ == '__main__':
     
         file_path = os.path.join(folder, f'{filename}.tif')
         volume_zyx = tifffile.imread(file_path)
+        
+        volume_zyx = cp.asarray(volume_zyx)
         # print(f"Image {k} oppened")
         
         out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
@@ -381,7 +395,7 @@ if __name__ == '__main__':
         
         # out_volume = crop_stack(out_volume[35:112,:,:], 0, 391, 699, 1133)
         
-        
+        out_volume = cp.asnumpy(out_volume)
         output_file_path = f'{folder}/test_dekew-rotate_{filename}.tif'
         tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
         # print(f"""image {filename} saved
@@ -390,6 +404,7 @@ if __name__ == '__main__':
         end_time = t.time()
         
         print(f'total time for image {k} : {end_time - start_time}')
+        
 
     
     
