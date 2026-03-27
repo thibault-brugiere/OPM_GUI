@@ -46,7 +46,6 @@ Created on Tue Sep  2 09:03:43 2025
     
 # TODO : Save positions for multi-position acquisition
 # TODO : apply selected LUT
-# TODO : ajouter la sortie daq et le numéro de série du mirroir dans les paramétres modifiables par l'utilisateur'
 
     #############
     # Deskewing #

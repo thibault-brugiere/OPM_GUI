@@ -269,7 +269,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         self.spinBox_scanV_overlap.setValue(25)
         self.comboBox_preview_zoom.setItemText(0, "Zoom Auto")
-        # self.label_image_preview.setSizePolicy(QSizePolicy.Policy.Maximum,QSizePolicy.Policy.Maximum)
         
         ##############################################
         ## Connection between functions and buttons ##
@@ -754,7 +753,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         "Saves the settings from the interface elements into the specified channel object."
         functions_ui.save_channel_from_interface(self.list_channel_interface,
                                                  self.channel[self.comboBox_channel_name.currentText()])
-        # print(self.channel['BFP'].laser_power['405'])
     
     def pb_channel_add_clicked_connect(self):
         "Saves the settings from the interface elements into a new channel object named from channel_name lineEdit object."
@@ -774,6 +772,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.comboBox_channel_name.addItem(index) # Add the new channel to the comboBox
         self.comboBox_channel_name.setCurrentText(index) # set the comboBox to this index
         self.lineEdit_channel_name.setText(index)
+        
+        self.spinBox_number_channels_value_changed()
  
     def pb_channel_remove_clicked_connect(self):
         "Removes the currently selected channel from the combo box and the channel dictionary."
@@ -784,6 +784,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             if index >= 0:
                 self.comboBox_channel_name.removeItem(index)
                 self.channel.pop(channel_id, None) # channel.pop remove the channel from the channel dictionnaire
+                
+                self.spinBox_number_channels_value_changed()
                 
         else:
             self.status_bar.showMessage("Default channel can not be removed", 5000)
@@ -1015,13 +1017,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
 
             self.preview_zoom = min(h_label/h_camera,w_label/w_camera)
         
-    def resizeEvent(self, event): # TODO
+    def resizeEvent(self, event):
         super().resizeEvent(event)
-        # pixel_map = QPixmap(4000,4000)
-        # pixel_map.fill(Qt.GlobalColor.black)
-        # self.label_image_preview.setPixmap(pixel_map)
-        
-        # label_size = [self.label_image_preview.width(), self.label_image_preview.height()]
         
         self.comboBox_preview_zoom_index_changed()
             
