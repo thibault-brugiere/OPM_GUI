@@ -85,6 +85,8 @@ class sample_finder_Window(QWidget, Ui_Form):
             # Get informations from microscope
             #
             
+        self.mirror = None
+            
         if self.microscope is None :
             self.mff_ser_num = 37009743
         else:
@@ -103,8 +105,12 @@ class sample_finder_Window(QWidget, Ui_Form):
             except:
                 self.daq_transmission = "Dev1/port0/line12"
                 self.daq_fluo = None  
-                
-        self.mirror = Thorlabs.kinesis.MFF(self.mff_ser_num)
+        
+        try :
+            self.mirror = Thorlabs.kinesis.MFF(self.mff_ser_num)
+        except:
+            print('Can not connect to Thorlabs mirror')
+            self.pb_mirror.setEnabled(False)
         
             #
             # Initialize camera
@@ -434,11 +440,14 @@ class sample_finder_Window(QWidget, Ui_Form):
         self.comboBox_illuminator.setCurrentIndex(self.cube)
             
     def update_mirror_position(self):
-        try :
-            position = self.mirror.get_state()
-        except:
-            print('[Sample Finder] Error during mirror position reading')
-            return
+        if self.mirror is not None :
+            try :
+                position = self.mirror.get_state()
+            except:
+                print('[Sample Finder] Error during mirror position reading')
+                return
+        else :
+            position = 1
         
         if position == 0:
             self.label_mirror_icon.setPixmap(self.Green_Light_Icon_On)
@@ -500,7 +509,9 @@ class sample_finder_Window(QWidget, Ui_Form):
         #
         
     def _on_close(self):
-        self.mirror.move_to_state(1)
+        if self.mirror is not None :
+            self.mirror.move_to_state(1)
+            self.mirror.close()
         functions_daq.digital_out(False, self.daq_transmission)
         
     def closeEvent(self, event):
@@ -512,12 +523,12 @@ class sample_finder_Window(QWidget, Ui_Form):
 
         if reply == QMessageBox.Yes:
             self.pb_stop_preview_clicked()
-            # self.mirror.move_to_state(1)
             # functions_daq.digital_out(False, self.daq_transmission)
             if self.tlcam is not None :
                 self.tlcam.close()
             self.pb_mirror.setChecked(False)
             self.pb_mirror_clicked()
+            self.mirror.close()
             self.pb_transmission.setChecked(False)
             self.pb_transmission_clicked()
             self.pb_fluo.setChecked(False)
