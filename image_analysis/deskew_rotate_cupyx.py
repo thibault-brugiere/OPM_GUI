@@ -10,7 +10,7 @@ import numpy as np
 import cupy as cp
 from cupyx.scipy import ndimage as cpx_ndimage
 
-def crop_stack(arr: np.ndarray, x1: int, y1: int, x2: int, y2: int):
+def crop_stack(arr: cp.ndarray, x1: int, y1: int, x2: int, y2: int, gpu_id: int = 0):
     """
     Crop a rectangular region of interest (ROI) from an array.
     Supports NumPy or CuPy arrays.
@@ -34,28 +34,30 @@ def crop_stack(arr: np.ndarray, x1: int, y1: int, x2: int, y2: int):
     np.ndarray or or CuPy arrays.
         Cropped view of the input array with shape (..., y2-y1+1, x2-x1+1).
     """
-    if arr.ndim < 2:
-        raise ValueError(f"Array has ndim={arr.ndim}, expected at least 2.")
-    
-    h = arr.shape[-2]
-    w = arr.shape[-1]
-    
-    for name, v, lo, hi in [
-        ("x1", x1, 0, w - 1),
-        ("x2", x2, 0, w - 1),
-        ("y1", y1, 0, h - 1),
-        ("y2", y2, 0, h - 1),
-        ]:
-        if v > hi:
-            v = hi
-        if v > lo :
-            v = lo
-    
-    if x2 < x1 or y2 < y1:
-        raise ValueError("Invalid ROI: need x2>=x1 and y2>=y1.")
-    
-    # y then x
-    return arr[..., y1 : y2 + 1, x1 : x2 + 1]
+    with cp.cuda.Device(gpu_id):
+        
+        if arr.ndim < 2:
+            raise ValueError(f"Array has ndim={arr.ndim}, expected at least 2.")
+        
+        h = arr.shape[-2]
+        w = arr.shape[-1]
+        
+        for name, v, lo, hi in [
+            ("x1", x1, 0, w - 1),
+            ("x2", x2, 0, w - 1),
+            ("y1", y1, 0, h - 1),
+            ("y2", y2, 0, h - 1),
+            ]:
+            if v > hi:
+                v = hi
+            if v > lo :
+                v = lo
+        
+        if x2 < x1 or y2 < y1:
+            raise ValueError("Invalid ROI: need x2>=x1 and y2>=y1.")
+        
+        # y then x
+        return arr[..., y1 : y2 + 1, x1 : x2 + 1]
 
 def _px_shift_calculation(aspect_ratio:float, angle:float, angle_unit:str = "rad", tolerance = 0.0001) -> int:
     """
@@ -100,7 +102,8 @@ def _px_shift_calculation(aspect_ratio:float, angle:float, angle_unit:str = "rad
         
     return int(int_px_shift)
 
-def _shear_integer_y(volume: np.ndarray, shift_y_px_per_plane: int, return_numpy: bool = False) -> np.ndarray:
+def _shear_integer_y(volume: np.ndarray, shift_y_px_per_plane: int,
+                     return_numpy: bool = False, gpu_id: int = 0) -> np.ndarray:
     """
     Apply an integer shear along Y on a 3D volume of shape (Z, Y, X).
 
@@ -121,34 +124,38 @@ def _shear_integer_y(volume: np.ndarray, shift_y_px_per_plane: int, return_numpy
     np.ndarray or cp.ndarray
         Sheared volume of shape (Z, Y + (Z - 1)*abs(shift), X).
     """
+        
     if volume.ndim != 3:
         raise ValueError("Expected a 3D array (Z, Y, X).")
-    
-    volume = cp.asarray(volume)
-    
-    z_size, y_size, x_size = volume.shape
-    shift = int(shift_y_px_per_plane)
-    if  shift == 0:
-        return volume.copy()
+            
+    with cp.cuda.Device(gpu_id):
 
-    pad_y = z_size * abs(shift)
-    out = cp.zeros((z_size, y_size + pad_y, x_size), dtype=volume.dtype)
-
-    if shift > 0:
-        for z in range(z_size):
-            y0 = z * shift
-            out[z, y0:y0 + y_size, :] = volume[z]
-    else:
-        # shift negative: start near the bottom
-        shift = -shift
-        for z in range(z_size):
-            y0 = pad_y - z * shift
-            out[z, y0:y0 + y_size, :] = volume[z]
+        
+        volume = cp.asarray(volume)
+        
+        z_size, y_size, x_size = volume.shape
+        shift = int(shift_y_px_per_plane)
+        if  shift == 0:
+            return volume.copy()
     
-    if return_numpy :
-        return cp.asnumpy(out)
-
-    return out
+        pad_y = z_size * abs(shift)
+        out = cp.zeros((z_size, y_size + pad_y, x_size), dtype=volume.dtype)
+    
+        if shift > 0:
+            for z in range(z_size):
+                y0 = z * shift
+                out[z, y0:y0 + y_size, :] = volume[z]
+        else:
+            # shift negative: start near the bottom
+            shift = -shift
+            for z in range(z_size):
+                y0 = pad_y - z * shift
+                out[z, y0:y0 + y_size, :] = volume[z]
+        
+        if return_numpy :
+            return cp.asnumpy(out)
+    
+        return out
 
 def rotate_about_x_physical(volume: np.ndarray,
                             dy_um: float,
@@ -157,7 +164,8 @@ def rotate_about_x_physical(volume: np.ndarray,
                             y_original_size: float = None,
                             order: int = 1,
                             cval: float = 0.0,
-                            return_numpy: bool = True) -> np.ndarray:
+                            return_numpy: bool = True,
+                            gpu_id: int = 0) -> np.ndarray:
     """
     Rotate a 3D volume around X, i.e. in the (Z, Y) plane, while accounting
     for anisotropic voxel size.
@@ -204,7 +212,7 @@ def rotate_about_x_physical(volume: np.ndarray,
     np.ndarray
         Rotated volume with tight output canvas.
     """
-    
+        
     if volume.ndim != 3:
         raise ValueError("Expected a 3D array with shape (Z, Y, X).")
     if dy_um <= 0 :
@@ -213,87 +221,90 @@ def rotate_about_x_physical(volume: np.ndarray,
         raise ValueError("dz_um must be > 0.")
     if order not in (0, 1, 2, 3, 4, 5):
         raise ValueError("order must be an integer between 0 and 5.")
-        
-    # Accept NumPy or CuPy input, but compute small geometry objects on CPU.
-    volume_gpu = cp.asarray(volume)
-        
-    z_size, y_size, x_size = volume_gpu.shape
-    theta = np.deg2rad(-theta_deg)
+            
+    with cp.cuda.Device(gpu_id):
 
-    cos_theta = np.cos(theta)
-    sin_theta = np.sin(theta)
-
-    # ------------------------------------------------------------------
-    # 1) Forward linear transform in index space, corrected for anisotropy
-    # ------------------------------------------------------------------
-
-    scale_zy = np.array([[dz_um, 0.0],
-                  [0.0, dy_um]], dtype=np.float64)
-    rotate_zy = np.array([[cos_theta, -sin_theta],
-                  [sin_theta,  cos_theta]], dtype=np.float64)
+            
+        # Accept NumPy or CuPy input, but compute small geometry objects on CPU.
+        volume_gpu = cp.asarray(volume)
+            
+        z_size, y_size, x_size = volume_gpu.shape
+        theta = np.deg2rad(-theta_deg)
     
-    # Forward mapping in index coordinates: input -> rotated output
-    forward_zy = np.linalg.inv(scale_zy) @ rotate_zy @ scale_zy  # 2x2 acting on (z,y) indices
-
-    # Build 3x3 affine for (z,y,x): keep x unchanged
-    forward_3d  = np.eye(3, dtype=np.float64)
-    forward_3d [0:2, 0:2] = forward_zy
-
-    # ---------------------------------------------------------
-    # 2) Compute the tight forward bounding box in the (Z, Y) plane
-    # ---------------------------------------------------------
-    center_in = np.array([
-        (z_size - 1) / 2.0,
-        (y_size - 1) / 2.0,
-        (x_size - 1) / 2.0,
+        cos_theta = np.cos(theta)
+        sin_theta = np.sin(theta)
+    
+        # ------------------------------------------------------------------
+        # 1) Forward linear transform in index space, corrected for anisotropy
+        # ------------------------------------------------------------------
+    
+        scale_zy = np.array([[dz_um, 0.0],
+                      [0.0, dy_um]], dtype=np.float64)
+        rotate_zy = np.array([[cos_theta, -sin_theta],
+                      [sin_theta,  cos_theta]], dtype=np.float64)
+        
+        # Forward mapping in index coordinates: input -> rotated output
+        forward_zy = np.linalg.inv(scale_zy) @ rotate_zy @ scale_zy  # 2x2 acting on (z,y) indices
+    
+        # Build 3x3 affine for (z,y,x): keep x unchanged
+        forward_3d  = np.eye(3, dtype=np.float64)
+        forward_3d [0:2, 0:2] = forward_zy
+    
+        # ---------------------------------------------------------
+        # 2) Compute the tight forward bounding box in the (Z, Y) plane
+        # ---------------------------------------------------------
+        center_in = np.array([
+            (z_size - 1) / 2.0,
+            (y_size - 1) / 2.0,
+            (x_size - 1) / 2.0,
+            ], dtype=np.float64)
+        
+        corners_zy = np.array([
+            [0.0,     0.0],
+            [0.0,     y_size - 1.0],
+            [z_size - 1, 0.0],
+            [z_size - 1.0, y_size - 1.0],
         ], dtype=np.float64)
+        
+        centered_corners_zy = corners_zy - center_in[None, 0:2]
+        rotated_corners = centered_corners_zy @ forward_zy.T
+        
+        min_zy = rotated_corners.min(axis=0)
+        max_zy = rotated_corners.max(axis=0)
+        
+        if y_original_size is not None :
+            out_z = int(np.ceil(((y_original_size - 1) * dy_um * abs(np.sin(theta))) / dz_um))
+        else:
+            out_z =int(np.ceil(max_zy[0] - min_zy[0] + 1))
+        out_y = int(np.ceil(max_zy[1] - min_zy[1] + 1))
+        out_x = x_size
+        
+        output_shape = (out_z, out_y, out_x)
+        
+        # ---------------------------------------------------------
+        # 3) Build the forward affine transform in absolute coordinates
+        # ---------------------------------------------------------
+        
+        # center of output box in its own index space
+        center_out = np.array([(out_z - 1) / 2.0, (out_y - 1) / 2.0, (out_x - 1) / 2.0], dtype=np.float64)
+        center_in = np.array([(z_size - 1) / 2.0, (y_size - 1) / 2.0, (x_size - 1) / 2.0], dtype=np.float64)
+        
+        offset = center_in - forward_3d  @ center_out
+        
+        rotated_gpu = cpx_ndimage.affine_transform(
+            volume_gpu,
+            matrix=cp.asarray(forward_3d) ,
+            offset=cp.asarray(offset),
+            output_shape=output_shape,
+            order=order,
+            mode="constant",
+            cval=cval,
+            prefilter=(order > 1)
+        )
+        if return_numpy:
+            return cp.asnumpy(rotated_gpu)
     
-    corners_zy = np.array([
-        [0.0,     0.0],
-        [0.0,     y_size - 1.0],
-        [z_size - 1, 0.0],
-        [z_size - 1.0, y_size - 1.0],
-    ], dtype=np.float64)
-    
-    centered_corners_zy = corners_zy - center_in[None, 0:2]
-    rotated_corners = centered_corners_zy @ forward_zy.T
-    
-    min_zy = rotated_corners.min(axis=0)
-    max_zy = rotated_corners.max(axis=0)
-    
-    if y_original_size is not None :
-        out_z = int(np.ceil(((y_original_size - 1) * dy_um * abs(np.sin(theta))) / dz_um))
-    else:
-        out_z =int(np.ceil(max_zy[0] - min_zy[0] + 1))
-    out_y = int(np.ceil(max_zy[1] - min_zy[1] + 1))
-    out_x = x_size
-    
-    output_shape = (out_z, out_y, out_x)
-    
-    # ---------------------------------------------------------
-    # 3) Build the forward affine transform in absolute coordinates
-    # ---------------------------------------------------------
-    
-    # center of output box in its own index space
-    center_out = np.array([(out_z - 1) / 2.0, (out_y - 1) / 2.0, (out_x - 1) / 2.0], dtype=np.float64)
-    center_in = np.array([(z_size - 1) / 2.0, (y_size - 1) / 2.0, (x_size - 1) / 2.0], dtype=np.float64)
-    
-    offset = center_in - forward_3d  @ center_out
-    
-    rotated_gpu = cpx_ndimage.affine_transform(
-        volume_gpu,
-        matrix=cp.asarray(forward_3d) ,
-        offset=cp.asarray(offset),
-        output_shape=output_shape,
-        order=order,
-        mode="constant",
-        cval=cval,
-        prefilter=(order > 1)
-    )
-    if return_numpy:
-        return cp.asnumpy(rotated_gpu)
-
-    return rotated_gpu
+        return rotated_gpu
 
 def deskew_and_rotate_opm(
         volume: np.ndarray,
@@ -364,21 +375,24 @@ if __name__ == '__main__':
     
     channels = ["GFP"]
     
-    for k in range(21) :
+    for k in range(1) :
         for channel in channels :
     
             filename = f'{channel}{basename}{k:04d}'
         
             file_path = os.path.join(folder, f'{filename}.tif')
-            volume_zyx = tifffile.imread(file_path)
+            # volume_zyx = tifffile.imread(file_path)
             
-            volume_zyx = cp.asarray(volume_zyx)
-            print(f"Image {k} oppened")
+            shape = tifffile.TiffFile(file_path).series[0].shape[1:3]
+            print(shape)
             
-            out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
+            # volume_zyx = cp.asarray(volume_zyx)
+            # print(f"Image {k} oppened")
             
-            out_volume = cp.asnumpy(out_volume)
-            output_file_path = f'{folder}/test_dekew-rotate_{filename}.tif'
-            tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
-            print(f"""image {filename} saved
-                  """)
+            # out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
+            
+            # out_volume = cp.asnumpy(out_volume)
+            # output_file_path = f'{folder}/test_dekew-rotate_{filename}.tif'
+            # tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
+            # print(f"""image {filename} saved
+            #       """)

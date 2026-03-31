@@ -119,29 +119,29 @@ def subtract_bg_xy_gpu(stack: np.ndarray, radius_px: int, gpu_id: int = 0, retur
     Returns
     -------
     np.ndarray ot cp.ndaray
-        Background-subtracted 3D stack, transferred back to CPU memory.
+        Background-subtracted 3D stack.
         All negative values are clipped to zero.
     """
+    if radius_px < 1:
+        raise ValueError("radius_px must be >= 1.")
+
+    if stack.ndim != 3:
+        raise ValueError("stack must be a 3D array with shape (Z, Y, X).")
     
     with cp.cuda.Device(gpu_id):
         
-        # Ensure contiguous memory before transfer to GPU
-        stack = np.ascontiguousarray(stack)
-        stack = cp.asarray(stack)
+        stack_gpu = cp.asarray(stack)
     
         # Build a 2D circular footprint (disk) in the XY plane
         yy, xx = cp.ogrid[-radius_px:radius_px+1, -radius_px:radius_px+1]
-        footprint = (xx*xx + yy*yy) <= radius_px*radius_px
+        disk_2d = (xx*xx + yy*yy) <= radius_px*radius_px
+        footprint_3d = disk_2d[cp.newaxis, :, :]   # shape (1, Y, X)
     
         # Estimate background using grey opening on GPU
-        out = cp.empty_like(stack)
-        for z in range(stack.shape[0]):
-            bg = cndi.grey_opening(stack[z], footprint=footprint, mode="reflect")
-            out[z] = stack[z] - bg
-            print(f"Backgournd substraction : {z}\r", end ="")
+        bg = cndi.grey_opening(stack_gpu, footprint=footprint_3d, mode="reflect")
     
         # Subtract background and clip negative values
-        out = cp.maximum(out, 0)
+        out = cp.maximum(stack_gpu - bg, 0)
         if return_numpy:
             return cp.asnumpy(out)
         

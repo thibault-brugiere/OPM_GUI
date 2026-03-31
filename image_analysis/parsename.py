@@ -69,6 +69,7 @@ def parse_mda_filenames(folder: str | Path) -> dict[str, Any]:
             "path": path,
             "channel": channel,
             "image": image,
+            "process": True,
         })
 
         channels_set.add(channel)
@@ -140,6 +141,7 @@ def parse_ls3_filenames(folder: str | Path) -> dict[str, Any]:
             "position" : position,
             "channel": channel,
             "index": index,
+            "process": True,
         })
 
         positions_set.add(position)

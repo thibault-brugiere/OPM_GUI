@@ -139,9 +139,10 @@ if __name__ == '__main__':
     channels_list = ["BFP","GFP", "CY3.5", "TexRed"]
     
     # experiment_path = "D:/Projets_Python/OPM_GUI/Images/20260206_LipidDroplets"
-    experiment_path = Path(r"D:\Projets_Python\OPM_GUI\Images")
+    experiment_path = Path(r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_NS_DNA-Paint")
     
-    folders= ['20260324_141345_Image'
+    folders= ['20260327_153503_NS_GFP',
+              '20260327_161507_NS_GFP'
               ]
     
     channels = ["GFP","BFP"]

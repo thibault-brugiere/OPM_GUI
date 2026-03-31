@@ -9,6 +9,8 @@ import math
 import numpy as np
 from scipy import ndimage
 
+import time as t
+
 def crop_stack(arr: np.ndarray, x1: int, y1: int, x2: int, y2: int):
     """
     Crop a rectangular region of interest (ROI) from an array.
@@ -318,6 +320,8 @@ def deskew_and_rotate_opm(
     shift_y_px_per_plane = _px_shift_calculation(aspect_ratio, theta_deg, angle_unit = "deg")
     
     sheared = _shear_integer_y(volume, shift_y_px_per_plane)
+
+    start_time = t.time()
     
     rotated = rotate_about_x_physical(
         sheared,
@@ -326,6 +330,10 @@ def deskew_and_rotate_opm(
         theta_deg=theta_deg,
         order=order, cval=0.0,
         y_original_size = size_y)
+    
+    end_time = t.time()
+    
+    print(f'total time for image : {end_time - start_time}')
     
     return rotated
 
@@ -340,32 +348,52 @@ if __name__ == '__main__':
     aspect_ratio = 3.3564
 
     folder = Path(r"C:\Users\tbrugiere\Documents\Images_OPM\20260324_Neurospheres_GFP\20260324_145316_Neurosphere_GFP_DIV7")
-            
-    basename = "_volume_"
+    # filename = "Position_0000_GFP_file_"
     
-    channels = ["BFP"]
+    # for k in range(4):
+    #     file_path = os.path.join(folder, f'{filename}{k:04d}.tif')
+    #     if k == 0 :
+    #         volume_zyx = tifffile.imread(file_path)
+    #     else:
+    #         volume_zyx = np.concatenate((volume_zyx, tifffile.imread(file_path)))
+            
+    #     print(f'\rImage {k:04d} / 36 oppened', end = " ")
+    # print("Images oppened")
+            
+    basename = "GFP_volume_"
+    
+    # channels = ["BFP","GFP", "CY3.5", "TexRed"]
     
     for k in range(5) :
-        for channel in channels :
-            filename = f'{basename}{k:04d}'
+        # for channel in channels :
+            
+        start_time = t.time()
+
+        filename = f'{basename}{k:04d}'
+    
+        file_path = os.path.join(folder, f'{filename}.tif')
+        volume_zyx = tifffile.imread(file_path)
+        # print(f"Image {k} oppened")
         
-            file_path = os.path.join(folder, f'{filename}.tif')
-            volume_zyx = tifffile.imread(file_path)
-            print(f"Image {k} oppened")
-            
-            out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
-            
-            print(f"Image {filename} deskewed")
-            
-            output_file_path = f'{folder}/test_dekew-rotate_{filename}.tif'
-            tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
-            
-            print(f"""image {filename} saved
-                  """)
+        out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
+        
+        # print(f"Image {filename} deskewed")
+        
+        # out_volume = crop_stack(out_volume[35:112,:,:], 0, 391, 699, 1133)
+        
+        
+        output_file_path = f'{folder}/test_dekew-rotate_{filename}.tif'
+        tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
+        # print(f"""image {filename} saved
+        #       """)
+              
+        end_time = t.time()
+        
+        print(f'total time for image {k} : {end_time - start_time}')
 
     
     
-    # for k in range(2): # If the file needs to be spleeted
+    # for k in range(2):
     #     volume_zyx_deskew = volume_zyx[:, :, k*256:(k+1)*256]
 
     #     if k == 0 :
