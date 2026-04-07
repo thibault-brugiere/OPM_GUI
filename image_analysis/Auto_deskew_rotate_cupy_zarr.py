@@ -7,16 +7,25 @@ Created on Thu Jan 22 16:54:49 2026
 This program should be run with the environnement OPM_gpu that contains the library
 cupyx
 """
+import gc
 import math
 import numpy as np
 import cupy as cp
 import os
 from pathlib import Path
 import tifffile
+import zarr
 
 from deskew_rotate_cupyx import deskew_and_rotate_opm as deskew_rotate
 import parsename
 import preprocessing
+
+import time as t
+
+def open_x_slices_zarr(buffer : np.ndarray, file_path:list,x_start:int, x_end:int):
+    file = file_path + r"\ZarrFiles.zarr"
+    z = zarr.open(file, mode="r")
+    return z[:, :, x_start:x_end]
 
 def auto_deskew_rotate(folders):
     for folder in folders:
@@ -53,7 +62,7 @@ def auto_deskew_rotate(folders):
                     out_volume_np = cp.asnumpy(out_volume)
                     
                     output_file_path = f'{folder}/dekew-rotate_{name}'
-                    tifffile.imwrite(output_file_path, out_volume_np, bigtiff=True, compression='zlib')
+                    tifffile.imwrite(output_file_path, out_volume_np, bigtiff=True, compression=None)
             
         if process == 'ls3':
             for position in parse_ls3["positions"] :
@@ -73,58 +82,73 @@ def auto_deskew_rotate(folders):
                             
                         size = shape[0]
                         size_list.append(size)
-                        y,x = tifffile.TiffFile(file_path).series[0].shape[1:3]
+                        y, x = shape[1:3]
+                    print(f'y: {y} x: {x}')
                     
-                    total_size = int(np.sum(size_list))
-                    volume_zyx = np.empty((total_size,y,x), dtype = np.uint16)
-                    start=0
-
-                    for k in range(len(file_path_list)):
-                        file_path = file_path_list[k]
-                        end = start + size_list[k]
-                        volume_zyx[start : end,:,:] = tifffile.imread(file_path)
-                        start = end 
-                        
-                        print(f'charged : {k} / {len(parse_ls3["index"])-1}')
+                    total_size = int(np.sum(size_list))                    
                     
-                    
-                    x_slices = volume_zyx.shape[-1]
+                    x_slices = x
+                    y_slices = y
                     steps = 32
                     step_size = math.ceil(x_slices / steps)
-                    print(f'X: {volume_zyx.shape[-1]} Y: {volume_zyx.shape[-2]} Z: {volume_zyx.shape[-3]}, stepsize: {step_size}')
+                    
+                    sub_volume_buffer = np.empty((total_size, y_slices, step_size), dtype=np.uint16)
                     
                     for k in range(steps):
                         print(f'part {k}/{steps-1}')
-    
+                        
+                        t0 = t.time()
+                        sub_volume_zyx = open_x_slices_zarr(sub_volume_buffer,
+                                                            folder,
+                                                            k*step_size,
+                                                            min((k+1) * step_size, x_slices))
+                        t1 = t.time()
+                        elapsed_time = t1-t0
+                        print(f"time for opening : {elapsed_time} s")
+                        
+                        t0 = t.time()
+                        
                         out_volume_cp = deskew_rotate(
-                            cp.asarray(volume_zyx[:, :, k*step_size : min((k+1) * step_size, x_slices)]),
+                            cp.asarray(sub_volume_zyx),
                             dy_um = metadata["px_size"],
                             aspect_ratio = metadata["aspect_ratio"],
                             theta_deg = metadata["angle"])
                         
+                        t1 = t.time()
+                        elapsed_time = t1-t0
+                        print(f"time for deskewing : {elapsed_time} s")
+                        
+                        t0 = t.time()
+                        
                         if k == 0 :
                             z,y = out_volume_cp.shape[-3],out_volume_cp.shape[-2]
-                            out_volume_np = np.empty((z,y,x_slices), dtype = np.uint16)
+                            
+                            out_file = folder + r"\deskew.zarr"
+                            
+                            zarr_array = zarr.open(
+                            out_file,
+                            mode="w",
+                            shape=(z, y, x_slices),
+                            chunks=(64, y , step_size),
+                            dtype=np.uint16,
+                        )
 
-                        out_volume_np[:,:,k*step_size : min((k+1) * step_size, x_slices)] = out_volume_cp
+                        zarr_array[:,:,k*step_size : min((k+1) * step_size, x_slices)] = out_volume_cp
                         
                         del out_volume_cp
+                        del sub_volume_zyx
+                        gc.collect()
                         cp.get_default_memory_pool().free_all_blocks()
-                    
-                    del volume_zyx
+                        t1 = t.time()
+                        
+                        elapsed_time = t1-t0
+                        print(f"time for saving : {elapsed_time} s")
                     
                     print('deskew_rotate finished')
                     
                     print('saving')
-                            
-                    output_file_path = f'{folder}/test_dekew-rotate_{name}.tif'
-                    tifffile.imwrite(output_file_path, out_volume_np, bigtiff=True)
                     
                     print('volume saved')
-                    
-                    del out_volume_np
-                            
-    
                                 
             
 ###############################################################################

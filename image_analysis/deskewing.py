@@ -138,14 +138,12 @@ if __name__ == '__main__':
     
     channels_list = ["BFP","GFP", "CY3.5", "TexRed"]
     
-    # experiment_path = "D:/Projets_Python/OPM_GUI/Images/20260206_LipidDroplets"
-    experiment_path = Path(r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_NS_DNA-Paint")
+    experiment_path = Path(r"D:\Projets_Python\OPM_GUI\Images")
     
-    folders= ['20260327_153503_NS_GFP',
-              '20260327_161507_NS_GFP'
+    folders= ['20260331_164237_NS_AgaroseStamp_Homer1C-mCherry',
               ]
     
-    channels = ["GFP","BFP"]
+    channels = ["CY3.5"]
     
     for folder in folders :
         print(f'FOLDER : {folder}')
@@ -153,11 +151,10 @@ if __name__ == '__main__':
     
         for channel in channels :
             
-            for k in range(1) :
+            for k in range(60) :
                 
                 t0 = time.perf_counter()
                 
-                # name = f'{channel}_volume_{k:04d}'
                 name = f'{channel}_volume_{k:04d}'
                 print(f'Deskewing {name}')
                 

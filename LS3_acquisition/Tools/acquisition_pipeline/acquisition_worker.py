@@ -82,6 +82,7 @@ class AcquisitionWorker(QObject):
         self.file_per_volume = math.ceil(self.n_steps / self.images_per_file)
         self.n_files = self.file_per_volume * self.n_volumes
         self.images_in_last_file = self.n_steps - (self.file_per_volume - 1) * self.images_per_file #TODO a orriger ici
+        print(f'images in lat file : {self.images_in_last_file}')
 
         self.stop_event = threading.Event()
         self.threads = []
@@ -220,7 +221,7 @@ class AcquisitionWorker(QObject):
                         file_id = 0
 
                         if self.preview_callback:
-                            self.new_volume_ready.emit(current_buffer[0:expected_slices-1], file_data)
+                            self.new_volume_ready.emit(current_buffer[0:expected_slices-1].copy(), file_data)
                     else :
                         if self.preview_callback:
                             self.new_volume_ready.emit(current_buffer.copy(), file_data)

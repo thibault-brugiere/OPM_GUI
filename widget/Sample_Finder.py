@@ -444,7 +444,6 @@ class sample_finder_Window(QWidget, Ui_Form):
             try :
                 position = self.mirror.get_state()
             except:
-                print('[Sample Finder] Error during mirror position reading')
                 return
         else :
             position = 1

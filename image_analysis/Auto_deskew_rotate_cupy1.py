@@ -7,16 +7,34 @@ Created on Thu Jan 22 16:54:49 2026
 This program should be run with the environnement OPM_gpu that contains the library
 cupyx
 """
+import gc
 import math
 import numpy as np
 import cupy as cp
 import os
 from pathlib import Path
 import tifffile
+import zarr
 
 from deskew_rotate_cupyx import deskew_and_rotate_opm as deskew_rotate
 import parsename
 import preprocessing
+
+def open_x_slices_tif(buffer : np.ndarray, file_path_list:list,x_start:int, x_end:int, size:list):
+    chunk_x = x_end - x_start
+    start = 0
+    k=0
+    for file_path in file_path_list :
+        print(f"reading file {k}/{len(file_path_list)-1}")
+        k+=1
+        array = tifffile.memmap(file_path)
+        z,y,x = array.shape
+        end = start + z
+        buffer[start:end,:,:chunk_x] = array[:,:,x_start:x_end]
+        start = end
+        del array
+
+    return buffer[:, :, :chunk_x]
 
 def auto_deskew_rotate(folders):
     for folder in folders:
@@ -53,7 +71,7 @@ def auto_deskew_rotate(folders):
                     out_volume_np = cp.asnumpy(out_volume)
                     
                     output_file_path = f'{folder}/dekew-rotate_{name}'
-                    tifffile.imwrite(output_file_path, out_volume_np, bigtiff=True, compression='zlib')
+                    tifffile.imwrite(output_file_path, out_volume_np, bigtiff=True, compression=None)
             
         if process == 'ls3':
             for position in parse_ls3["positions"] :
@@ -73,31 +91,32 @@ def auto_deskew_rotate(folders):
                             
                         size = shape[0]
                         size_list.append(size)
-                        y,x = tifffile.TiffFile(file_path).series[0].shape[1:3]
+                        y, x = shape[1:3]
+                    print(f'y: {y} x: {x}')
                     
-                    total_size = int(np.sum(size_list))
-                    volume_zyx = np.empty((total_size,y,x), dtype = np.uint16)
-                    start=0
-
-                    for k in range(len(file_path_list)):
-                        file_path = file_path_list[k]
-                        end = start + size_list[k]
-                        volume_zyx[start : end,:,:] = tifffile.imread(file_path)
-                        start = end 
-                        
-                        print(f'charged : {k} / {len(parse_ls3["index"])-1}')
+                    total_size = int(np.sum(size_list))                    
                     
-                    
-                    x_slices = volume_zyx.shape[-1]
+                    x_slices = x
+                    y_slices = y
                     steps = 32
                     step_size = math.ceil(x_slices / steps)
-                    print(f'X: {volume_zyx.shape[-1]} Y: {volume_zyx.shape[-2]} Z: {volume_zyx.shape[-3]}, stepsize: {step_size}')
+                    
+                    sub_volume_buffer = np.empty((total_size, y_slices, step_size), dtype=np.uint16)
                     
                     for k in range(steps):
                         print(f'part {k}/{steps-1}')
+                        
+                        sub_volume_zyx = open_x_slices_tif(
+                                                sub_volume_buffer,
+                                                file_path_list,
+                                                k*step_size,
+                                                min((k+1) * step_size, x_slices)
+                                                )
+                        
+                        # sub_volume_zyx = open_x_slices_tif(file_path_list, k*step_size, min((k+1) * step_size, x_slices), [total_size,y_slices])
     
                         out_volume_cp = deskew_rotate(
-                            cp.asarray(volume_zyx[:, :, k*step_size : min((k+1) * step_size, x_slices)]),
+                            cp.asarray(sub_volume_zyx),
                             dy_um = metadata["px_size"],
                             aspect_ratio = metadata["aspect_ratio"],
                             theta_deg = metadata["angle"])
@@ -109,29 +128,27 @@ def auto_deskew_rotate(folders):
                         out_volume_np[:,:,k*step_size : min((k+1) * step_size, x_slices)] = out_volume_cp
                         
                         del out_volume_cp
+                        del sub_volume_zyx
+                        gc.collect()
                         cp.get_default_memory_pool().free_all_blocks()
-                    
-                    del volume_zyx
                     
                     print('deskew_rotate finished')
                     
                     print('saving')
                             
                     output_file_path = f'{folder}/test_dekew-rotate_{name}.tif'
-                    tifffile.imwrite(output_file_path, out_volume_np, bigtiff=True)
+                    tifffile.imwrite(output_file_path, out_volume_np, bigtiff=True, compression=None)
                     
                     print('volume saved')
                     
                     del out_volume_np
-                            
-    
                                 
             
 ###############################################################################
 if __name__ == "__main__" :
 
     folders = [
-        r"C:\Users\tbrugiere\Documents\Images_OPM\20260330_154402_Image",
+        r"D:\Projets_Python\OPM_GUI\Images\20260402_Demonstration\20260402_095623_NS_GFP",
         # r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4"
         ]
     
