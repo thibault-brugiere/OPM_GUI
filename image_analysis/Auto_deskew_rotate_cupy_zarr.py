@@ -95,30 +95,18 @@ def auto_deskew_rotate(folders):
                     sub_volume_buffer = np.empty((total_size, y_slices, step_size), dtype=np.uint16)
                     
                     for k in range(steps):
-                        print(f'part {k}/{steps-1}')
+                        print(f'\rpart {k + 1}/{steps}', end = "")
                         
-                        t0 = t.time()
                         sub_volume_zyx = open_x_slices_zarr(sub_volume_buffer,
                                                             folder,
                                                             k*step_size,
                                                             min((k+1) * step_size, x_slices))
-                        t1 = t.time()
-                        elapsed_time = t1-t0
-                        print(f"time for opening : {elapsed_time} s")
-                        
-                        t0 = t.time()
                         
                         out_volume_cp = deskew_rotate(
                             cp.asarray(sub_volume_zyx),
                             dy_um = metadata["px_size"],
                             aspect_ratio = metadata["aspect_ratio"],
                             theta_deg = metadata["angle"])
-                        
-                        t1 = t.time()
-                        elapsed_time = t1-t0
-                        print(f"time for deskewing : {elapsed_time} s")
-                        
-                        t0 = t.time()
                         
                         if k == 0 :
                             z,y = out_volume_cp.shape[-3],out_volume_cp.shape[-2]
@@ -139,10 +127,6 @@ def auto_deskew_rotate(folders):
                         del sub_volume_zyx
                         gc.collect()
                         cp.get_default_memory_pool().free_all_blocks()
-                        t1 = t.time()
-                        
-                        elapsed_time = t1-t0
-                        print(f"time for saving : {elapsed_time} s")
                     
                     print('deskew_rotate finished')
                     
@@ -158,5 +142,7 @@ if __name__ == "__main__" :
         r"C:\Users\tbrugiere\Documents\Images_OPM\20260330_154402_Image",
         # r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4"
         ]
-    
+    t0 = t.time()
     auto_deskew_rotate(folders)
+    t1 = t.time()
+    print(f'TOTAL TIME : {t1-t0}s')

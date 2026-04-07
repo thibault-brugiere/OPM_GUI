@@ -120,40 +120,19 @@ def tiffs_to_zarr(file_path_list: Sequence[str | Path],
 
     for file_index, file_path in enumerate(file_paths):
         print(f"[TIFF -> Zarr] file {file_index + 1}/{len(file_paths)}: {file_path.name}")
-
-        # Fast path when TIFF is memmap-compatible.
-        try:
-            # src = tifffile.memmap(file_path)
-            src = tifffile.imread(file_path)
-            # use_memmap = True
-            use_memmap = False
-        except Exception:
-            src = None
-            use_memmap = False
-
+        
+        arr = tifffile.imread(file_path)
         file_z = z_sizes[file_index]
-
+        
         for local_z0 in range(0, file_z, read_z_chunk):
             local_z1 = min(local_z0 + read_z_chunk, file_z)
             dst_z0 = global_z0 + local_z0
             dst_z1 = global_z0 + local_z1
-
-            if use_memmap:
-                block = np.asarray(src[local_z0:local_z1, :, :])
-            else:
-                # Fallback: read only this Z block if memmap is unavailable.
-                with tifffile.TiffFile(file_path) as tif:
-                    pages = [
-                        tif.pages[k].asarray()
-                        for k in range(local_z0, local_z1)
-                    ]
-                block = np.stack(pages, axis=0)
-
-            zarr_array[dst_z0:dst_z1, :, :] = block
-            del block
         
-        if use_memmap:
-            del src
+            zarr_array[dst_z0:dst_z1, :, :] = arr[local_z0:local_z1, :, :]
+        
+        del arr
+
 
         global_z0 += file_z
 
@@ -220,11 +199,6 @@ def zarr_to_small_tiffs(zarr_path: str | Path,
     
     if z_sizes is None:
         z_sizes = [zarr_array.shape[0]]
-        # n_z = zarr_array.shape[0]
-        # n_file = int(n_z / 10)
-        # z_sizes = [10 for k in range(n_file)]
-        # if n_z - n_file * 10 !=0 :
-        #     z_sizes.append(n_z - n_file * 10)
     
     z_sizes = [int(v) for v in z_sizes]
 
@@ -267,7 +241,7 @@ if __name__ == "__main__" :
 
     folders = [
         r"C:\Users\tbrugiere\Documents\Images_OPM\20260330_154402_Image",
-        # r"C:\Users\tbrugiere\Documents\Images_OPM\20260330_154402_Image\deskew.zarr",
+        # r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4",
         ]
     
     # Convert TIFFS in ZARR
@@ -279,16 +253,23 @@ if __name__ == "__main__" :
         for file in parse_ls3["files"]:
             files.append(file['path'])
 
-        zarr_path = folder + r"\ZarrFiles_01.zarr"
+        zarr_path = folder + r"\ZarrFiles.zarr"
         
-        tiffs_to_zarr(files, zarr_path)
+        tiffs_to_zarr(files, zarr_path, overwrite=True)
         
     t1 = t.time()
     
     print(f"total conversion time : {t1-t0}s")
     
     # Convert ZARR in tiffs
+    # t0 = t.time()
+    
     # for folder in folders:
+    #     zarr_file = folder + r"\ZarrFiles.zarr"
     #     out = folder + r"\tifs"
     #     z_sizes = None
-    #     zarr_to_small_tiffs(folder, out, z_sizes)
+    #     zarr_to_small_tiffs(zarr_file , out, z_sizes)
+        
+    # t1 = t.time()
+    
+    # print(f"total conversion time : {t1-t0}s")
