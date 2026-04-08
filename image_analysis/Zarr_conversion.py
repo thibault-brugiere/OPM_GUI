@@ -240,36 +240,48 @@ if __name__ == "__main__" :
     import time as t
 
     folders = [
-        r"C:\Users\tbrugiere\Documents\Images_OPM\20260330_154402_Image",
+        # r"C:\Users\tbrugiere\Documents\Images_OPM\20260330_154402_Image",
         # r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4",
+        r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4_copie",
         ]
     
     # Convert TIFFS in ZARR
-    t0 = t.time()
-    for folder in folders :
-        parse_ls3 = parsename.parse_ls3_filenames(folder)
-        
-        files = []
-        for file in parse_ls3["files"]:
-            files.append(file['path'])
-
-        zarr_path = folder + r"\ZarrFiles.zarr"
-        
-        tiffs_to_zarr(files, zarr_path, overwrite=True)
-        
-    t1 = t.time()
-    
-    print(f"total conversion time : {t1-t0}s")
-    
-    # Convert ZARR in tiffs
     # t0 = t.time()
     
-    # for folder in folders:
-    #     zarr_file = folder + r"\ZarrFiles.zarr"
-    #     out = folder + r"\tifs"
-    #     z_sizes = None
-    #     zarr_to_small_tiffs(zarr_file , out, z_sizes)
+    # for folder in folders :
+    #     parse_ls3 = parsename.parse_ls3_filenames(folder)
+        
+    #     for channel in parse_ls3["channels"]:
+    #         for position in parse_ls3["positions"]:
+        
+    #             files = []
+    #             for file in parse_ls3["files"]:
+    #                 if file["channel"] == channel :
+    #                     if file["position"] == position :
+    #                         files.append(file['path'])
+                
+    #             zarr_path = folder + r"\Position_" + f"{position:04d}_{channel}_file.zarr"
+
+    #             tiffs_to_zarr(files, zarr_path, overwrite=True)
         
     # t1 = t.time()
     
     # print(f"total conversion time : {t1-t0}s")
+    
+    # Convert ZARR in tiffs
+    t0 = t.time()
+    
+    for folder in folders:
+        parse_ls3_deskew = parsename.parse_ls3_deskew_foldernames(folder)
+        
+        for channel in parse_ls3_deskew["channels"]:
+            for position in parse_ls3_deskew["positions"]:
+    
+                zarr_file = folder + r"\deskew_Position_" + f"{position:04d}_{channel}_file.zarr"
+                out = folder + r"\deskew_tif"
+                z_sizes = None
+                zarr_to_small_tiffs(zarr_file , out, z_sizes, f"deskew_Position_{position}_{channel}")
+        
+    t1 = t.time()
+    
+    print(f"total conversion time : {t1-t0}s")

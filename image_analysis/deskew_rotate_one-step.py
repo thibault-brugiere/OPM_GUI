@@ -3,6 +3,12 @@
 Created on Tue Mar 31 09:20:04 2026
 
 @author: tbrugiere
+
+functions used to deskew and rotate images acquired using the OPM
+These functions use the GPU of the computer and does the operation in one step
+but there is a DEGRADATION OF IMAGE QUALITY
+This program should be run with the environnement OPM_gpu that contains the library
+cupyx
 """
 import numpy as np
 import cupy as cp

@@ -6,6 +6,7 @@ Created on Thu Jan 22 16:54:49 2026
 
 This program should be run with the environnement OPM_gpu that contains the library
 cupyx
+This programm charge the entire during processing meaning that volumes too big are not supported
 """
 import math
 import numpy as np
@@ -15,10 +16,11 @@ from pathlib import Path
 import tifffile
 
 from deskew_rotate_cupyx import deskew_and_rotate_opm as deskew_rotate
+from deskew_rotate_cupyx import _px_shift_calculation as px_shift_calculation
 import parsename
 import preprocessing
 
-def auto_deskew_rotate(folders):
+def auto_deskew_rotate(folders, max_shear_size = 2e9):
     for folder in folders:
         print(folder)
         parse_mda = parsename.parse_mda_filenames(folder)
@@ -88,9 +90,18 @@ def auto_deskew_rotate(folders):
                         print(f'charged : {k} / {len(parse_ls3["index"])-1}')
                     
                     
-                    x_slices = volume_zyx.shape[-1]
-                    steps = 32
+                    z, y, x_slices = volume_zyx.shape                    
+                    
+                    px_shift = px_shift_calculation(metadata["aspect_ratio"], metadata["angle"], angle_unit = "deg")
+                    shear_size_zy = z * ( z - 1 ) * px_shift + z * y # during shearing
+                    max_step_size = max_shear_size / shear_size_zy
+                    
+                    steps = math.ceil(x_slices / max_step_size)
+                    
+                    print(steps)
+                    
                     step_size = math.ceil(x_slices / steps)
+                    
                     print(f'X: {volume_zyx.shape[-1]} Y: {volume_zyx.shape[-2]} Z: {volume_zyx.shape[-3]}, stepsize: {step_size}')
                     
                     for k in range(steps):

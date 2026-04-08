@@ -6,19 +6,19 @@ Created on Thu Jan 22 16:54:49 2026
 
 This program should be run with the environnement OPM_gpu that contains the library
 cupyx
+This program us ls3 acquisition images in zarr format for more efficiency
+The theoritical maximum z plans is around 22337 sor 18.115mm
+(for 2000 pixels in y and anaspect ratio of 3.37 and a graphic card with 16gb of memorry)
 """
 import gc
 import math
 import numpy as np
 import cupy as cp
-import os
-from pathlib import Path
-import tifffile
 import zarr
 
 from deskew_rotate_cupyx import deskew_and_rotate_opm as deskew_rotate
+from deskew_rotate_cupyx import _px_shift_calculation as px_shift_calculation
 import parsename
-import preprocessing
 
 import time as t
 
@@ -27,112 +27,93 @@ def open_x_slices_zarr(buffer : np.ndarray, file_path:list,x_start:int, x_end:in
     z = zarr.open(file, mode="r")
     return z[:, :, x_start:x_end]
 
-def auto_deskew_rotate(folders):
+def auto_deskew_rotate_ls3(folders : list(str), max_shear_size : int = 2e9):
+    """
+    Automaticallu deskew and rotate images from LS3 protocol contained in a folder.
+    The images should be in a .zarr folder in the format : "Position_{:04d}_{str}_file.zarr"
+    It save the images in the same folder in the zarr format : "deskew_Position_{:04d}_{str}_file.zarr"
+
+    Parameters
+    ----------
+    folders : list of str
+        list of folders containing the images to deskew and rotate
+    max_shear_size : int, optional, The default is 2e9.
+        Maximum size in pixels of the image after shearing, should be 1/4 of
+        the memorry of the graphic card. Lower it if necessary
+
+    Returns
+    -------
+    None.
+
+    """
     for folder in folders:
         print(folder)
-        parse_mda = parsename.parse_mda_filenames(folder)
-        parse_ls3 = parsename.parse_ls3_filenames(folder)
+        parse_ls3 = parsename.parse_ls3_foldernames(folder)
         metadata = parsename.get_metadata(folder)
         
-        if len(parse_mda['files']) != 0 :
-            process = 'mda'
-            parse = parse_mda
-        elif len(parse_ls3['files']) != 0:
-            process = 'ls3'
-            parse = parse_ls3
-        else:
+
+        if len(parse_ls3['files']) == 0:
+            
             print("No image to process")
             
-        for file in parse["files"] :
-            if process == 'mda' :
-                if file['process'] :
-                    file_path = Path(file['path'])
-                    name = file_path.name
-                    print(name)
-                    
-                    volume_zyx = tifffile.imread(file_path)
-                    volume_zyx_cp = cp.asarray(volume_zyx)
-                    
-                    volume_zyx_cp = preprocessing.subtract_bg_xy_gpu(volume_zyx_cp, 20)
-                        
-                    out_volume = deskew_rotate(volume_zyx_cp, dy_um = metadata["px_size"],
-                                               aspect_ratio = metadata["aspect_ratio"],
-                                               theta_deg = metadata["angle"])
-                    
-                    out_volume_np = cp.asnumpy(out_volume)
-                    
-                    output_file_path = f'{folder}/dekew-rotate_{name}'
-                    tifffile.imwrite(output_file_path, out_volume_np, bigtiff=True, compression=None)
             
-        if process == 'ls3':
-            for position in parse_ls3["positions"] :
-                for channel in parse_ls3["channels"]:
+        for position in parse_ls3["positions"] :
+            print(f"Position : {position:04d}")
+            for channel in parse_ls3["channels"]:
+                print(f"Channel : {channel}")
+                
+                file = folder + r"\Position_"+ f"{position:04d}_{channel}_file.zarr"
+                
+                volume = zarr.open(file, mode="r")
+                
+                z, y, x = volume.shape
+                
+                print(f"{z} - {y} - {x}")
+                  
+                x_slices = x
+                
+                px_shift = px_shift_calculation(metadata["aspect_ratio"], metadata["angle"], angle_unit = "deg")
+                shear_size_zy = z * ( z - 1 ) * px_shift + z * y # during shearing
+                max_step_size = max_shear_size / shear_size_zy
+                
+                steps = math.ceil(x_slices / max_step_size)
+                
+                print(steps)
+                
+                step_size = math.ceil(x_slices / steps)
+                
+                for k in range(steps):
+                    print(f'\rpart {k + 1}/{steps}', end = "")
                     
-                    file_path_list = []
-                    size_list = []
+                    out_volume_cp = deskew_rotate(
+                        volume[:, :, k*step_size:min((k+1) * step_size, x_slices)],
+                        dy_um = metadata["px_size"],
+                        aspect_ratio = metadata["aspect_ratio"],
+                        theta_deg = metadata["angle"])
+                    
+                    if k == 0 :
+                        z,y = out_volume_cp.shape[-3],out_volume_cp.shape[-2]
+                        
+                        out_file = folder + r"\deskew_Position_"+ f"{position:04d}_{channel}_file.zarr"
+                        
+                        zarr_array = zarr.open(
+                        out_file,
+                        mode="w",
+                        shape=(z, y, x_slices),
+                        chunks=(64, y , step_size),
+                        dtype=np.uint16,
+                    )
 
-                    for index in parse_ls3["index"]:
-                        filename = f'Position_{position:04d}_{channel}_file_{index:04d}.tif'
-                        name = f'Position_{position:04d}_{channel}'
-                        file_path = os.path.join(folder, filename)
-                        file_path_list.append(file_path)
-                        
-                        with tifffile.TiffFile(file_path) as tif:
-                            shape = tif.series[0].shape
-                            
-                        size = shape[0]
-                        size_list.append(size)
-                        y, x = shape[1:3]
-                    print(f'y: {y} x: {x}')
+                    zarr_array[:,:,k*step_size : min((k+1) * step_size, x_slices)] = out_volume_cp
                     
-                    total_size = int(np.sum(size_list))                    
+                    del out_volume_cp
                     
-                    x_slices = x
-                    y_slices = y
-                    steps = 32
-                    step_size = math.ceil(x_slices / steps)
-                    
-                    sub_volume_buffer = np.empty((total_size, y_slices, step_size), dtype=np.uint16)
-                    
-                    for k in range(steps):
-                        print(f'\rpart {k + 1}/{steps}', end = "")
-                        
-                        sub_volume_zyx = open_x_slices_zarr(sub_volume_buffer,
-                                                            folder,
-                                                            k*step_size,
-                                                            min((k+1) * step_size, x_slices))
-                        
-                        out_volume_cp = deskew_rotate(
-                            cp.asarray(sub_volume_zyx),
-                            dy_um = metadata["px_size"],
-                            aspect_ratio = metadata["aspect_ratio"],
-                            theta_deg = metadata["angle"])
-                        
-                        if k == 0 :
-                            z,y = out_volume_cp.shape[-3],out_volume_cp.shape[-2]
-                            
-                            out_file = folder + r"\deskew.zarr"
-                            
-                            zarr_array = zarr.open(
-                            out_file,
-                            mode="w",
-                            shape=(z, y, x_slices),
-                            chunks=(64, y , step_size),
-                            dtype=np.uint16,
-                        )
-
-                        zarr_array[:,:,k*step_size : min((k+1) * step_size, x_slices)] = out_volume_cp
-                        
-                        del out_volume_cp
-                        del sub_volume_zyx
-                        gc.collect()
-                        cp.get_default_memory_pool().free_all_blocks()
-                    
-                    print('deskew_rotate finished')
-                    
-                    print('saving')
-                    
-                    print('volume saved')
+                    gc.collect()
+                    cp.get_default_memory_pool().free_all_blocks()
+                
+                print('')
+                
+                print('volume saved')
                                 
             
 ###############################################################################
@@ -140,9 +121,10 @@ if __name__ == "__main__" :
 
     folders = [
         r"C:\Users\tbrugiere\Documents\Images_OPM\20260330_154402_Image",
-        # r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4"
+        # r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4",
+        # r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4_copie"
         ]
     t0 = t.time()
-    auto_deskew_rotate(folders)
+    auto_deskew_rotate_ls3(folders)
     t1 = t.time()
     print(f'TOTAL TIME : {t1-t0}s')

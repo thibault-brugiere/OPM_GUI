@@ -3,6 +3,9 @@
 Created on Tue Jun  3 08:41:13 2025
 
 @author: tbrugiere
+
+functions used to deskew the images acquired using the OPM (no rotation)
+
 """
 import math
 import numpy as np

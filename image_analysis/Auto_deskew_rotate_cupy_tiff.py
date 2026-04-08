@@ -6,6 +6,7 @@ Created on Thu Jan 22 16:54:49 2026
 
 This program should be run with the environnement OPM_gpu that contains the library
 cupyx
+This program use tiff ls3 images
 """
 import gc
 import math
@@ -14,9 +15,9 @@ import cupy as cp
 import os
 from pathlib import Path
 import tifffile
-import zarr
 
 from deskew_rotate_cupyx import deskew_and_rotate_opm as deskew_rotate
+from deskew_rotate_cupyx import _px_shift_calculation as px_shift_calculation
 import parsename
 import preprocessing
 
@@ -36,7 +37,7 @@ def open_x_slices_tif(buffer : np.ndarray, file_path_list:list,x_start:int, x_en
 
     return buffer[:, :, :chunk_x]
 
-def auto_deskew_rotate(folders):
+def auto_deskew_rotate(folders, max_shear_size : int = 2e9):
     for folder in folders:
         print(folder)
         parse_mda = parsename.parse_mda_filenames(folder)
@@ -99,6 +100,17 @@ def auto_deskew_rotate(folders):
                     x_slices = x
                     y_slices = y
                     steps = 32
+                    step_size = math.ceil(x_slices / steps)
+                    z = step_size
+                    
+                    px_shift = px_shift_calculation(metadata["aspect_ratio"], metadata["angle"], angle_unit = "deg")
+                    shear_size_zy = z * ( z - 1 ) * px_shift + z * y # during shearing
+                    max_step_size = max_shear_size / shear_size_zy
+                    
+                    steps = math.ceil(x_slices / max_step_size)
+                    
+                    print(steps)
+                    
                     step_size = math.ceil(x_slices / steps)
                     
                     sub_volume_buffer = np.empty((total_size, y_slices, step_size), dtype=np.uint16)

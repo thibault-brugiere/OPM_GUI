@@ -3,6 +3,11 @@
 Created on Thu Mar  5 15:10:54 2026
 
 @author: tbrugiere
+
+functions used to deskew and rotate images acquired using the OPM
+These functions use the GPU of the computer
+This program should be run with the environnement OPM_gpu that contains the library
+cupyx
 """
 
 import math
@@ -154,7 +159,7 @@ def _shear_integer_y(volume: np.ndarray, shift_y_px_per_plane: int,
         
         if return_numpy :
             return cp.asnumpy(out)
-    
+        
         return out
 
 def rotate_about_x_physical(volume: np.ndarray,
@@ -381,18 +386,18 @@ if __name__ == '__main__':
             filename = f'{channel}{basename}{k:04d}'
         
             file_path = os.path.join(folder, f'{filename}.tif')
-            # volume_zyx = tifffile.imread(file_path)
+            volume_zyx = tifffile.imread(file_path)
             
             shape = tifffile.TiffFile(file_path).series[0].shape[1:3]
             print(shape)
             
-            # volume_zyx = cp.asarray(volume_zyx)
-            # print(f"Image {k} oppened")
+            volume_zyx = cp.asarray(volume_zyx)
+            print(f"Image {k} oppened")
             
-            # out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
+            out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
             
-            # out_volume = cp.asnumpy(out_volume)
-            # output_file_path = f'{folder}/test_dekew-rotate_{filename}.tif'
-            # tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
-            # print(f"""image {filename} saved
-            #       """)
+            out_volume = cp.asnumpy(out_volume)
+            output_file_path = f'{folder}/test_dekew-rotate_{filename}.tif'
+            tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
+            print(f"""image {filename} saved
+                  """)

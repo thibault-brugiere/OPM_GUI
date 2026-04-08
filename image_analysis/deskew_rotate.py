@@ -3,6 +3,10 @@
 Created on Thu Mar  5 15:10:54 2026
 
 @author: tbrugiere
+
+functions used to deskew and rotate images acquired using the OPM
+These functions use the CPU of the computer
+and uses TIFF files
 """
 
 import math
@@ -348,21 +352,8 @@ if __name__ == '__main__':
     aspect_ratio = 3.3564
 
     folder = Path(r"C:\Users\tbrugiere\Documents\Images_OPM\20260324_Neurospheres_GFP\20260324_145316_Neurosphere_GFP_DIV7")
-    # filename = "Position_0000_GFP_file_"
-    
-    # for k in range(4):
-    #     file_path = os.path.join(folder, f'{filename}{k:04d}.tif')
-    #     if k == 0 :
-    #         volume_zyx = tifffile.imread(file_path)
-    #     else:
-    #         volume_zyx = np.concatenate((volume_zyx, tifffile.imread(file_path)))
-            
-    #     print(f'\rImage {k:04d} / 36 oppened', end = " ")
-    # print("Images oppened")
             
     basename = "GFP_volume_"
-    
-    # channels = ["BFP","GFP", "CY3.5", "TexRed"]
     
     for k in range(5) :
         # for channel in channels :
@@ -373,13 +364,8 @@ if __name__ == '__main__':
     
         file_path = os.path.join(folder, f'{filename}.tif')
         volume_zyx = tifffile.imread(file_path)
-        # print(f"Image {k} oppened")
         
         out_volume = deskew_and_rotate_opm(volume_zyx, dy_um, aspect_ratio, theta)
-        
-        # print(f"Image {filename} deskewed")
-        
-        # out_volume = crop_stack(out_volume[35:112,:,:], 0, 391, 699, 1133)
         
         
         output_file_path = f'{folder}/test_dekew-rotate_{filename}.tif'
@@ -390,19 +376,3 @@ if __name__ == '__main__':
         end_time = t.time()
         
         print(f'total time for image {k} : {end_time - start_time}')
-
-    
-    
-    # for k in range(2):
-    #     volume_zyx_deskew = volume_zyx[:, :, k*256:(k+1)*256]
-
-    #     if k == 0 :
-    #         out_volume = deskew_and_rotate_opm(volume_zyx_deskew, dy_um, aspect_ratio, theta)
-    #     else:
-    #         out_volume = np.concat((out_volume, deskew_and_rotate_opm(volume_zyx_deskew, dy_um, aspect_ratio, theta)),axis=2)
-        
-    #     print(f"image deskewed_rotated : {k}/7")
-        
-    # output_file_path = f'{folder}/dekew-rotate_{filename}total.tif'
-    # tifffile.imwrite(output_file_path, out_volume, bigtiff=True, compression='zlib')
-    # print("image saved")

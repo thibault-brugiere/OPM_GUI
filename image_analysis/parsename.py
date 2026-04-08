@@ -157,6 +157,138 @@ def parse_ls3_filenames(folder: str | Path) -> dict[str, Any]:
         "index": sorted(index_set),
     }
 
+_PATTERN_LS3_ZARR = re.compile(r"^Position_(?P<position>\d{4})_(?P<channel>[A-Za-z0-9]+)_file$")
+
+def parse_ls3_foldernames(folder: str | Path) -> dict[str, Any]:
+    """
+    Analyse les noms de fichiers d'un dossier selon le motif :
+    Position_{position}_{channel}_file
+    Le suffixe .zarr du dossier n'est pas pris en compte'
+
+    :param folder:
+        Dossier contenant les images.
+    :type folder: str | Path
+
+    :returns:
+        Dictionnaire contenant :
+            - ``files`` : liste triée des fichiers correspondants avec
+              ``path``, ``channel`` et ``image``
+            - ``positions`` : listre triée des positions uniques
+            - ``channels`` : liste triée des canaux uniques
+    :rtype: dict[str, Any]
+
+    :raises FileNotFoundError:
+        Si le dossier n'existe pas.
+    :raises NotADirectoryError:
+        Si ``folder`` n'est pas un dossier.
+    """
+    folder = Path(folder)
+
+    if not folder.exists():
+        raise FileNotFoundError(f"Dossier introuvable : {folder}")
+    if not folder.is_dir():
+        raise NotADirectoryError(f"Ce n'est pas un dossier : {folder}")
+
+    parsed_files: list[dict[str, Any]] = []
+    positions_set: set[int] = set()
+    channels_set: set[str] = set()
+
+    for path in folder.iterdir():
+        if not path.is_dir() :
+            continue
+
+        stem = path.stem
+        match = _PATTERN_LS3_ZARR.match(stem)
+        if match is None:
+            continue
+
+        position = int(match.group("position"))
+        channel = match.group("channel")
+
+        parsed_files.append({
+            "path": path,
+            "position" : position,
+            "channel": channel,
+            "process": True,
+        })
+
+        positions_set.add(position)
+        channels_set.add(channel)
+
+    parsed_files.sort(key=lambda item: (item["position"], item["channel"]))
+
+    return {
+        "files": parsed_files,
+        "positions": sorted(positions_set),
+        "channels": sorted(channels_set),
+    }
+
+_PATTERN_LS3_DESKEW_ZARR = re.compile(r"^deskew_Position_(?P<position>\d{4})_(?P<channel>[A-Za-z0-9]+)_file$")
+
+def parse_ls3_deskew_foldernames(folder: str | Path) -> dict[str, Any]:
+    """
+    Analyse les noms de fichiers d'un dossier selon le motif :
+    deskew_Position_{position}_{channel}_file
+    Le suffixe .zarr du dossier n'est pas pris en compte'
+
+    :param folder:
+        Dossier contenant les images.
+    :type folder: str | Path
+
+    :returns:
+        Dictionnaire contenant :
+            - ``files`` : liste triée des fichiers correspondants avec
+              ``path``, ``channel`` et ``image``
+            - ``positions`` : listre triée des positions uniques
+            - ``channels`` : liste triée des canaux uniques
+    :rtype: dict[str, Any]
+
+    :raises FileNotFoundError:
+        Si le dossier n'existe pas.
+    :raises NotADirectoryError:
+        Si ``folder`` n'est pas un dossier.
+    """
+    folder = Path(folder)
+
+    if not folder.exists():
+        raise FileNotFoundError(f"Dossier introuvable : {folder}")
+    if not folder.is_dir():
+        raise NotADirectoryError(f"Ce n'est pas un dossier : {folder}")
+
+    parsed_files: list[dict[str, Any]] = []
+    positions_set: set[int] = set()
+    channels_set: set[str] = set()
+
+    for path in folder.iterdir():
+        if not path.is_dir() :
+            continue
+
+        stem = path.stem
+        match = _PATTERN_LS3_DESKEW_ZARR.match(stem)
+        if match is None:
+            continue
+
+        position = int(match.group("position"))
+        channel = match.group("channel")
+
+        parsed_files.append({
+            "path": path,
+            "position" : position,
+            "channel": channel,
+            "process": True,
+        })
+
+        positions_set.add(position)
+        channels_set.add(channel)
+
+    parsed_files.sort(key=lambda item: (item["position"], item["channel"]))
+
+    return {
+        "files": parsed_files,
+        "positions": sorted(positions_set),
+        "channels": sorted(channels_set),
+    }
+
 
 def get_metadata(folder, filename = "GUI_parameters.txt"):
     """
@@ -211,26 +343,31 @@ def get_preprocess_steps(folder, filename = "preprocess_parameters.txt"):
 
 ###############################################################################
 if __name__ == "__main__":
-    folder_mda = r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260324_145316_Neurosphere_GFP_DIV7"
-    result_mda = parse_mda_filenames(folder_mda)
+    # folder_mda = r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260324_145316_Neurosphere_GFP_DIV7"
+    # result_mda = parse_mda_filenames(folder_mda)
     
-    print("MDA folder")
-    # print("Channels :", result_mda["channels"])
-    # print("Images   :", result_mda["images"])
-    metadata_mda = get_metadata(folder_mda)
-    print("px_size :", metadata_mda["px_size"])
-    print("angle :", metadata_mda["angle"])
-    print("aspect_ratio :", metadata_mda["aspect_ratio"])
+    # print("MDA folder")
+    # metadata_mda = get_metadata(folder_mda)
+    # print("px_size :", metadata_mda["px_size"])
+    # print("angle :", metadata_mda["angle"])
+    # print("aspect_ratio :", metadata_mda["aspect_ratio"])
     
-    folder_ls3 = r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4"
-    result_ls3 = parse_ls3_filenames(folder_ls3)
+    # folder_ls3 = r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4"
+    # result_ls3 = parse_ls3_filenames(folder_ls3)
     
-    print("LS3 folder")
-    print("files :", result_ls3["files"])
-    # print("positions :", result_ls3["positions"])
-    # print("channels :", result_ls3["channels"])
-    # print("index :", result_ls3["index"])
-    metadata_ls3 = get_metadata(folder_ls3)
-    print("px_size :", metadata_ls3["px_size"])
-    print("aspect_ratio :", metadata_ls3["aspect_ratio"])
-    print("angle :", metadata_ls3["angle"])
+    # print("LS3 folder")
+    # print("files :", result_ls3["files"])
+    # metadata_ls3 = get_metadata(folder_ls3)
+    # print("px_size :", metadata_ls3["px_size"])
+    # print("aspect_ratio :", metadata_ls3["aspect_ratio"])
+    # print("angle :", metadata_ls3["angle"])
+    
+    # print("LS3 ZARR folder")
+    # folder_ls3_zarr = r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4_copie"
+    # result_ls3_zarr = parse_ls3_foldernames(folder_ls3_zarr)
+    # print('files :', result_ls3_zarr["files"])
+    
+    print("LS3 deskew ZARR folder")
+    folder_ls3_zarr = r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4_copie"
+    result_ls3_zarr = parse_ls3_deskew_foldernames(folder_ls3_zarr)
+    print('files :', result_ls3_zarr["files"])
