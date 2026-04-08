@@ -57,37 +57,6 @@ def crop_stack(arr: np.ndarray, x1: int, y1: int, x2: int, y2: int):
     # y then x
     return arr[..., y1 : y2 + 1, x1 : x2 + 1]
 
-
-def rolling_ball_stack(stack: np.ndarray, radius: int):
-    """
-    Perform background subtraction on a 3D stack using 2D rolling ball 
-    
-    Parameters
-    ----------
-    stack: np.ndarray
-    Input 3D stack with shape (Z, Y, X). Can be uint16 or float.
-    The array is transferred to the GPU internally.
-    radius: int
-        Radius of the circular structuring element in pixels. This value
-        should be larger than the typical object size to preserve objects
-        while removing slowly varying background.
-        
-    Returns
-    -------
-    np.ndarray
-        Background-subtracted 3D stack, transferred back to CPU memory.
-        All negative values are clipped to zero. 
-    """
-    out = np.empty_like(stack)
-
-    for z in range(stack.shape[0]):
-        bg = rolling_ball(stack[z], radius=radius)
-        out[z] = stack[z] - bg
-        print(f"Backgournd substraction : {z}\r", end ="")
-
-    out[out < 0] = 0
-    return out
-
 def subtract_bg_xy_gpu(stack: np.ndarray, radius_px: int, gpu_id: int = 0, return_numpy: bool = False):
     """
     Perform background subtraction on a 3D stack using 2D grey opening

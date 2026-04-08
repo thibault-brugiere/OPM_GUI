@@ -8,6 +8,7 @@ Created on Wed Apr  1 16:45:35 2026
 from __future__ import annotations
 
 from pathlib import Path
+import shutil
 from typing import Iterable, Sequence
 
 import numpy as np
@@ -20,7 +21,8 @@ def tiffs_to_zarr(file_path_list: Sequence[str | Path],
                   chunks: tuple[int, int, int] | None = None,
                   overwrite: bool = False,
                   read_z_chunk: int | None = None,
-                  zarr_format: int = 3) -> dict:
+                  zarr_format: int = 3,
+                  progress_callback = None) -> dict:
     """
     Convert a sequence of 3D TIFF files of identical YX shape into one Zarr array
     by concatenating them along Z.
@@ -44,6 +46,8 @@ def tiffs_to_zarr(file_path_list: Sequence[str | Path],
         If ``None``, uses ``chunks[0]`` when available, otherwise a default.
     zarr_format : int, optional
         Zarr format version. Default is 3.
+    progress_callback : None, optionlal
+        External process use to follow the advancement of the program
 
     Returns
     -------
@@ -119,7 +123,10 @@ def tiffs_to_zarr(file_path_list: Sequence[str | Path],
     global_z0 = 0
 
     for file_index, file_path in enumerate(file_paths):
-        print(f"[TIFF -> Zarr] file {file_index + 1}/{len(file_paths)}: {file_path.name}")
+        if progress_callback is not None :
+            progress_callback(file_index,len(file_paths))
+        else:
+            print(f"[TIFF -> Zarr] file {file_index + 1}/{len(file_paths)}: {file_path.name}")
         
         arr = tifffile.imread(file_path)
         file_z = z_sizes[file_index]
@@ -153,7 +160,8 @@ def zarr_to_small_tiffs(zarr_path: str | Path,
                         z_sizes: Sequence[int],
                         base_name: str = "volume",
                         bigtiff: bool = True,
-                        compression: str | None = None) -> list[str]:
+                        compression: str | None = None,
+                        progress_callback = None) -> list[str]:
     """
     Export a Zarr array of shape (Z, Y, X) into several TIFF files by splitting
     along Z according to ``z_sizes``.
@@ -174,6 +182,8 @@ def zarr_to_small_tiffs(zarr_path: str | Path,
     compression : str | None, optional
         TIFF compression passed to ``tifffile.imwrite``.
         Use ``None`` for fastest and simplest output.
+    progress_callback : None, optionlal
+        External process use to follow the advancement of the program
 
     Returns
     -------
@@ -214,7 +224,10 @@ def zarr_to_small_tiffs(zarr_path: str | Path,
         end = start + file_z
         out_path = output_dir / f"{base_name}_file_{idx:04d}.tif"
 
-        print(f"[Zarr -> TIFF] file {idx + 1}/{len(z_sizes)}: {out_path.name}")
+        if progress_callback is not None :
+            progress_callback(idx, len(z_sizes))
+        else:
+            print(f"[Zarr -> TIFF] file {idx + 1}/{len(z_sizes)}: {out_path.name}")
 
         # This slice reads only the required sub-volume.
         block = np.asarray(zarr_array[start:end, :, :])
@@ -231,6 +244,36 @@ def zarr_to_small_tiffs(zarr_path: str | Path,
         start = end
 
     return file_paths
+
+def delete_zarr(path:str):
+    """
+    Delete a Zarr store (directory) and all its contents.
+
+    Parameters
+    ----------
+    path : or Path
+        Path to the .zarr directory.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the path does not exist.
+    ValueError
+        If the path is not a directory.
+        If the path is not a .zarr directory
+    """
+    path = Path(path)
+
+    if not path.exists():
+        raise FileNotFoundError(f"{path} does not exist.")
+    
+    if not path.is_dir():
+        raise ValueError(f"{path} is not a directory (not a valid Zarr store).")
+        
+    if path.suffix != ".zarr":
+        raise ValueError("Refusing to delete non-.zarr directory")
+
+    shutil.rmtree(path)
 
 ##############################################################################
 
@@ -278,9 +321,10 @@ if __name__ == "__main__" :
             for position in parse_ls3_deskew["positions"]:
     
                 zarr_file = folder + r"\deskew_Position_" + f"{position:04d}_{channel}_file.zarr"
-                out = folder + r"\deskew_tif"
-                z_sizes = None
-                zarr_to_small_tiffs(zarr_file , out, z_sizes, f"deskew_Position_{position}_{channel}")
+                # out = folder + r"\deskew_tif"
+                # z_sizes = None
+                # zarr_to_small_tiffs(zarr_file , out, z_sizes, f"deskew_Position_{position}_{channel}")
+                delete_zarr(zarr_file)
         
     t1 = t.time()
     
