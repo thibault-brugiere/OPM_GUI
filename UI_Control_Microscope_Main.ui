@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1880</width>
+    <width>1990</width>
     <height>1174</height>
    </rect>
   </property>
@@ -23,9 +23,12 @@
    <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_38">
+   <layout class="QHBoxLayout" name="horizontalLayout_41">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
       <item>
        <widget class="QLabel" name="label_saving">
         <property name="font">
@@ -1320,6 +1323,9 @@
         </item>
         <item>
          <widget class="QPushButton" name="pb_laser_emission">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start the emission of the laser event if preview is not running&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Emission</string>
           </property>
@@ -1409,6 +1415,9 @@
     </item>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_5">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
       <item>
        <widget class="QLabel" name="label_timelaps_settings">
         <property name="font">
@@ -1435,10 +1444,10 @@
 This value is linked to the total duration and interval.</string>
           </property>
           <property name="maximum">
-           <number>3600</number>
+           <number>999999</number>
           </property>
           <property name="value">
-           <number>10</number>
+           <number>1</number>
           </property>
          </widget>
         </item>
@@ -1690,7 +1699,7 @@ Position (µm)</string>
 This defines the maximum displacement during scanning.</string>
           </property>
           <property name="maximum">
-           <double>300.000000000000000</double>
+           <double>400.000000000000000</double>
           </property>
           <property name="value">
            <double>20.000000000000000</double>
@@ -1854,13 +1863,6 @@ This defines the maximum displacement during scanning.</string>
        </spacer>
       </item>
       <item>
-       <widget class="Line" name="line_6">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QLabel" name="label_volume_duration">
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Estimated volume duration is for 1 color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1874,6 +1876,94 @@ Estimated volume duration: 0.000 s</string>
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="Line" name="line_9">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_channels_2">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>LS3
+scanning parameters</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_38">
+        <item>
+         <widget class="QSpinBox" name="spinBox_stage_scan_range">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the length of the scanning using Light sheet stabilized scanning in µm&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="maximum">
+           <number>10000</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_stage_scan_range">
+          <property name="text">
+           <string>Stage scan range (µm)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_39">
+        <item>
+         <widget class="QSpinBox" name="spinBox_scanV_range">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the width of the scanning using Light sheet stabilized scanning (in µm)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="maximum">
+           <number>10000</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_scanV_range">
+          <property name="text">
+           <string>Scan width (µm)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_40">
+        <item>
+         <widget class="QSpinBox" name="spinBox_scanV_overlap">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the overlap between twoo lines during Light sheet stabilized scanning&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="maximum">
+           <number>50</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_scanV_overlap">
+          <property name="text">
+           <string>Scan overlap (in %)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
      </layout>
     </item>
     <item>
@@ -1885,8 +1975,17 @@ Estimated volume duration: 0.000 s</string>
     </item>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_4">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMaximumSize</enum>
+      </property>
       <item>
        <widget class="QLabel" name="label_image_preview">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
           <width>1108</width>
@@ -2110,6 +2209,13 @@ Pixels above this value will appear white.</string>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_23">
             <item>
+             <widget class="QPushButton" name="pb_MinMax_grayscale">
+              <property name="text">
+               <string>PushButton</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="pb_auto_grayscale">
               <property name="toolTip">
                <string>Automatically adjust the minimum and maximum grey values based on the image histogram.</string>
@@ -2326,6 +2432,9 @@ Pixels above this value will appear white.</string>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_25">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetMaximumSize</enum>
+        </property>
         <item>
          <spacer name="horizontalSpacer_9">
           <property name="orientation">
@@ -2340,7 +2449,7 @@ Pixels above this value will appear white.</string>
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pb_snoutscope_acquisition">
+         <widget class="QPushButton" name="pb_fast_acquisition">
           <property name="font">
            <font>
             <pointsize>10</pointsize>
@@ -2349,13 +2458,13 @@ Pixels above this value will appear white.</string>
            </font>
           </property>
           <property name="toolTip">
-           <string>Start image acquisition using the Snoutscope program.</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start image acquisition using the Fast Acquisition program.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="autoFillBackground">
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>Snoutscope
+           <string>Fast
 Acquisition</string>
           </property>
          </widget>
@@ -2404,6 +2513,37 @@ Acquisition</string>
           </property>
          </spacer>
         </item>
+        <item>
+         <widget class="QPushButton" name="pb_LS3_acquisition">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start the acquisition using the Light sheet stabilized scanning&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>LS3
+Acquisition</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_18">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
        </layout>
       </item>
      </layout>
@@ -2415,8 +2555,8 @@ Acquisition</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1880</width>
-     <height>23</height>
+     <width>1990</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFichier">
@@ -2430,7 +2570,6 @@ Acquisition</string>
      <string>Config</string>
     </property>
     <addaction name="action_DAQ"/>
-    <addaction name="action_Filters"/>
     <addaction name="action_Microscope"/>
    </widget>
    <widget class="QMenu" name="menuAlign">

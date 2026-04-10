@@ -44,25 +44,73 @@ class microscope_settings_window(QWidget, Ui_Form):
         self.setWindowTitle('microscope parameters')
         self.setWindowFlag(Qt.Window)  # Assure que la fenêtre est indépendante
         
+        self.message_filters = ''
+        
         #
         # Dictionnary creation
         #
+        
+        self.lineEdit_filters = [self.lineEdit_Filter1, self.lineEdit_Filter2, self.lineEdit_Filter3,
+                                 self.lineEdit_Filter4, self.label_Filter5, self.lineEdit_Filter6]
        
         self.lineEdits = {'tilt_angle' : self.lineEdit_tilt_angle,
                      'mag_total' : self.lineEdit_mag_total,
+                     'stage_port' : self.lineEdit_stage_port,
+                     'trans_mirror_ser_num' : self.lineEdit_trans_mirror_ser_num,
                      'volts_per_um' : self.lineEdit_volts_per_um,
                      'galvo_response_time' : self.lineEdit_galvo_response_time,
                      'galvo_flyback_time' : self.lineEdit_galvo_flyback_time,
-                     'laser_response_time' : self.lineEdit_laser_response_time,    
+                     'laser_response_time' : self.lineEdit_laser_response_time,   
+                     'Oxius_port' : self.lineEdit_OxxiusCombiner_port,
+                     'filter_port' : self.lineEdit_Filter_port,
+                     'filter_changing_time' : self.lineEdit_filter_changing_time,
+                     'filter1' : self.lineEdit_Filter1,
+                     'filter2' : self.lineEdit_Filter2,
+                     'filter3' : self.lineEdit_Filter3,
+                     'filter4' : self.lineEdit_Filter4,
+                     'filter5' : self.lineEdit_Filter5,
+                     'filter6' : self.lineEdit_Filter6
                      }
         
         self.microscope_params = {'tilt_angle' : self.microscope.tilt_angle,
                              'mag_total' : self.microscope.mag_total,
+                             'stage_port' : self.microscope.stage_port,
+                             'trans_mirror_ser_num' : self.microscope.trans_mirror_ser_num,
                              'volts_per_um' : self.microscope.volts_per_um,
                              'galvo_response_time' : self.microscope.galvo_response_time,
                              'galvo_flyback_time' : self.microscope.galvo_flyback_time,
-                             'laser_response_time' : self.microscope.laser_response_time,    
+                             'laser_response_time' : self.microscope.laser_response_time,
+                             'Oxius_port' : self.microscope.OxxiusCombiner_port,
+                             'filter_port' : self.microscope.filter_port,
+                             'filter_changing_time' : self.microscope.filter_changing_time,
+                             'filter1' : self.microscope.filters[0],
+                             'filter2' : self.microscope.filters[1],
+                             'filter3' : self.microscope.filters[2],
+                             'filter4' : self.microscope.filters[3],
+                             'filter5' : self.microscope.filters[4],
+                             'filter6' : self.microscope.filters[5],
                              }
+        
+        self.param_type = {'tilt_angle' : 'float',
+                           'mag_total' : 'float',
+                           'stage_port' : 'str',
+                           'trans_mirror_ser_num' : 'int',
+                           'volts_per_um' : 'float',
+                           'galvo_response_time' : 'float',
+                           'galvo_flyback_time' : 'float',
+                           'laser_response_time' : 'float',
+                           'Oxius_port' : 'str',
+                           'filter_port' : 'str',
+                           'filter_changing_time' : 'float',
+                           'filter1' : 'str',
+                           'filter2' : 'str',
+                           'filter3' : 'str',
+                           'filter4' : 'str',
+                           'filter5' : 'str',
+                           'filter6' : 'str',
+                           }
+        
+        self.param_filters = ['filter1','filter2','filter3','filter4','filter5','filter6']
         
         #
         # Initialisation of the lineEdits
@@ -87,7 +135,7 @@ class microscope_settings_window(QWidget, Ui_Form):
         for key in self.lineEdits.keys():
             if self.lineEdits[key].text() == str(self.microscope_params[key]):
                 pass
-            else:
+            elif self.param_type[key] == 'float':
                 try:
                     value = float(self.lineEdits[key].text())
                     self.microscope_params[key] = value
@@ -95,26 +143,47 @@ class microscope_settings_window(QWidget, Ui_Form):
                     self.lineEdits[key].blockSignals(True)
                     self.lineEdits[key].setText(str(self.microscope_params[key]))
                     self.lineEdits[key].blockSignals(False)
+            else:
+                self.microscope_params[key] = self.lineEdits[key].text()
+                if key in self.param_filters :
+                    self.message_filters = """\n[WARNING]Changes has been made in filters,
+you have to set changes in channels too"""
                     
     def set_values(self):
         self.microscope.tilt_angle = self.microscope_params['tilt_angle']
         self.microscope.mag_total = self.microscope_params['mag_total']
+        self.microscope.stage_port = self.microscope_params['stage_port']
+        self.microscope.trans_mirror_ser_num = self.microscope_params['trans_mirror_ser_num']
         self.microscope.volts_per_um = self.microscope_params['volts_per_um']
         self.microscope.galvo_response_time = self.microscope_params['galvo_response_time']
         self.microscope.galvo_flyback_time = self.microscope_params['galvo_flyback_time']
         self.microscope.laser_response_time = self.microscope_params['laser_response_time']
+        self.microscope.OxxiusCombiner_port = self.microscope_params['Oxius_port']
+        self.microscope.filter_port = self.microscope_params['filter_port']
+        self.microscope.filter_changing_time = self.microscope_params['filter_changing_time']
+        self.microscope.filters = [self.microscope_params['filter1'],
+                                   self.microscope_params['filter2'],
+                                   self.microscope_params['filter3'],
+                                   self.microscope_params['filter4'],
+                                   self.microscope_params['filter5'],
+                                   self.microscope_params['filter6'],
+                                   ]
                     
     def closeEvent(self, event):
         reply = QMessageBox.question(
             self, 'Confirmer changes',
-            "Are you sure you want to quit?",
+            f""""Are you sure you want to quit?\n{self.message_filters}""",
             QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
             QMessageBox.Cancel
         )
 
         if reply == QMessageBox.Yes:
             self.set_values()
-            self.parent().microscope = self.microscope
+            try:
+                self.parent().microscope = self.microscope
+                self.parent().sync_filter_interface()
+            except:
+                pass
             event.accept()
         elif reply == QMessageBox.No:
             event.ignore()

@@ -29,6 +29,7 @@ class functions_daq():
             devices = system.devices
 
             # Retournez une liste des noms des dispositifs
+            print("[OK] Ni-DAQ connected")
             return [device.name for device in devices]
 
         except Exception as e:

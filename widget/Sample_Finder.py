@@ -7,15 +7,12 @@ This widget connects to a Thorlabs camera (TLCamera via pylablib) and allows:
 - Snapshots saved to TIFF files
 - Real-time histogram visualization of the current frame
 - Basic control buttons (mirror, fluorescence, transmission light)
-  TODO : Save positions for multi-position acquisition
-  TODO : apply selected LUT
-  TODO : controll illuminators using DAQ
 """
 
+import atexit
 import numpy as np
 import os
 from pylablib.devices import Thorlabs
-import random
 import sys
 import tifffile
 
@@ -24,16 +21,32 @@ from PySide6.QtWidgets import QApplication, QWidget
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from PySide6.QtGui import QPixmap, QImage
 
+import pylablib as pll
+pll.par['devices/dlls/thorlabs_tlcam'] = r"C:\Program Files\Thorlabs\ThorImageCAM\Bin\thorlabs_tsi_camera_sdk.dll"
+
 # Ajoutez le dossier parent au sys.path si le fichier est exécuté directement
 if __name__ == "__main__":
     current_dir = os.path.dirname(os.path.abspath(__file__))
     parent_dir = os.path.dirname(current_dir)
     sys.path.append(parent_dir)
     
+from hardware.functions_DAQ import functions_daq
 from widget.ui_sample_finder import Ui_Form
 
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
+
+import warnings
+
+warnings.filterwarnings(
+    "ignore",
+    message="pkg_resources is deprecated as an API"
+)
+
+warnings.filterwarnings(
+    "ignore",
+    message="model number .* doesn't match the device ID prefix"
+)
 
 class sample_finder_Window(QWidget, Ui_Form):
     """
@@ -57,6 +70,8 @@ class sample_finder_Window(QWidget, Ui_Form):
         self.microscope = microscope
         self.on_init()
         
+        atexit.register(self._on_close)
+        
     def on_init(self):
         """Perform all initialization: camera, GUI defaults, timers, connections."""
         
@@ -65,6 +80,37 @@ class sample_finder_Window(QWidget, Ui_Form):
         ###############################
         ## Creation of the Variables ##
         ###############################
+        
+            #
+            # Get informations from microscope
+            #
+            
+        self.mirror = None
+            
+        if self.microscope is None :
+            self.mff_ser_num = 37009743
+        else:
+            try:
+                self.mff_ser_num = self.microscope.trans_mirror_ser_num
+            except:
+                self.mff_ser_num = 37009743
+                
+        if self.microscope is None:
+            self.daq_transmission = "Dev1/port0/line12"
+            self.daq_fluo = None
+        else:
+            try :
+                self.daq_transmission = self.microscope.daq_channels["transmission_light"]
+                self.daq_fluo = self.microscope.daq_channels["fluo_light"]
+            except:
+                self.daq_transmission = "Dev1/port0/line12"
+                self.daq_fluo = None  
+        
+        try :
+            self.mirror = Thorlabs.kinesis.MFF(self.mff_ser_num)
+        except:
+            print('Can not connect to Thorlabs mirror')
+            self.pb_mirror.setEnabled(False)
         
             #
             # Initialize camera
@@ -143,9 +189,12 @@ class sample_finder_Window(QWidget, Ui_Form):
             # Timers
             #
         
-        self.timer_illuminator = QTimer() # Timer to show the illuminator weel position
-        self.timer_illuminator.timeout.connect(self.update_illuminator)
-        self.timer_illuminator.start(100)
+        # self.timer_illuminator = QTimer() # Timer to show the illuminator weel position
+        # self.timer_illuminator.timeout.connect(self.update_illuminator)
+        # self.timer_illuminator.start(100)
+        self.timer_mirror = QTimer()
+        self.timer_mirror.timeout.connect(self.update_mirror_position)
+        self.timer_mirror.start(200)
         
         self.timer_preview = QTimer() # Timer to show new frame
         self.timer_preview.timeout.connect(self.update_preview)
@@ -185,6 +234,8 @@ class sample_finder_Window(QWidget, Ui_Form):
         #####################################
         ## Functions called by the buttons ##
         #####################################
+        self.comboBox_illuminator.setEnabled(False)
+        self.pb_fluo.setEnabled(False)
         
     def desactivate_camera_options(self):
         """Disable the whole widget when no camera is connected."""
@@ -229,11 +280,9 @@ class sample_finder_Window(QWidget, Ui_Form):
     def pb_mirror_clicked(self):
         """Toggle the mirror in/out state and update the icon/label."""
         if self.pb_mirror.isChecked():
-            self.label_mirror_icon.setPixmap(self.Green_Light_Icon_On)
-            self.label_mirror.setText("IN ")
+            self.mirror.move_to_state(0)
         else:
-            self.label_mirror_icon.setPixmap(self.Green_Light_Icon_Off)
-            self.label_mirror.setText("OUT")
+            self.mirror.move_to_state(1)
             
     def pb_fluo_clicked(self):
         """Toggle the fluorescence lamp on/off."""
@@ -247,9 +296,11 @@ class sample_finder_Window(QWidget, Ui_Form):
     def pb_transmission_clicked(self):
         """Toggle the transmission lamp on/off."""
         if self.pb_transmission.isChecked():
+            functions_daq.digital_out(signal = True, line_name = self.daq_transmission)
             self.label_transmission_icon.setPixmap(self.Red_Light_Icon_On)
             self.label_transmission.setText("ON")
         else:
+            functions_daq.digital_out(False, self.daq_transmission)
             self.label_transmission_icon.setPixmap(self.Red_Light_Icon_Off)
             self.label_transmission.setText("OFF")
             
@@ -257,11 +308,6 @@ class sample_finder_Window(QWidget, Ui_Form):
         """Update exposure time on the camera when the spin box changes."""
         self.exposure_time = self.spinBox_channel_exposure_time.value()
         self.tlcam.set_exposure(self.exposure_time/1000)
-            
-    def update_illuminator(self):
-        """Update the illuminator wheel position randomly (placeholder)."""
-        self.cube = random.randint(0, 5)
-        self.comboBox_illuminator.setCurrentIndex(self.cube)
         
         #
         # Preview
@@ -388,6 +434,31 @@ class sample_finder_Window(QWidget, Ui_Form):
         #
         # Frame acquisition and display
         #
+    def update_illuminator(self):
+        """Update the illuminator wheel position randomly (placeholder)."""
+        self.cube = 0
+        self.comboBox_illuminator.setCurrentIndex(self.cube)
+            
+    def update_mirror_position(self):
+        if self.mirror is not None :
+            try :
+                position = self.mirror.get_state()
+            except:
+                return
+        else :
+            position = 1
+        
+        if position == 0:
+            self.label_mirror_icon.setPixmap(self.Green_Light_Icon_On)
+            self.pb_mirror.setChecked(True)
+            self.label_mirror.setText("IN ")
+        elif position == 1 :
+            self.label_mirror_icon.setPixmap(self.Green_Light_Icon_Off)
+            self.pb_mirror.setChecked(False)
+            self.label_mirror.setText("OUT")
+        elif position is None :
+            return
+            
         
     def store_frame(self, frame):
         """Receive a frame from the camera thread and store it (unless paused)."""
@@ -436,6 +507,12 @@ class sample_finder_Window(QWidget, Ui_Form):
         # Close
         #
         
+    def _on_close(self):
+        if self.mirror is not None :
+            self.mirror.move_to_state(1)
+            self.mirror.close()
+        functions_daq.digital_out(False, self.daq_transmission)
+        
     def closeEvent(self, event):
         """Intercept close event: confirm and release hardware resources."""
         reply = QMessageBox.question(
@@ -445,10 +522,12 @@ class sample_finder_Window(QWidget, Ui_Form):
 
         if reply == QMessageBox.Yes:
             self.pb_stop_preview_clicked()
+            # functions_daq.digital_out(False, self.daq_transmission)
             if self.tlcam is not None :
                 self.tlcam.close()
             self.pb_mirror.setChecked(False)
             self.pb_mirror_clicked()
+            self.mirror.close()
             self.pb_transmission.setChecked(False)
             self.pb_transmission_clicked()
             self.pb_fluo.setChecked(False)
@@ -495,6 +574,6 @@ if __name__ == '__main__':
     "To test the window"
     app = QApplication(sys.argv)
     
-    editor = sample_finder_window()
+    editor = sample_finder_Window()
     editor.show()
     sys.exit(app.exec())

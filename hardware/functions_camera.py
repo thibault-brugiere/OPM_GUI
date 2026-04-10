@@ -10,8 +10,8 @@ from PySide6.QtCore import QThread, Signal
 
 from configs.config import camera
 
-# from pylablib.devices import DCAM
-from mock.hamamatsu import DCAM
+from pylablib.devices import DCAM
+# from mock.hamamatsu import DCAM
 
 class functions_camera():
     
@@ -41,7 +41,13 @@ class functions_camera():
             cam.sample_pixel_size = cam.pixel_size / magnification
             
             cameras.append(cam)
+        
+        if n_camera == 0:
+            print("[WARNING] No camera detected")
             
+        else:
+            print("[OK] Camera initialized")
+        
         return hcams, cameras
     
     def close_cameras(hamamatsu_cameras):

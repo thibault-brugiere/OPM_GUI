@@ -7,9 +7,9 @@ Created on Fri Jul 18 11:57:36 2025
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from PySide6.QtGui import qRgb
 
 
-    
 def update_timelapse_strip(strip: np.ndarray, new_image: np.ndarray, max_images: int = 100) -> np.ndarray:
     """
     Ajoute une nouvelle image verticale à la frise temporelle.
@@ -92,3 +92,31 @@ def auto_contrast(image: np.ndarray, low_perc: float = 0.5, high_perc: float = 9
         min_gray, max_gray = float(flat.min()), float(flat.max())
     
     return min_gray, max_gray
+
+class LookUpTables :
+    
+    def __init__(self):
+        self.on_init()
+    
+    def on_init(self):
+        self.palettes = {"Grayscale" : [qRgb(i, i, i)   for i in range(256)],
+                         "Red"       : [qRgb(i, 0, 0)   for i in range(256)],
+                         "Green"     : [qRgb(0, i, 0)   for i in range(256)],
+                         "Blue"      : [qRgb(0, 0, i)   for i in range(256)],
+                         "Fire"      : self._fire_palette(),
+                    }
+        
+    def _fire_palette(self):
+        pal = []
+        for i in range(256):
+            # zones: 0-127 rouge monte, 128-223 vert monte, 224-255 bleu monte
+            if i < 128:
+                r, g, b = 2*i, 0, 0
+            elif i < 224:
+                r, g, b = 255, int(255*(i-128)/96), 0
+            else:
+                r, g, b = 255, 255, int(255*(i-224)/31)
+            pal.append(qRgb(r, g, b))
+        return pal
+    
+    

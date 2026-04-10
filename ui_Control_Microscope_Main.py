@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'ui_Control_Microscope_Main.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.1
+## Created by: Qt User Interface Compiler version 6.9.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -18,17 +18,17 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QComboBox,
     QDateTimeEdit, QDoubleSpinBox, QFrame, QGroupBox,
-    QHBoxLayout, QLCDNumber, QLabel, QLineEdit,
-    QMainWindow, QMenu, QMenuBar, QPushButton,
-    QRadioButton, QSizePolicy, QSlider, QSpacerItem,
-    QSpinBox, QStatusBar, QTimeEdit, QVBoxLayout,
-    QWidget)
+    QHBoxLayout, QLCDNumber, QLabel, QLayout,
+    QLineEdit, QMainWindow, QMenu, QMenuBar,
+    QPushButton, QRadioButton, QSizePolicy, QSlider,
+    QSpacerItem, QSpinBox, QStatusBar, QTimeEdit,
+    QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1880, 1174)
+        MainWindow.resize(1990, 1174)
         MainWindow.setAutoFillBackground(False)
         MainWindow.setAnimated(True)
         MainWindow.setDockNestingEnabled(True)
@@ -68,10 +68,11 @@ class Ui_MainWindow(object):
         self.action_Sample_finder.setObjectName(u"action_Sample_finder")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.horizontalLayout_38 = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_38.setObjectName(u"horizontalLayout_38")
+        self.horizontalLayout_41 = QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_41.setObjectName(u"horizontalLayout_41")
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setSizeConstraint(QLayout.SetMinimumSize)
         self.label_saving = QLabel(self.centralwidget)
         self.label_saving.setObjectName(u"label_saving")
         font = QFont()
@@ -88,13 +89,13 @@ class Ui_MainWindow(object):
         self.label_data_path.setObjectName(u"label_data_path")
         palette = QPalette()
         brush = QBrush(QColor(255, 255, 255, 255))
-        brush.setStyle(Qt.SolidPattern)
-        palette.setBrush(QPalette.Active, QPalette.Base, brush)
-        palette.setBrush(QPalette.Active, QPalette.Window, brush)
-        palette.setBrush(QPalette.Inactive, QPalette.Base, brush)
-        palette.setBrush(QPalette.Inactive, QPalette.Window, brush)
-        palette.setBrush(QPalette.Disabled, QPalette.Base, brush)
-        palette.setBrush(QPalette.Disabled, QPalette.Window, brush)
+        brush.setStyle(Qt.BrushStyle.SolidPattern)
+        palette.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
+        palette.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush)
+        palette.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
+        palette.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush)
+        palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush)
+        palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush)
         self.label_data_path.setPalette(palette)
         self.label_data_path.setAutoFillBackground(False)
         self.label_data_path.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
@@ -310,18 +311,18 @@ class Ui_MainWindow(object):
         self.lcdNumber_laser_405.setObjectName(u"lcdNumber_laser_405")
         palette1 = QPalette()
         brush1 = QBrush(QColor(226, 137, 255, 255))
-        brush1.setStyle(Qt.SolidPattern)
-        palette1.setBrush(QPalette.Active, QPalette.Light, brush1)
-        palette1.setBrush(QPalette.Active, QPalette.Base, brush)
+        brush1.setStyle(Qt.BrushStyle.SolidPattern)
+        palette1.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Light, brush1)
+        palette1.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
         brush2 = QBrush(QColor(0, 0, 0, 255))
-        brush2.setStyle(Qt.SolidPattern)
-        palette1.setBrush(QPalette.Active, QPalette.Window, brush2)
-        palette1.setBrush(QPalette.Inactive, QPalette.Light, brush1)
-        palette1.setBrush(QPalette.Inactive, QPalette.Base, brush)
-        palette1.setBrush(QPalette.Inactive, QPalette.Window, brush2)
-        palette1.setBrush(QPalette.Disabled, QPalette.Light, brush1)
-        palette1.setBrush(QPalette.Disabled, QPalette.Base, brush2)
-        palette1.setBrush(QPalette.Disabled, QPalette.Window, brush2)
+        brush2.setStyle(Qt.BrushStyle.SolidPattern)
+        palette1.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush2)
+        palette1.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Light, brush1)
+        palette1.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
+        palette1.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush2)
+        palette1.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Light, brush1)
+        palette1.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush2)
+        palette1.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush2)
         self.lcdNumber_laser_405.setPalette(palette1)
         self.lcdNumber_laser_405.setAutoFillBackground(True)
         self.lcdNumber_laser_405.setSmallDecimalPoint(False)
@@ -333,16 +334,16 @@ class Ui_MainWindow(object):
         self.lcdNumber_laser_488.setObjectName(u"lcdNumber_laser_488")
         palette2 = QPalette()
         brush3 = QBrush(QColor(85, 255, 255, 255))
-        brush3.setStyle(Qt.SolidPattern)
-        palette2.setBrush(QPalette.Active, QPalette.Light, brush3)
-        palette2.setBrush(QPalette.Active, QPalette.Base, brush)
-        palette2.setBrush(QPalette.Active, QPalette.Window, brush2)
-        palette2.setBrush(QPalette.Inactive, QPalette.Light, brush3)
-        palette2.setBrush(QPalette.Inactive, QPalette.Base, brush)
-        palette2.setBrush(QPalette.Inactive, QPalette.Window, brush2)
-        palette2.setBrush(QPalette.Disabled, QPalette.Light, brush3)
-        palette2.setBrush(QPalette.Disabled, QPalette.Base, brush2)
-        palette2.setBrush(QPalette.Disabled, QPalette.Window, brush2)
+        brush3.setStyle(Qt.BrushStyle.SolidPattern)
+        palette2.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Light, brush3)
+        palette2.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
+        palette2.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush2)
+        palette2.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Light, brush3)
+        palette2.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
+        palette2.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush2)
+        palette2.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Light, brush3)
+        palette2.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush2)
+        palette2.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush2)
         self.lcdNumber_laser_488.setPalette(palette2)
         self.lcdNumber_laser_488.setAutoFillBackground(True)
         self.lcdNumber_laser_488.setSmallDecimalPoint(False)
@@ -354,16 +355,16 @@ class Ui_MainWindow(object):
         self.lcdNumber_laser_561.setObjectName(u"lcdNumber_laser_561")
         palette3 = QPalette()
         brush4 = QBrush(QColor(255, 255, 127, 255))
-        brush4.setStyle(Qt.SolidPattern)
-        palette3.setBrush(QPalette.Active, QPalette.Light, brush4)
-        palette3.setBrush(QPalette.Active, QPalette.Base, brush)
-        palette3.setBrush(QPalette.Active, QPalette.Window, brush2)
-        palette3.setBrush(QPalette.Inactive, QPalette.Light, brush4)
-        palette3.setBrush(QPalette.Inactive, QPalette.Base, brush)
-        palette3.setBrush(QPalette.Inactive, QPalette.Window, brush2)
-        palette3.setBrush(QPalette.Disabled, QPalette.Light, brush4)
-        palette3.setBrush(QPalette.Disabled, QPalette.Base, brush2)
-        palette3.setBrush(QPalette.Disabled, QPalette.Window, brush2)
+        brush4.setStyle(Qt.BrushStyle.SolidPattern)
+        palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Light, brush4)
+        palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
+        palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush2)
+        palette3.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Light, brush4)
+        palette3.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
+        palette3.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush2)
+        palette3.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Light, brush4)
+        palette3.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush2)
+        palette3.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush2)
         self.lcdNumber_laser_561.setPalette(palette3)
         self.lcdNumber_laser_561.setAutoFillBackground(True)
         self.lcdNumber_laser_561.setSmallDecimalPoint(False)
@@ -375,16 +376,16 @@ class Ui_MainWindow(object):
         self.lcdNumber_laser_640.setObjectName(u"lcdNumber_laser_640")
         palette4 = QPalette()
         brush5 = QBrush(QColor(255, 0, 0, 255))
-        brush5.setStyle(Qt.SolidPattern)
-        palette4.setBrush(QPalette.Active, QPalette.Light, brush5)
-        palette4.setBrush(QPalette.Active, QPalette.Base, brush)
-        palette4.setBrush(QPalette.Active, QPalette.Window, brush2)
-        palette4.setBrush(QPalette.Inactive, QPalette.Light, brush5)
-        palette4.setBrush(QPalette.Inactive, QPalette.Base, brush)
-        palette4.setBrush(QPalette.Inactive, QPalette.Window, brush2)
-        palette4.setBrush(QPalette.Disabled, QPalette.Light, brush5)
-        palette4.setBrush(QPalette.Disabled, QPalette.Base, brush2)
-        palette4.setBrush(QPalette.Disabled, QPalette.Window, brush2)
+        brush5.setStyle(Qt.BrushStyle.SolidPattern)
+        palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Light, brush5)
+        palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
+        palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush2)
+        palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Light, brush5)
+        palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
+        palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush2)
+        palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Light, brush5)
+        palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush2)
+        palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush2)
         self.lcdNumber_laser_640.setPalette(palette4)
         self.lcdNumber_laser_640.setAutoFillBackground(True)
         self.lcdNumber_laser_640.setSmallDecimalPoint(False)
@@ -636,17 +637,18 @@ class Ui_MainWindow(object):
         self.verticalLayout.addItem(self.verticalSpacer)
 
 
-        self.horizontalLayout_38.addLayout(self.verticalLayout)
+        self.horizontalLayout_41.addLayout(self.verticalLayout)
 
         self.line = QFrame(self.centralwidget)
         self.line.setObjectName(u"line")
         self.line.setFrameShape(QFrame.Shape.VLine)
         self.line.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_38.addWidget(self.line)
+        self.horizontalLayout_41.addWidget(self.line)
 
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.verticalLayout_5.setSizeConstraint(QLayout.SetMinimumSize)
         self.label_timelaps_settings = QLabel(self.centralwidget)
         self.label_timelaps_settings.setObjectName(u"label_timelaps_settings")
         self.label_timelaps_settings.setFont(font)
@@ -658,8 +660,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
         self.spinBox_timepoints = QSpinBox(self.centralwidget)
         self.spinBox_timepoints.setObjectName(u"spinBox_timepoints")
-        self.spinBox_timepoints.setMaximum(3600)
-        self.spinBox_timepoints.setValue(10)
+        self.spinBox_timepoints.setMaximum(999999)
+        self.spinBox_timepoints.setValue(1)
 
         self.horizontalLayout_16.addWidget(self.spinBox_timepoints)
 
@@ -795,7 +797,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_34.setObjectName(u"horizontalLayout_34")
         self.spinBox_scan_range = QDoubleSpinBox(self.centralwidget)
         self.spinBox_scan_range.setObjectName(u"spinBox_scan_range")
-        self.spinBox_scan_range.setMaximum(300.000000000000000)
+        self.spinBox_scan_range.setMaximum(400.000000000000000)
         self.spinBox_scan_range.setValue(20.000000000000000)
 
         self.horizontalLayout_34.addWidget(self.spinBox_scan_range)
@@ -905,44 +907,105 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addItem(self.verticalSpacer_2)
 
-        self.line_6 = QFrame(self.centralwidget)
-        self.line_6.setObjectName(u"line_6")
-        self.line_6.setFrameShape(QFrame.Shape.HLine)
-        self.line_6.setFrameShadow(QFrame.Shadow.Sunken)
-
-        self.verticalLayout_5.addWidget(self.line_6)
-
         self.label_volume_duration = QLabel(self.centralwidget)
         self.label_volume_duration.setObjectName(u"label_volume_duration")
         self.label_volume_duration.setAutoFillBackground(False)
 
         self.verticalLayout_5.addWidget(self.label_volume_duration)
 
+        self.line_9 = QFrame(self.centralwidget)
+        self.line_9.setObjectName(u"line_9")
+        self.line_9.setFrameShape(QFrame.Shape.HLine)
+        self.line_9.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_38.addLayout(self.verticalLayout_5)
+        self.verticalLayout_5.addWidget(self.line_9)
+
+        self.label_channels_2 = QLabel(self.centralwidget)
+        self.label_channels_2.setObjectName(u"label_channels_2")
+        self.label_channels_2.setFont(font)
+        self.label_channels_2.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_5.addWidget(self.label_channels_2)
+
+        self.horizontalLayout_38 = QHBoxLayout()
+        self.horizontalLayout_38.setObjectName(u"horizontalLayout_38")
+        self.spinBox_stage_scan_range = QSpinBox(self.centralwidget)
+        self.spinBox_stage_scan_range.setObjectName(u"spinBox_stage_scan_range")
+        self.spinBox_stage_scan_range.setMaximum(10000)
+
+        self.horizontalLayout_38.addWidget(self.spinBox_stage_scan_range)
+
+        self.label_stage_scan_range = QLabel(self.centralwidget)
+        self.label_stage_scan_range.setObjectName(u"label_stage_scan_range")
+
+        self.horizontalLayout_38.addWidget(self.label_stage_scan_range)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_38)
+
+        self.horizontalLayout_39 = QHBoxLayout()
+        self.horizontalLayout_39.setObjectName(u"horizontalLayout_39")
+        self.spinBox_scanV_range = QSpinBox(self.centralwidget)
+        self.spinBox_scanV_range.setObjectName(u"spinBox_scanV_range")
+        self.spinBox_scanV_range.setMaximum(10000)
+
+        self.horizontalLayout_39.addWidget(self.spinBox_scanV_range)
+
+        self.label_scanV_range = QLabel(self.centralwidget)
+        self.label_scanV_range.setObjectName(u"label_scanV_range")
+
+        self.horizontalLayout_39.addWidget(self.label_scanV_range)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_39)
+
+        self.horizontalLayout_40 = QHBoxLayout()
+        self.horizontalLayout_40.setObjectName(u"horizontalLayout_40")
+        self.spinBox_scanV_overlap = QSpinBox(self.centralwidget)
+        self.spinBox_scanV_overlap.setObjectName(u"spinBox_scanV_overlap")
+        self.spinBox_scanV_overlap.setMaximum(50)
+
+        self.horizontalLayout_40.addWidget(self.spinBox_scanV_overlap)
+
+        self.label_scanV_overlap = QLabel(self.centralwidget)
+        self.label_scanV_overlap.setObjectName(u"label_scanV_overlap")
+
+        self.horizontalLayout_40.addWidget(self.label_scanV_overlap)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_40)
+
+
+        self.horizontalLayout_41.addLayout(self.verticalLayout_5)
 
         self.line_2 = QFrame(self.centralwidget)
         self.line_2.setObjectName(u"line_2")
         self.line_2.setFrameShape(QFrame.Shape.VLine)
         self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_38.addWidget(self.line_2)
+        self.horizontalLayout_41.addWidget(self.line_2)
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.verticalLayout_4.setSizeConstraint(QLayout.SetMaximumSize)
         self.label_image_preview = QLabel(self.centralwidget)
         self.label_image_preview.setObjectName(u"label_image_preview")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_image_preview.sizePolicy().hasHeightForWidth())
+        self.label_image_preview.setSizePolicy(sizePolicy)
         self.label_image_preview.setMinimumSize(QSize(1108, 592))
         self.label_image_preview.setMaximumSize(QSize(2216, 1184))
         palette5 = QPalette()
         brush6 = QBrush(QColor(150, 150, 150, 255))
-        brush6.setStyle(Qt.SolidPattern)
-        palette5.setBrush(QPalette.Active, QPalette.Base, brush6)
-        palette5.setBrush(QPalette.Active, QPalette.Window, brush6)
-        palette5.setBrush(QPalette.Inactive, QPalette.Base, brush6)
-        palette5.setBrush(QPalette.Inactive, QPalette.Window, brush6)
-        palette5.setBrush(QPalette.Disabled, QPalette.Base, brush6)
-        palette5.setBrush(QPalette.Disabled, QPalette.Window, brush6)
+        brush6.setStyle(Qt.BrushStyle.SolidPattern)
+        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush6)
+        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush6)
+        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush6)
+        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush6)
+        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush6)
+        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush6)
         self.label_image_preview.setPalette(palette5)
         self.label_image_preview.setAutoFillBackground(True)
 
@@ -1026,6 +1089,11 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_23 = QHBoxLayout()
         self.horizontalLayout_23.setObjectName(u"horizontalLayout_23")
+        self.pb_MinMax_grayscale = QPushButton(self.centralwidget)
+        self.pb_MinMax_grayscale.setObjectName(u"pb_MinMax_grayscale")
+
+        self.horizontalLayout_23.addWidget(self.pb_MinMax_grayscale)
+
         self.pb_auto_grayscale = QPushButton(self.centralwidget)
         self.pb_auto_grayscale.setObjectName(u"pb_auto_grayscale")
 
@@ -1088,12 +1156,12 @@ class Ui_MainWindow(object):
         self.label_histogram_greyvalue.setObjectName(u"label_histogram_greyvalue")
         self.label_histogram_greyvalue.setMinimumSize(QSize(600, 200))
         palette6 = QPalette()
-        palette6.setBrush(QPalette.Active, QPalette.Base, brush)
-        palette6.setBrush(QPalette.Active, QPalette.Window, brush6)
-        palette6.setBrush(QPalette.Inactive, QPalette.Base, brush)
-        palette6.setBrush(QPalette.Inactive, QPalette.Window, brush6)
-        palette6.setBrush(QPalette.Disabled, QPalette.Base, brush6)
-        palette6.setBrush(QPalette.Disabled, QPalette.Window, brush6)
+        palette6.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
+        palette6.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush6)
+        palette6.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
+        palette6.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush6)
+        palette6.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush6)
+        palette6.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush6)
         self.label_histogram_greyvalue.setPalette(palette6)
         self.label_histogram_greyvalue.setAutoFillBackground(True)
 
@@ -1111,16 +1179,17 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_25 = QHBoxLayout()
         self.horizontalLayout_25.setObjectName(u"horizontalLayout_25")
+        self.horizontalLayout_25.setSizeConstraint(QLayout.SetMaximumSize)
         self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_25.addItem(self.horizontalSpacer_9)
 
-        self.pb_snoutscope_acquisition = QPushButton(self.centralwidget)
-        self.pb_snoutscope_acquisition.setObjectName(u"pb_snoutscope_acquisition")
-        self.pb_snoutscope_acquisition.setFont(font)
-        self.pb_snoutscope_acquisition.setAutoFillBackground(False)
+        self.pb_fast_acquisition = QPushButton(self.centralwidget)
+        self.pb_fast_acquisition.setObjectName(u"pb_fast_acquisition")
+        self.pb_fast_acquisition.setFont(font)
+        self.pb_fast_acquisition.setAutoFillBackground(False)
 
-        self.horizontalLayout_25.addWidget(self.pb_snoutscope_acquisition)
+        self.horizontalLayout_25.addWidget(self.pb_fast_acquisition)
 
         self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -1136,16 +1205,26 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_25.addItem(self.horizontalSpacer_11)
 
+        self.pb_LS3_acquisition = QPushButton(self.centralwidget)
+        self.pb_LS3_acquisition.setObjectName(u"pb_LS3_acquisition")
+        self.pb_LS3_acquisition.setFont(font)
+
+        self.horizontalLayout_25.addWidget(self.pb_LS3_acquisition)
+
+        self.horizontalSpacer_18 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_25.addItem(self.horizontalSpacer_18)
+
 
         self.verticalLayout_4.addLayout(self.horizontalLayout_25)
 
 
-        self.horizontalLayout_38.addLayout(self.verticalLayout_4)
+        self.horizontalLayout_41.addLayout(self.verticalLayout_4)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1880, 23))
+        self.menubar.setGeometry(QRect(0, 0, 1990, 21))
         self.menuFichier = QMenu(self.menubar)
         self.menuFichier.setObjectName(u"menuFichier")
         self.menuConfig = QMenu(self.menubar)
@@ -1167,7 +1246,6 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuParameters.menuAction())
         self.menuFichier.addAction(self.action_SaveConfig)
         self.menuConfig.addAction(self.action_DAQ)
-        self.menuConfig.addAction(self.action_Filters)
         self.menuConfig.addAction(self.action_Microscope)
         self.menuAlign.addAction(self.action_Align_O2_O3)
         self.menuAlign.addAction(self.menuShortcuts.menuAction())
@@ -1363,6 +1441,9 @@ class Ui_MainWindow(object):
         self.spinBox_channel_exposure_time.setToolTip(QCoreApplication.translate("MainWindow", u"Set the exposure time for the 405 nm channel in milliseconds.", None))
 #endif // QT_CONFIG(tooltip)
         self.label_channel_exposure_time.setText(QCoreApplication.translate("MainWindow", u"Exposure Time (ms)", None))
+#if QT_CONFIG(tooltip)
+        self.pb_laser_emission.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Start the emission of the laser event if preview is not running</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.pb_laser_emission.setText(QCoreApplication.translate("MainWindow", u"Emission", None))
         self.label_laser_icon.setText("")
         self.label_laser.setText(QCoreApplication.translate("MainWindow", u"OFF", None))
@@ -1416,6 +1497,20 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.label_volume_duration.setText(QCoreApplication.translate("MainWindow", u"Number of frames/volumes\n"
 "Estimated volume duration: 0.000 s", None))
+        self.label_channels_2.setText(QCoreApplication.translate("MainWindow", u"LS3\n"
+"scanning parameters", None))
+#if QT_CONFIG(tooltip)
+        self.spinBox_stage_scan_range.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Set the length of the scanning using Light sheet stabilized scanning in \u00b5m</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_stage_scan_range.setText(QCoreApplication.translate("MainWindow", u"Stage scan range (\u00b5m)", None))
+#if QT_CONFIG(tooltip)
+        self.spinBox_scanV_range.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Set the width of the scanning using Light sheet stabilized scanning (in \u00b5m)</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_scanV_range.setText(QCoreApplication.translate("MainWindow", u"Scan width (\u00b5m)", None))
+#if QT_CONFIG(tooltip)
+        self.spinBox_scanV_overlap.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Set the overlap between twoo lines during Light sheet stabilized scanning</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_scanV_overlap.setText(QCoreApplication.translate("MainWindow", u"Scan overlap (in %)", None))
         self.label_image_preview.setText("")
         self.checkBox_show_saturation.setText(QCoreApplication.translate("MainWindow", u"Show saturation", None))
         self.comboBox_preview_zoom.setItemText(0, QCoreApplication.translate("MainWindow", u"Image zoom", None))
@@ -1443,6 +1538,7 @@ class Ui_MainWindow(object):
 "Pixels above this value will appear white.", None))
 #endif // QT_CONFIG(tooltip)
         self.label_max_grayscale.setText(QCoreApplication.translate("MainWindow", u"Max", None))
+        self.pb_MinMax_grayscale.setText(QCoreApplication.translate("MainWindow", u"PushButton", None))
 #if QT_CONFIG(tooltip)
         self.pb_auto_grayscale.setToolTip(QCoreApplication.translate("MainWindow", u"Automatically adjust the minimum and maximum grey values based on the image histogram.", None))
 #endif // QT_CONFIG(tooltip)
@@ -1469,14 +1565,19 @@ class Ui_MainWindow(object):
         self.pb_snap.setText(QCoreApplication.translate("MainWindow", u"Snap", None))
         self.label_histogram_greyvalue.setText("")
 #if QT_CONFIG(tooltip)
-        self.pb_snoutscope_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"Start image acquisition using the Snoutscope program.", None))
+        self.pb_fast_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Start image acquisition using the Fast Acquisition program.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.pb_snoutscope_acquisition.setText(QCoreApplication.translate("MainWindow", u"Snoutscope\n"
+        self.pb_fast_acquisition.setText(QCoreApplication.translate("MainWindow", u"Fast\n"
 "Acquisition", None))
 #if QT_CONFIG(tooltip)
         self.pb_multidimensional_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"Start a multidimensional acquisition, including multiple channels, positions, or timepoints.", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_multidimensional_acquisition.setText(QCoreApplication.translate("MainWindow", u"Multidimensional\n"
+"Acquisition", None))
+#if QT_CONFIG(tooltip)
+        self.pb_LS3_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Start the acquisition using the Light sheet stabilized scanning</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.pb_LS3_acquisition.setText(QCoreApplication.translate("MainWindow", u"LS3\n"
 "Acquisition", None))
         self.menuFichier.setTitle(QCoreApplication.translate("MainWindow", u"Fichier", None))
         self.menuConfig.setTitle(QCoreApplication.translate("MainWindow", u"Config", None))

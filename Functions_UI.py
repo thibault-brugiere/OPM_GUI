@@ -17,13 +17,9 @@ import sys
 
 from PySide6.QtCore import QTime
 from PySide6.QtGui import QImage
-
-# set multidimensional_acquisition importable
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "multidimensional_acquisition"))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
     
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
+from acquisition.functions_acquisition import functions_acquisition as fa
 
 class functions_ui():
     
@@ -173,6 +169,9 @@ class functions_ui():
         channel.filter = channel_list_interface['filter'].currentText()
         channel.camera = channel_list_interface['camera'].currentIndex()
         channel.exposure_time = channel_list_interface['exposure_time'].value()
+        
+    def change_filter(position):
+        pass
     
     #
     # Timelaps settings
@@ -219,7 +218,7 @@ class functions_ui():
     #
     
     def label_volume_duration(scan_range, sample_pixel_size, aspect_ratio, tilt_angle,
-                              exposure_time, vsize, line_readout_time, galvo_response_time):
+                              exposure_time, vsize, line_readout_time, galvo_response_time, mode):
         """
         Return a label for the interface containing the number of steps / volume
         as well as the duration of eachvolumes.
@@ -242,19 +241,26 @@ class functions_ui():
             time to read two lines of the camera 
         galvo_response_time :  (ms)
             time for galvo to move of 1 step
+        mode : str
+            acquisition mode, "standard" for standard acquisition mode, "fast" for fast acquisition mode
 
         Returns
         -------
         message : str
         """
+        aspect_ratio = fa.legalize_aspect_ratio(sample_pixel_size, aspect_ratio, tilt_angle)
         
         step_size = aspect_ratio * sample_pixel_size / np.sin(tilt_angle * math.pi / 180)
         n_steps = 1 + int(round(scan_range / step_size))
+        image_readout_time = (vsize / 2 + 8) * line_readout_time * 1000 # in ms
         
-        estimated_time = n_steps * (exposure_time + vsize * line_readout_time * 1000 / 2
-                                    + galvo_response_time) * galvo_response_time * 2
+        if mode == "standard" :
+            estimated_time = n_steps * (exposure_time + max(image_readout_time, galvo_response_time)) + galvo_response_time * 2
+        elif mode == "fast" :
+            estimated_time = n_steps * exposure_time + galvo_response_time * 2
         
-        message  = f'Number of frames/volume: {str(n_steps)}\n'
+        message  = f'Number of frames/volume/color: {str(n_steps)}\n'
+        message += f'Legalized aspect ratio: {round(aspect_ratio,3)}\n'
         message += f'Step size: {round(step_size,3)}µm\n'
         message += f'Estimated volume duration: {round(estimated_time/1000,3)}s/channel'
         
@@ -312,11 +318,12 @@ class functions_ui():
         - QImage: The processed image, either in grayscale or with a colormap highlighting saturated pixels.
         """
         
+        if zoom <= 0:
+            zoom = 1
+        
         h , w = frame.shape # get dimensions of the image
         
-        
         frame = np.clip(frame,min_grayscale , max_grayscale ) #Remove grey value bellow and above a certain value
-        # frame = ((frame - min_grayscale ) * coef_grayscale ).astype(np.uint8) #Change values between 0 and 255 for displaying
         frame = ((frame - min_grayscale ) * (255/(max_grayscale - min_grayscale)) ).astype(np.uint8) #Change values between 0 and 255 for displaying
         
         h , w = int(h * zoom ) , int (w * zoom)
@@ -396,29 +403,6 @@ class functions_ui():
         qimage = QImage(image_data, w, h, w * 4, QImage.Format_RGBA8888)
         
         return qimage
-    
-    #
-    # Acquisition
-    #
-    
-    def start_snoutscope_acquisition(file_path, working_directory) :
-        """
-        Lance un fichier Python en utilisant subprocess.
-        
-        Parameters:
-        - file_path (str): Le chemin vers le fichier Python à exécuter.
-        """
-        try:
-            # Exécuter le fichier Python
-            subprocess.run(["python", file_path],
-                           check=True, text=True,
-                           capture_output=True,
-                           cwd=working_directory)
-        except subprocess.CalledProcessError as e:
-            print(f"Erreur lors de l'exécution du fichier : {e}")
-            print("Return code:", e.returncode)
-            print("Output:", e.stdout)
-            print("Error:", e.stderr)
 
     def get_active_channel(active_channels, channel):
         channel_acquisition = []
@@ -431,15 +415,15 @@ class functions_ui():
         return channel_acquisition
 
     def start_multidimensional_acquisition(hcam):
-        print("[OPM] start multidimensional acquisition")
+        # print("[OPM] start multidimensional acquisition")
         MDA = MultidimensionalAcquisition(hcam)
-        print("[OPM] camera initialization")
+        # print("[OPM] camera initialization")
         MDA.initialize_cameras()
-        print("[OPM] acquisition workers initialization")
+        # print("[OPM] acquisition workers initialization")
         MDA.initialize_acquisition_workers()
-        print("[OPM] DAQ configuration")
+        # print("[OPM] DAQ configuration")
         MDA.configure_daq()
-        print("[OPM] MDA RUN")
+        # print("[OPM] MDA RUN")
         MDA.run()
     
     #

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Thu Jan 30 14:00:36 2025
 
@@ -6,51 +5,60 @@ Created on Thu Jan 30 14:00:36 2025
 
 Convert file.ui to file.py
 
-pyside6-uic ui_Control_Microscope_Main.ui -o ui_Control_Microscope_Main.py
-
-# TODO : Present preview size should be limited by camera parameters
-# TODO : ouvrir laser_GUI depuis l'interface
-# TODO : Widget pour modifier tous les paramétres du microscope
-# TODO : faire un dictionnaire.json dans config pour toute la description du microscope
-        Pour qu'elle soit enregistrée lors de l'acquisition
+pyside6-uic D:/Projets_Python/OPM_GUI/ui_Control_Microscope_Main.ui -o D:/Projets_Python/OPM_GUI/ui_Control_Microscope_Main.py
 
 Resolved FTDI DLL issue by copying ftd2xx64.dll from Thorlabs software to C:\Windows\System32 and renaming it to ftd2xx.dll
+NOTE : les mocks sont en rempacer dans : * main_OPM_GUI * hardware.Laser_Controller * functions_camera * main_MDA * main_LS3
 """
+# Branche laser
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    message="pkg_resources is deprecated as an API"
+)
 
 import copy
 import json
+import math
 import numpy as np
 import os
 import pickle
-# from pylablib.devices import DCAM # A remplacer aussi dans hardware functions_camera
+from pylablib.devices import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
 import sys
 import tifffile
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import QTimer #, QCoreApplication, QEventLoop
+from PySide6.QtCore import QTimer, Qt  #, QCoreApplication, QEventLoop
 from PySide6.QtGui import QPixmap, QImage
-from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox, QSizePolicy
 
-from acquisition.send_to_acquisition import send_to_snoutscope_acquisition
-from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
+from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition, send_to_ls3_acquisition
 from acquisition.z_stack import z_stack
 from configs.config import channel_config, microscope, experiment #, camera
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
-# from hardware.functions_DAQ import functions_daq
-from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera
-from mock.DAQ import functions_daq
+from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
+from hardware.filter_wheel import FilterWheel
+from hardware.Laser_Controller import LaserController
+# from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
+# from mock.DAQ import functions_daq
+# from mock.filter_wheel import FilterWheel
+from mock.Null import NullObject
+
+from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
+from LS3_acquisition.main_LS3 import Light_sheet_stabilized_scanning
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
 from widget.Alignement_O2_O3_Window import alignement_O2_O3_Window
 from widget.Channel_Editor_Window import ChannelEditorWindow
+from widget.MDA_manager import mda_mannager
+from widget.LS3_manager import ls3_mannager
 from widget.Microscope_Settings_Window import microscope_settings_window
 from widget.Preset_ROI_Window import PresetROIWindow
 from widget.Sample_Finder import sample_finder_Window
 from widget.set_DAQ_Window import setDAQWindow
-from widget.Set_Filters_Window import filtersEditionWindow
 
 class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     """
@@ -128,12 +136,34 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.label_daq_detected.setText(f'{len(self.connected_daq)} ni-DAQ detected : {self.connected_daq[0]}')
         else :
             self.label_daq_detected.setText('WARNING: No ni-DAQ detected ! Please restart the interface.')
+            
+        functions_daq.digital_out(False, self.microscope.daq_channels["transmission_light"]) # Force the transmission light OFF
+            
+        #
+        # Connect to the filter wheel
+        #
+        
+        try :
+            self.filterWheel = FilterWheel(filterList = self.microscope.filters)
+            self.filterWheel.connect()
+            self.filterWheel.home()
+        except:
+            print("[WARNING] failled to connect filter wheel")
+            self.status_bar.showMessage("[WARNING] failled to connect filter wheel")
+            self.filterWheel = NullObject()
         
         #
         # creation of the channels / lasers
         #
         
-        self.lasers = ["405","488","561","640"] # = self.microscope.lasers, can not be modified
+        self.laser_list = ["405","488","561","640"] # = self.microscope.lasers, can not be modified
+        
+        self.laser_controller = LaserController(self.microscope.daq_channels_laser_analog_out,
+                                                self.microscope.daq_channels_laser_digital_out,
+                                                self.microscope.volts_per_laser_percent,
+                                                self.microscope.OxxiusCombiner_command,
+                                                self.laser_list,
+                                                self.microscope.OxxiusCombiner_port)
         
         if self.loaded_channels == False: # If channels haven't been loaded, create default channels
         
@@ -142,7 +172,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.channel_names = ['BFP','GFP','CY3.5','TexRed']
             
             for channel in self.channel_names:
-                self.default_channel[channel] = channel_config(channel, self.lasers)
+                self.default_channel[channel] = channel_config(channel, self.laser_list)
                 
         self.channel = copy.deepcopy(self.default_channel) # These are channels modified by the user
         
@@ -183,8 +213,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
         self.sync_laser_interface() # Block modification and starting of not connected laser (to the DAQ)
         
-        self.comboBox_channel_name_set_indexes() # Put all the channels to the self.comboBox_channel_name
-        
         self.sync_filter_interface() # synchronize channels filters to avaliable filters (can be modified via action_Filters)
 
         #
@@ -210,6 +238,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.timer_gray_hystogram = QTimer() # Timer to show grayscale graph
         self.timer_gray_hystogram.timeout.connect(self.update_gray_histogram)
         
+        self.comboBox_channel_name_set_indexes() # Put all the channels to the self.comboBox_channel_name
+        
         #
         # Petites choses de l'interface
         #
@@ -227,6 +257,19 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.spinBox_aspect_ratio.setValue(self.experiment.aspect_ratio)
         
+        self.comboBox_channel_filter_index_changed()
+        
+        self.pb_fast_acquisition.setText("Fast acquisition")
+        self.pb_fast_acquisition.setCheckable(True)
+            
+        self.pb_MinMax_grayscale.setText("Min / Max")
+        
+        #
+        # Modifications d'élements de l'interface #TODO a modifier dans Main.ui
+        #
+        self.spinBox_scanV_overlap.setValue(25)
+        self.comboBox_preview_zoom.setItemText(0, "Zoom Auto")
+        
         ##############################################
         ## Connection between functions and buttons ##
         ##############################################
@@ -241,7 +284,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_hpos.editingFinished.connect(self.spinBox_hpos_value_changed)
         self.spinBox_vsize.editingFinished.connect(self.spinBox_vsize_value_changed)
         self.spinBox_vpos.editingFinished.connect(self.spinBox_vpos_value_changed)
-        self.comboBox_size_preset.currentIndexChanged.connect(self.comboBox_size_preset_index_changed)
+        self.comboBox_size_preset.textActivated.connect(self.comboBox_size_preset_index_changed)
         self.pb_center_FOV.clicked.connect(self.pb_center_FOV_clicked)
         self.comboBox_binning.currentIndexChanged.connect(self.comboBox_binning_index_changed)
         
@@ -282,11 +325,17 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
                 ### Channel selection and orders
         self.spinBox_number_channels.valueChanged.connect(self.spinBox_number_channels_value_changed)
+        
+                ### LS3 parameters
+        self.spinBox_stage_scan_range.valueChanged.connect(self.spinBox_stage_scan_range_value_changed)
+        self.spinBox_scanV_range.valueChanged.connect(self.spinBox_scanV_range_value_changed)
+        self.spinBox_scanV_overlap.valueChanged.connect(self.spinBox_scanV_overlap_value_changed)
 
             ## Preview
         self.checkBox_show_saturation.stateChanged.connect(self.checkBox_show_saturation_value_changed)
         self.spinBox_min_grayscale.valueChanged.connect(self.spinBox_grayscale_value_changed)
         self.spinBox_max_grayscale.valueChanged.connect(self.spinBox_grayscale_value_changed)
+        self.pb_MinMax_grayscale.clicked.connect(self.pb_MinMax_grayscale_clicked_connect)
         self.pb_auto_grayscale.clicked.connect(self.pb_auto_grayscale_clicked_connect)
         self.pb_reset_grayscale.clicked.connect(self.pb_reset_grayscale_clicked_connect)
         self.pb_preview.clicked.connect(self.pb_preview_clicked)
@@ -296,8 +345,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_snap.clicked.connect(self.pb_snap_clicked_connect)
         
             ## Acquisition
-        self.pb_snoutscope_acquisition.clicked.connect(self.pb_snoutscope_acquisition_clicked_connect)
+        self.pb_fast_acquisition.clicked.connect(self.pb_fast_acquisition_clicked_connect)
         self.pb_multidimensional_acquisition.clicked.connect(self.pb_multidimensional_acquisition_clicked_connect)
+        self.pb_LS3_acquisition.clicked.connect(self.pb_LS3_acquisition_clicked_connect)
         
     ###############################################
     ## Connection between functions and toolbars ##
@@ -308,7 +358,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
             ## Config
         self.action_DAQ.triggered.connect(self.openDAQEditor)
-        self.action_Filters.triggered.connect(self.openFiltersEditor)
         self.action_Microscope.triggered.connect(self.openMicroscopeEditor)
         
             ## Tools
@@ -338,11 +387,14 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             if self.is_preview:
                 # Stop acquisition if necessary
                 self.pb_stop_preview_clicked()
-                # Turn of lasers if necessary
-                self.pb_laser_emission.setChecked(False)
-                self.pb_laser_emission_clicked()
-                
+            # Turn of lasers if necessary
+            self.pb_laser_emission.setChecked(False)
+            self.pb_laser_emission_clicked()
+            
+            # Close hardware thar needs to be closed
+            self.filterWheel.close()
             functions_camera.close_cameras(self.hcam)
+            
             event.accept()
         else:
             event.ignore()
@@ -409,7 +461,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_pause_preview.setDisabled(desactivation)
         self.pb_stop_preview.setDisabled(desactivation)
         self.pb_snap.setDisabled(desactivation)
-        self.pb_snoutscope_acquisition.setDisabled(desactivation)
         self.pb_multidimensional_acquisition.setDisabled(desactivation)
 
     def comboBox_camera_index_changed(self):
@@ -457,6 +508,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #set hpos
         self.spinBox_hpos_value_changed()
         
+        #set zoom
+        self.comboBox_preview_zoom_index_changed()
+        
     def spinBox_hpos_value_changed(self):
         'Horizontal position of the ROI'
         
@@ -480,11 +534,13 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.camera[self.camera_id].vsize = size
         self.camera[self.camera_id].calculate_image_readout_time()
+        self.pb_fast_acquisition_clicked_connect()
         
         #set vpos
         self.spinBox_vpos_value_changed()
         
-        self.label_volume_duration_update()
+        #set zoom
+        self.comboBox_preview_zoom_index_changed()
         
     def spinBox_vpos_value_changed(self):
         'Vertical position of the ROI'
@@ -619,6 +675,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.experiment.slit_aperture = self.spinBox_slit_aperture.value
         
     def label_volume_duration_update(self):
+        if self.n_camera == 0 :
+            return
         message = functions_ui.label_volume_duration(self.experiment.scan_range,
                                                      self.camera[self.camera_id].sample_pixel_size ,
                                                      self.experiment.aspect_ratio,
@@ -626,7 +684,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                                      self.preview_channel.exposure_time,
                                                      self.camera[self.camera_id].vsize,
                                                      self.camera[self.camera_id].line_readout_time,
-                                                     self.microscope.galvo_response_time)
+                                                     self.microscope.galvo_response_time,
+                                                     self.experiment.mode)
         
         self.label_volume_duration.setText(message)
     
@@ -649,10 +708,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         This ensures that the user interface accurately reflects the current
         state of the laser connections.
         """
+        # TODO : Bloquer l'utilisation des lasers concerné si le banc Oxxius n'est pas bien intialisé
         
         for laser in self.checkBox_laser.keys():
             self.channel = copy.deepcopy(self.default_channel)
-            if self.microscope.daq_channels[laser] is None :
+            
+            if self.microscope.daq_channels_laser_analog_out[laser] is None and self.microscope.daq_channels_laser_digital_out[laser] is None:
                 self.checkBox_laser[laser].setDisabled(True)
                 self.checkBox_laser[laser].setChecked(False)
                 self.spinBox_laser_power[laser].setDisabled(True)
@@ -674,6 +735,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.comboBox_channel_name.clear()
         self.comboBox_channel_name.addItems(list(self.channel.keys()))
         self.comboBox_channel_name.blockSignals(False)
+        
+        self.label_volume_duration_update()
     
     def comboBox_channel_name_index_changed(self):
         "Configures the interface elements when changing the comboBox_channel from selected channel object."
@@ -684,11 +747,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.preview_channel = self.channel[self.comboBox_channel_name.currentText()] # Change the current name of the channel used for preview
         
+        self.label_volume_duration_update()
+        
     def pb_channel_save_clicked_connect(self):
         "Saves the settings from the interface elements into the specified channel object."
         functions_ui.save_channel_from_interface(self.list_channel_interface,
                                                  self.channel[self.comboBox_channel_name.currentText()])
-        # print(self.channel['BFP'].laser_power['405'])
     
     def pb_channel_add_clicked_connect(self):
         "Saves the settings from the interface elements into a new channel object named from channel_name lineEdit object."
@@ -702,12 +766,14 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         if name_ok == False : self.status_bar.showMessage("Invalid experiment name! Avoid spaces and special characters.", 5000)
         
-        self.channel[index] = channel_config(index, self.lasers) #Create the new channel
+        self.channel[index] = channel_config(index, self.laser_list) #Create the new channel
         functions_ui.save_channel_from_interface(self.list_channel_interface,
                                                  self.channel[self.comboBox_channel_name.currentText()]) #save the channel parameters
         self.comboBox_channel_name.addItem(index) # Add the new channel to the comboBox
         self.comboBox_channel_name.setCurrentText(index) # set the comboBox to this index
         self.lineEdit_channel_name.setText(index)
+        
+        self.spinBox_number_channels_value_changed()
  
     def pb_channel_remove_clicked_connect(self):
         "Removes the currently selected channel from the combo box and the channel dictionary."
@@ -719,11 +785,13 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.comboBox_channel_name.removeItem(index)
                 self.channel.pop(channel_id, None) # channel.pop remove the channel from the channel dictionnaire
                 
+                self.spinBox_number_channels_value_changed()
+                
         else:
             self.status_bar.showMessage("Default channel can not be removed", 5000)
             
             ### Functions called when changing the parameters of lasers
-            "These functions are triggered when the corresponding laser spin-box or check-box is changed."
+    "These functions are triggered when the corresponding laser spin-box or check-box is changed."
     def state_laser_405_changed(self):
         self.state_laser_changed('405')
             
@@ -738,15 +806,20 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def state_laser_changed(self, laser):
         "Updates the laser output signal via the DAQ if laser emission is active."
+        
+        power = self.spinBox_laser_power[laser].value()
+        
+        self.laser_controller.set_laser_power(laser, power) # Will only have an effect for digital modulated laser
+        
         if self.laser_emission:
-            if self.microscope.daq_channels[laser] is not None:
-                if self.checkBox_laser[laser].isChecked():
-                        # Sets the analog output voltage based on the laser power percentage (scaled to 5V max).
-                        functions_daq.analog_out(self.spinBox_laser_power[laser].value()*self.microscope.volts_per_laser_percent[laser],
-                                                 self.microscope.daq_channels[laser])
-                else:
-                    # Turns off the laser by setting the output to 0V.
-                    functions_daq.analog_out(0,self.microscope.daq_channels[laser])
+            if self.checkBox_laser[laser].isChecked():
+                # Sets the power based on the laser power percentage.
+                self.laser_controller.start_laser_emission(laser, power)
+            else:
+                # Turns off the laser
+                self.laser_controller.stop_laser_emission(laser)
+        else:
+            self.laser_controller.stop_laser_emission(laser)
         
     def pb_laser_emission_clicked(self):
         " Start or stop laser emission from actual channel after user click on pb_laser_emission"
@@ -755,16 +828,16 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.label_laser.setText("ON ")
             self.laser_emission = True
             functions_daq.digital_out(True, self.microscope.daq_channels['laser_blanking'])
-            for laser in self.lasers:
+            for laser in self.laser_list:
                 self.state_laser_changed(laser)
         else:
             self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
             self.label_laser.setText("OFF")
             self.laser_emission = False
-            functions_daq.digital_out(False, self.microscope.daq_channels['laser_blanking'])
-            for laser in self.checkBox_laser.keys():
-                if self.microscope.daq_channels[laser] is not None:
-                    functions_daq.analog_out(0,self.microscope.daq_channels[laser])
+            if len(self.connected_daq) > 0 :
+                functions_daq.digital_out(False, self.microscope.daq_channels['laser_blanking'])
+            for laser in self.laser_list:
+                self.state_laser_changed(laser)
                     
     def sync_filter_interface(self):
         """
@@ -801,12 +874,15 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.is_preview: # Change exposure time during preview
             self.hcam[self.preview_channel.camera].set_exposure(self.camera[self.preview_channel.camera].exposure_time)
             
+        self.label_volume_duration_update()
+            
     
     def comboBox_channel_filter_index_changed(self):
         """
         This function will allow user to chancge the filter in live when filter weel will be avaliable
         """
-        pass
+        filterName = self.comboBox_channel_filter.currentText()
+        self.filterWheel.moveToFilter(filterName)
     
     def spinBox_number_channels_value_changed(self):
         """
@@ -845,6 +921,19 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.active_channels = [comboBox.currentText() for comboBox in self.comboBoxes_channel_order]
 
         #
+        # LS3 parameters    
+        #
+        
+    def spinBox_stage_scan_range_value_changed(self):
+        self.experiment.stage_scan_range = self.spinBox_stage_scan_range.value()
+    
+    def spinBox_scanV_range_value_changed(self):
+        self.experiment.scanV_range = self.spinBox_scanV_range.value()
+    
+    def spinBox_scanV_overlap_value_changed(self):
+        self.experiment.scanV_overlap = self.spinBox_scanV_overlap.value()
+
+        #
         # Preview
         #
         
@@ -881,8 +970,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.slider_min_grayscale.blockSignals(True)
             self.slider_min_grayscale.setValue(self.min_grayscale)
             self.slider_min_grayscale.blockSignals(False)
-        
-    def pb_auto_grayscale_clicked_connect(self):
+            
+    def pb_MinMax_grayscale_clicked_connect(self):
         """"
         Sets the grayscale min and max values based on the current preview frame,
         or assigns default values if no frame is available.
@@ -893,6 +982,20 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.spinBox_max_grayscale.setValue(np.max(frame))
         else:
             pass
+    
+    def pb_auto_grayscale_clicked_connect(self):
+        """"
+        Sets the grayscale min and max values based on the current preview frame,
+        or assigns default values if no frame is available.
+        """
+        if self.preview_frame is not None:
+            frame = self.preview_frame
+            min_grayscale, max_grayscale = functions_ui.auto_contrast(frame)
+            
+            self.spinBox_min_grayscale.setValue(min_grayscale)
+            self.spinBox_max_grayscale.setValue(max_grayscale)
+        else:
+            pass
         
     def pb_reset_grayscale_clicked_connect(self):
         "Resets the grayscale range to the full 16-bit scale (0 to 65535)."
@@ -900,7 +1003,25 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_min_grayscale.setValue(0)
             
     def comboBox_preview_zoom_index_changed(self):
-        self.preview_zoom = [0.25 , 2 , 1 , 0.5 , 1/3 , 0.25][self.comboBox_preview_zoom.currentIndex()]
+        self.preview_zoom = [-1 , 2 , 1 , 0.5 , 1/3 , 0.25][self.comboBox_preview_zoom.currentIndex()]
+        if self.preview_zoom == -1 :
+
+            label_size = [self.label_image_preview.width(), self.label_image_preview.height()]
+            w_label, h_label = label_size[0], label_size[1]
+            
+            # h_label = self.label_image_preview.height()
+            # w_label = self.label_image_preview.width()
+            
+            h_camera = self.camera[self.camera_id].hsize
+            w_camera = self.camera[self.camera_id].vsize
+
+            self.preview_zoom = min(h_label/h_camera,w_label/w_camera)
+        
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        
+        self.comboBox_preview_zoom_index_changed()
+            
             
     def pb_snap_clicked_connect(self):
         """
@@ -1050,7 +1171,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.histogram_greyvalue_thread.start()
         
     def display_gray_histogram(self, image_data, w, h):
-        " display the latest generated gray histogram"
+        "display the latest generated gray histogram"
         qimage = QImage(image_data, w, h, w * 4, QImage.Format_RGBA8888)
         self.label_histogram_greyvalue.setPixmap(QPixmap.fromImage(qimage))
             
@@ -1087,35 +1208,36 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         # Acquisition
         #
         
-    def pb_snoutscope_acquisition_clicked_connect(self):
-        """Start acquisition with the Snoutscope protocole from Armin"""
-        self.status_bar.showMessage("start Snoutscope acquisition", 10000)
-        print("start Snoutscope acquisition")
-        if self.is_preview:
-            # Eteint l'acquisition si nécessaire
-            self.pb_stop_preview_clicked()
-            # Eteint les lasers si nécessaire
-            self.pb_laser_emission.setChecked(False)
-            self.pb_laser_emission_clicked()
-            
-        functions_camera.close_cameras(self.hcam)
-        
-        if self.active_channels and self.active_channels[0] != 'None' :
-            try:
-                send_to_snoutscope_acquisition(self.camera[0],
-                                               self.channel[self.active_channels[0]],
-                                               self.experiment, self.microscope)
-                # Enregistre les données, ne prendra en compre que le premier channel choisi
-                functions_ui.start_snoutscope_acquisition(file_path = 'D:/Projets_Python/OPM_GUI/snoutscopev3/Snoutscope.py',
-                                                          working_directory = 'D:/Projets_Python/OPM_GUI/snoutscopev3')
-            except:
-                self.status_bar.showMessage("parameters saving didn't worked!", 5000)
+    def pb_fast_acquisition_clicked_connect(self):
+        """
+        Select the acquisition mode :
+            "standard" for standard acquisition protocol
+            "fast" for fast acquisition protocol with galvo mirror mooving while
+            camera exposing
+
+        """
+        if self.pb_fast_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
+            self.experiment.mode = "fast"
+            # Set minimum exposure time
+            min_exposure_time = math.ceil(100*(self.camera[self.camera_id].image_readout_time)*1000)/100
+            self.spinBox_channel_exposure_time.setMinimum(min_exposure_time)
+            for channel in self.channel.keys():
+                if self.channel[channel].exposure_time < min_exposure_time:
+                    self.channel[channel].exposure_time = min_exposure_time
+                    self.status_bar.showMessage(f"Exposure time to low for at least one channel, exposure time set to {min_exposure_time}ms")
+                
         else:
-            self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
+            self.experiment.mode = "standard"
+            self.spinBox_channel_exposure_time.setMinimum(0.01)
             
-        self.hcam , self.cameras = functions_camera.initialize_cameras(self.n_camera, self.microscope.mag_total)
+        self.label_volume_duration_update()
             
     def pb_multidimensional_acquisition_clicked_connect(self):
+        if self.pb_fast_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
+            self.experiment.mode = "fast"
+        else:
+            self.experiment.mode = "standard"
+            
         """Start acquisition with the Multi Dimentionnal Acquisition protocole from Thibault"""
         if self.is_preview:
             # Eteint l'acquisition si nécessaire
@@ -1127,6 +1249,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             try:
                 channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
                 send_to_multidimensionnal_acquisition(self.camera,
+                                                      self.filterWheel,
                                                       channel_acquisition,
                                                       self.experiment,
                                                       self.microscope,
@@ -1134,11 +1257,52 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                                       filename = 'GUI_parameters.json')
                 
                 self.status_bar.showMessage("start multidimensional acquisition")
-                functions_ui.start_multidimensional_acquisition(self.hcam)
+                
+                MDA = MultidimensionalAcquisition(self.hcam, self.filterWheel)
+                self.MDA_manager = mda_mannager(MDA, self)
+                self.MDA_manager.show()
+                self.MDA_manager.start_acquisition()
+                
             except:
                 self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
         else:
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
+            
+    def pb_LS3_acquisition_clicked_connect(self):
+        """Start acquisition with the Light sheet stabilized scanning protocole from Thibault"""
+        if self.is_preview:
+            # Eteint l'acquisition si nécessaire
+            self.pb_stop_preview_clicked()
+            # Eteint les lasers si nécessaire
+            self.pb_laser_emission.setChecked(False)
+            self.pb_laser_emission_clicked()
+            
+        self.experiment.mode = "LS3"
+         
+        if self.active_channels and self.active_channels[0] != 'None' :
+            try:
+                channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
+                send_to_ls3_acquisition(self.camera,
+                                        self.filterWheel,
+                                        channel_acquisition,
+                                        self.experiment,
+                                        self.microscope,
+                                        dirname = 'LS3_acquisition/Config',
+                                        filename = 'GUI_parameters.json')
+                
+                self.status_bar.showMessage("start Light_sheet_stabilized_scanning acquisition")
+                
+                LS3 = Light_sheet_stabilized_scanning(self.hcam, self.filterWheel)
+                
+                self.LS3_manager = ls3_mannager(LS3, self)
+                self.LS3_manager.show()
+                self.LS3_manager.start_acquisition()
+                
+            except:
+                self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
+        else:
+            self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
+            
         
     ##################################
     ## Fonctions called by toolbars ##
@@ -1169,12 +1333,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def openDAQEditor(self):
         "display window to eddit DAC channels"
-        self.DAQ_editor = setDAQWindow(self.microscope.daq_channels,self)
+        self.DAQ_editor = setDAQWindow(self.microscope.daq_channels,
+                                       self.microscope.daq_channels_laser_analog_out,
+                                       self.microscope.daq_channels_laser_digital_out,
+                                       self)
         self.DAQ_editor.show()
-    
-    def openFiltersEditor(self):
-        self.filters_editor = filtersEditionWindow(self.microscope.filters,self)
-        self.filters_editor.show()
         
     def openMicroscopeEditor(self):
         self.microscope_settings_editor = microscope_settings_window(self.microscope, self)
@@ -1250,7 +1413,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.is_preview :
             self.pb_stop_preview_clicked()
             
-        self.sample_finder = sample_finder_Window()
+        self.sample_finder = sample_finder_Window(microscope = self.microscope)
         self.sample_finder.show()
                 
         #
@@ -1310,30 +1473,28 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     
     def load_microscope_settings(self):
         config_dir = 'configs'
-        file_path = os.path.join(config_dir, 'microscope_settings.pkl')
         
+        file_path = os.path.join(config_dir, 'microscope_settings.json')
         self.loaded_microscope_settings = False
         
         if os.path.exists(file_path):
-            with open(file_path, 'rb') as file:
-                data = pickle.load(file)
-                self.microscope = data
-                
-            self.loaded_microscope_settings = True
-        
-        return self.loaded_microscope_settings
+            with open(file_path, 'r') as file:
+                microscope_dict = json.load(file)
+                self.microscope = microscope()
+                self.microscope.from_dict(microscope_dict)
+                self.loaded_microscope_settings = True
     
     def save_microscope_settings(self):
         config_dir = 'configs'
         os.makedirs(config_dir, exist_ok=True)  # Crée le dossier s'il n'existe pas
-        file_path = os.path.join(config_dir, 'microscope_settings.pkl')
+            
+        file_path = os.path.join(config_dir, 'microscope_settings.json')
         
-        microscope_settings_data = self.microscope
+        microscope_dict = self.microscope.to_dict()
         
-        with open(file_path, 'wb') as file:
-            pickle.dump(microscope_settings_data, file)
-    
-    
+        with open(file_path, 'w') as file:
+            json.dump(microscope_dict, file, indent = 4)
+        
     #
     # Channels
     #

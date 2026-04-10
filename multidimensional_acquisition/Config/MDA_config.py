@@ -7,6 +7,7 @@ Created on Tue Jul  8 14:00:18 2025
 
 import json
 import os
+import shutil
 
 from configs.config import camera, channel_config, experiment, microscope
 
@@ -19,7 +20,7 @@ class config():
     experiment and microscope settings.
     """
     
-    def __init__(self, dirname = ""):
+    def __init__(self, dirname = "", filename = 'GUI_parameters.json'):
         """
         Initialize the config object.
         
@@ -36,7 +37,8 @@ class config():
         """
         
         self.dirname = dirname
-        self.GUI_parameters = self.load_parameters_from_GUI()
+        self.filename = filename
+        self.GUI_parameters = self.load_parameters_from_GUI(self.filename)
         
         self.cameras, self.channels, self.experiment, self.microscope = self.GUI_parameters_to_config()
     
@@ -60,6 +62,15 @@ class config():
         with open(file_path, 'r') as json_file:
             parameters = json.load(json_file)
         return parameters
+    
+    def copy_parameters(self, dest, filename = 'GUI_parameters.json'):
+        dirname = self.dirname
+        file_path = os.path.join(dirname, filename)   # Construct full path to the file
+        
+        destination = os.path.join(dest, 'GUI_parameters.txt')
+        
+        shutil.copy(file_path,destination)
+        
     
     def GUI_parameters_to_config(self):
         """
@@ -92,7 +103,7 @@ class config():
             cam.exposure_time = cam_data["exposure_time"]
             cam.binning = cam_data["binning"]
             cam.line_readout_time = cam_data["line_readout_time"]
-            # image_readout_time is not used in the camera object, but could be stored if needed
+            cam.calculate_image_readout_time()
             cameras.append(cam)
     
         # 2. Create channel objects with laser configuration
@@ -115,6 +126,7 @@ class config():
         exp.data_path = exp_data["data_path"]
         exp.timepoints = exp_data["timepoints"]
         exp.time_intervals = exp_data["time_intervals"]
+        exp.mode = exp_data["mode"]
         exp.total_duration = exp_data["total_duration"]
         exp.scanner_position = exp_data["scanner_position"]
         exp.scan_range = exp_data["scan_range"]
@@ -134,12 +146,17 @@ class config():
         micro.galvo_response_time = micro_data["galvo_response_time"]
         micro.galvo_flyback_time = micro_data["galvo_flyback_time"]
         micro.stage_port = micro_data["stage_port"]
+        micro.filter_changing_time = micro_data["filter_changing_time"]
         micro.filters = micro_data["filters"]
         micro.lasers = micro_data["lasers"]
         micro.volts_per_laser_percent = micro_data["volts_per_laser_percent"]
-        micro.laser_response_time = micro_data["laser_response_time"]
+        micro.laser_response_time = micro_data['laser_response_time']
+        micro.OxxiusCombiner_port = micro_data['OxxiusCombiner_port']
+        micro.OxxiusCombiner_command = micro_data['OxxiusCombiner_command']
         micro.daq_channels.update(micro_data["daq_channels"])
-    
+        micro.daq_channels_laser_analog_out = micro_data['daq_channels_laser_analog_out']
+        micro.daq_channels_laser_digital_out = micro_data['daq_channels_laser_digital_out']
+        
         return cameras, channels, exp, micro
     
 

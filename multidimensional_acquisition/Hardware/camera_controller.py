@@ -35,7 +35,7 @@ class camera_acquisition():
             Optional pre-initialized camera object.
         others parameters are only needed for simulation
         """
-        
+        self.experiment = experiment
         self.camera = camera
         self.hcam = hcam
         
@@ -117,10 +117,17 @@ class camera_acquisition():
         
         # Trigger settings
         self.hcam.cav["trigger_source"] = 2 # 1=internal, 2=external, 3=software, 4=master pulse
-        self.hcam.cav["trigger_mode"] = 1 # 1=normal, 2=start
-        self.hcam.cav["trigger_active"] = 2 # 1=edge, 2=level, 3=syncreadout
-        # self.hcam.cav["trigger_global_exposure"] = 1 # 1=delayed, 2=global reset
-        # self.hcam.cav["trigger_time"] = 1 # in µs
+        
+        if self.experiment.mode == "standard" : 
+            self.hcam.cav["trigger_mode"] = 1 # 1=normal, 2=start
+            self.hcam.cav["trigger_active"] = 2 # 1=edge, 2=level, 3=syncreadout
+            self.hcam.cav["trigger_global_exposure"] = 5 # 3 = delayed,  2 = global reset, # 5 Global reset ?
+        
+        elif self.experiment.mode == "fast" :
+            self.hcam.cav["trigger_mode"] = 1 # 1=normal, 2=start
+            self.hcam.cav["trigger_active"] = 3 # 1=edge, 2=level, 3=syncreadout
+            # self.hcam.cav["trigger_global_exposure"] = 5 # 3 = delayed,  2 = global reset, # 5 Global reset ?
+        
         self.hcam.cav["trigger_polarity"] = 2 # 1=negative, 2=positive
         self.hcam.cav["trigger_delay"] = 0 # in µs
         
@@ -159,7 +166,9 @@ class camera_acquisition():
         Fully releases the camera and resets the state to idle.
         """
         if self.hcam is not None:
-            self.hcam.close()
+            print('[hcam] Camera clearing')
+            self.hcam.clear_acquisition()
+            self.hcam.cav["trigger_source"] = 1
             self.hcam = None
             self.state = "idle"
 

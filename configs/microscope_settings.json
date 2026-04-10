@@ -1,0 +1,69 @@
+{
+    "tilt_angle": 40.0,
+    "mag_total": 29.61,
+    "volts_per_um": 0.009679,
+    "galvo_response_time": 0.3,
+    "galvo_flyback_time": 3.0,
+    "stage_port": "COM10",
+    "trans_mirror_ser_num": "37009743",
+    "filter_port": "COM?",
+    "filter_changing_time": [
+        55,
+        70,
+        85
+    ],
+    "filters": [
+        "BFP",
+        "GFP",
+        "CY3.5",
+        "TexRed",
+        "empty5",
+        "empty6"
+    ],
+    "lasers": [
+        "405",
+        "488",
+        "561",
+        "640"
+    ],
+    "volts_per_laser_percent": {
+        "405": 0.05,
+        "488": 0.05,
+        "561": 0.05,
+        "640": 0.05
+    },
+    "laser_response_time": 0.02,
+    "OxxiusCombiner_port": "COM5",
+    "OxxiusCombiner_command": {
+        "405": null,
+        "488": null,
+        "561": "PPL2",
+        "640": null
+    },
+    "daq_channels": {
+        "co_channel": "Dev1/ctr0",
+        "co_terminal": "/Dev1/PFI0",
+        "transmission_light": "Dev1/port0/line12",
+        "fluo_light": null,
+        "galvo": "Dev1/ao0",
+        "camera_0": "Dev1/port0/line0",
+        "camera_1": "Dev1/port0/line1",
+        "filter_wheel_1": "Dev1/port0/line2",
+        "filter_wheel_2": "Dev1/port0/line3",
+        "channel_finished": "/Dev1/PFI1",
+        "laser_blanking": "Dev1/port0/line4",
+        "stage_triger": "/Dev1/PFI2"
+    },
+    "daq_channels_laser_analog_out": {
+        "405": "Dev1/ao1",
+        "488": "Dev1/ao2",
+        "561": null,
+        "640": "Dev1/ao3"
+    },
+    "daq_channels_laser_digital_out": {
+        "405": "Dev1/port0/Line8",
+        "488": "Dev1/port0/Line9",
+        "561": "Dev1/port0/Line10",
+        "640": "Dev1/port0/Line11"
+    }
+}

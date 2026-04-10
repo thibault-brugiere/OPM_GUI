@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'ui_set_DAQ.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.1
+## Created by: Qt User Interface Compiler version 6.9.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -16,13 +16,13 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QLineEdit,
-    QSizePolicy, QVBoxLayout, QWidget)
+    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(642, 731)
+        Form.resize(630, 1183)
         self.verticalLayout = QVBoxLayout(Form)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout_9 = QHBoxLayout()
@@ -70,6 +70,52 @@ class Ui_Form(object):
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_10)
+
+        self.horizontalLayout_21 = QHBoxLayout()
+        self.horizontalLayout_21.setObjectName(u"horizontalLayout_21")
+        self.label_transmission_light = QLabel(Form)
+        self.label_transmission_light.setObjectName(u"label_transmission_light")
+        self.label_transmission_light.setMinimumSize(QSize(100, 0))
+        self.label_transmission_light.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_21.addWidget(self.label_transmission_light)
+
+        self.lineEdit_transmission_light = QLineEdit(Form)
+        self.lineEdit_transmission_light.setObjectName(u"lineEdit_transmission_light")
+
+        self.horizontalLayout_21.addWidget(self.lineEdit_transmission_light)
+
+        self.label_label_transmission_light_out = QLabel(Form)
+        self.label_label_transmission_light_out.setObjectName(u"label_label_transmission_light_out")
+        self.label_label_transmission_light_out.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_21.addWidget(self.label_label_transmission_light_out)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_21)
+
+        self.horizontalLayout_20 = QHBoxLayout()
+        self.horizontalLayout_20.setObjectName(u"horizontalLayout_20")
+        self.label_fluorescent_light = QLabel(Form)
+        self.label_fluorescent_light.setObjectName(u"label_fluorescent_light")
+        self.label_fluorescent_light.setMinimumSize(QSize(100, 0))
+        self.label_fluorescent_light.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_20.addWidget(self.label_fluorescent_light)
+
+        self.lineEdit_fluo_light = QLineEdit(Form)
+        self.lineEdit_fluo_light.setObjectName(u"lineEdit_fluo_light")
+
+        self.horizontalLayout_20.addWidget(self.lineEdit_fluo_light)
+
+        self.label_fluorescent_light_out = QLabel(Form)
+        self.label_fluorescent_light_out.setObjectName(u"label_fluorescent_light_out")
+        self.label_fluorescent_light_out.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_20.addWidget(self.label_fluorescent_light_out)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_20)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -140,97 +186,74 @@ class Ui_Form(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_3)
 
-        self.horizontalLayout_4 = QHBoxLayout()
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.label_laser_405 = QLabel(Form)
-        self.label_laser_405.setObjectName(u"label_laser_405")
-        self.label_laser_405.setMinimumSize(QSize(100, 0))
-        self.label_laser_405.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.horizontalLayout_11 = QHBoxLayout()
+        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
+        self.label_filter_wheel_1 = QLabel(Form)
+        self.label_filter_wheel_1.setObjectName(u"label_filter_wheel_1")
+        self.label_filter_wheel_1.setMinimumSize(QSize(100, 0))
+        self.label_filter_wheel_1.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
-        self.horizontalLayout_4.addWidget(self.label_laser_405)
+        self.horizontalLayout_11.addWidget(self.label_filter_wheel_1)
 
-        self.lineEdit_laser_405 = QLineEdit(Form)
-        self.lineEdit_laser_405.setObjectName(u"lineEdit_laser_405")
+        self.lineEdit_filter_wheel_1 = QLineEdit(Form)
+        self.lineEdit_filter_wheel_1.setObjectName(u"lineEdit_filter_wheel_1")
 
-        self.horizontalLayout_4.addWidget(self.lineEdit_laser_405)
+        self.horizontalLayout_11.addWidget(self.lineEdit_filter_wheel_1)
 
-        self.label_laser_405_out = QLabel(Form)
-        self.label_laser_405_out.setObjectName(u"label_laser_405_out")
-        self.label_laser_405_out.setMinimumSize(QSize(180, 0))
+        self.label_camera2_out_2 = QLabel(Form)
+        self.label_camera2_out_2.setObjectName(u"label_camera2_out_2")
+        self.label_camera2_out_2.setMinimumSize(QSize(180, 0))
 
-        self.horizontalLayout_4.addWidget(self.label_laser_405_out)
-
-
-        self.verticalLayout.addLayout(self.horizontalLayout_4)
-
-        self.horizontalLayout_5 = QHBoxLayout()
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.label_laser_488 = QLabel(Form)
-        self.label_laser_488.setObjectName(u"label_laser_488")
-        self.label_laser_488.setMinimumSize(QSize(100, 0))
-        self.label_laser_488.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.horizontalLayout_5.addWidget(self.label_laser_488)
-
-        self.lineEdit_laser_488 = QLineEdit(Form)
-        self.lineEdit_laser_488.setObjectName(u"lineEdit_laser_488")
-
-        self.horizontalLayout_5.addWidget(self.lineEdit_laser_488)
-
-        self.label_laser_488_out = QLabel(Form)
-        self.label_laser_488_out.setObjectName(u"label_laser_488_out")
-        self.label_laser_488_out.setMinimumSize(QSize(180, 0))
-
-        self.horizontalLayout_5.addWidget(self.label_laser_488_out)
+        self.horizontalLayout_11.addWidget(self.label_camera2_out_2)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_5)
+        self.verticalLayout.addLayout(self.horizontalLayout_11)
 
-        self.horizontalLayout_6 = QHBoxLayout()
-        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
-        self.label_laser_561 = QLabel(Form)
-        self.label_laser_561.setObjectName(u"label_laser_561")
-        self.label_laser_561.setMinimumSize(QSize(100, 0))
-        self.label_laser_561.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.horizontalLayout_12 = QHBoxLayout()
+        self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
+        self.label_filter_wheel_2 = QLabel(Form)
+        self.label_filter_wheel_2.setObjectName(u"label_filter_wheel_2")
+        self.label_filter_wheel_2.setMinimumSize(QSize(100, 0))
+        self.label_filter_wheel_2.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
-        self.horizontalLayout_6.addWidget(self.label_laser_561)
+        self.horizontalLayout_12.addWidget(self.label_filter_wheel_2)
 
-        self.lineEdit_laser_561 = QLineEdit(Form)
-        self.lineEdit_laser_561.setObjectName(u"lineEdit_laser_561")
+        self.lineEdit_filter_wheel_2 = QLineEdit(Form)
+        self.lineEdit_filter_wheel_2.setObjectName(u"lineEdit_filter_wheel_2")
 
-        self.horizontalLayout_6.addWidget(self.lineEdit_laser_561)
+        self.horizontalLayout_12.addWidget(self.lineEdit_filter_wheel_2)
 
-        self.label_laser_561_out = QLabel(Form)
-        self.label_laser_561_out.setObjectName(u"label_laser_561_out")
-        self.label_laser_561_out.setMinimumSize(QSize(180, 0))
+        self.label_camera2_out_3 = QLabel(Form)
+        self.label_camera2_out_3.setObjectName(u"label_camera2_out_3")
+        self.label_camera2_out_3.setMinimumSize(QSize(180, 0))
 
-        self.horizontalLayout_6.addWidget(self.label_laser_561_out)
-
-
-        self.verticalLayout.addLayout(self.horizontalLayout_6)
-
-        self.horizontalLayout_7 = QHBoxLayout()
-        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.label_laser_640 = QLabel(Form)
-        self.label_laser_640.setObjectName(u"label_laser_640")
-        self.label_laser_640.setMinimumSize(QSize(100, 0))
-        self.label_laser_640.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.horizontalLayout_7.addWidget(self.label_laser_640)
-
-        self.lineEdit_laser_640 = QLineEdit(Form)
-        self.lineEdit_laser_640.setObjectName(u"lineEdit_laser_640")
-
-        self.horizontalLayout_7.addWidget(self.lineEdit_laser_640)
-
-        self.label_laser_640_out = QLabel(Form)
-        self.label_laser_640_out.setObjectName(u"label_laser_640_out")
-        self.label_laser_640_out.setMinimumSize(QSize(180, 0))
-
-        self.horizontalLayout_7.addWidget(self.label_laser_640_out)
+        self.horizontalLayout_12.addWidget(self.label_camera2_out_3)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_7)
+        self.verticalLayout.addLayout(self.horizontalLayout_12)
+
+        self.horizontalLayout_19 = QHBoxLayout()
+        self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
+        self.label_filter_ChannelFinished = QLabel(Form)
+        self.label_filter_ChannelFinished.setObjectName(u"label_filter_ChannelFinished")
+        self.label_filter_ChannelFinished.setMinimumSize(QSize(100, 0))
+        self.label_filter_ChannelFinished.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_19.addWidget(self.label_filter_ChannelFinished)
+
+        self.lineEdit_ChannelFinished = QLineEdit(Form)
+        self.lineEdit_ChannelFinished.setObjectName(u"lineEdit_ChannelFinished")
+
+        self.horizontalLayout_19.addWidget(self.lineEdit_ChannelFinished)
+
+        self.label_camera2_out_4 = QLabel(Form)
+        self.label_camera2_out_4.setObjectName(u"label_camera2_out_4")
+        self.label_camera2_out_4.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_19.addWidget(self.label_camera2_out_4)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_19)
 
         self.horizontalLayout_8 = QHBoxLayout()
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
@@ -255,6 +278,259 @@ class Ui_Form(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_8)
 
+        self.horizontalLayout_34 = QHBoxLayout()
+        self.horizontalLayout_34.setObjectName(u"horizontalLayout_34")
+        self.label_stage_triger = QLabel(Form)
+        self.label_stage_triger.setObjectName(u"label_stage_triger")
+        self.label_stage_triger.setMinimumSize(QSize(100, 0))
+        self.label_stage_triger.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_34.addWidget(self.label_stage_triger)
+
+        self.lineEdit_stage_triger = QLineEdit(Form)
+        self.lineEdit_stage_triger.setObjectName(u"lineEdit_stage_triger")
+
+        self.horizontalLayout_34.addWidget(self.lineEdit_stage_triger)
+
+        self.label_stage_triger_out = QLabel(Form)
+        self.label_stage_triger_out.setObjectName(u"label_stage_triger_out")
+        self.label_stage_triger_out.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_34.addWidget(self.label_stage_triger_out)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_34)
+
+        self.horizontalLayout_13 = QHBoxLayout()
+        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
+        self.horizontalSpacer_7 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_13.addItem(self.horizontalSpacer_7)
+
+        self.label_lasers_analog = QLabel(Form)
+        self.label_lasers_analog.setObjectName(u"label_lasers_analog")
+        font = QFont()
+        font.setBold(True)
+        self.label_lasers_analog.setFont(font)
+        self.label_lasers_analog.setAlignment(Qt.AlignCenter)
+
+        self.horizontalLayout_13.addWidget(self.label_lasers_analog)
+
+        self.horizontalSpacer_8 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_13.addItem(self.horizontalSpacer_8)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_13)
+
+        self.horizontalLayout_4 = QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.label_laser_405 = QLabel(Form)
+        self.label_laser_405.setObjectName(u"label_laser_405")
+        self.label_laser_405.setMinimumSize(QSize(100, 0))
+        self.label_laser_405.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_4.addWidget(self.label_laser_405)
+
+        self.lineEdit_laser_ao_405 = QLineEdit(Form)
+        self.lineEdit_laser_ao_405.setObjectName(u"lineEdit_laser_ao_405")
+
+        self.horizontalLayout_4.addWidget(self.lineEdit_laser_ao_405)
+
+        self.label_laser_405_out = QLabel(Form)
+        self.label_laser_405_out.setObjectName(u"label_laser_405_out")
+        self.label_laser_405_out.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_4.addWidget(self.label_laser_405_out)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_4)
+
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.label_laser_488 = QLabel(Form)
+        self.label_laser_488.setObjectName(u"label_laser_488")
+        self.label_laser_488.setMinimumSize(QSize(100, 0))
+        self.label_laser_488.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_5.addWidget(self.label_laser_488)
+
+        self.lineEdit_laser_ao_488 = QLineEdit(Form)
+        self.lineEdit_laser_ao_488.setObjectName(u"lineEdit_laser_ao_488")
+
+        self.horizontalLayout_5.addWidget(self.lineEdit_laser_ao_488)
+
+        self.label_laser_488_out = QLabel(Form)
+        self.label_laser_488_out.setObjectName(u"label_laser_488_out")
+        self.label_laser_488_out.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_5.addWidget(self.label_laser_488_out)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_5)
+
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.label_laser_561 = QLabel(Form)
+        self.label_laser_561.setObjectName(u"label_laser_561")
+        self.label_laser_561.setMinimumSize(QSize(100, 0))
+        self.label_laser_561.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_6.addWidget(self.label_laser_561)
+
+        self.lineEdit_laser_ao_561 = QLineEdit(Form)
+        self.lineEdit_laser_ao_561.setObjectName(u"lineEdit_laser_ao_561")
+
+        self.horizontalLayout_6.addWidget(self.lineEdit_laser_ao_561)
+
+        self.label_laser_561_out = QLabel(Form)
+        self.label_laser_561_out.setObjectName(u"label_laser_561_out")
+        self.label_laser_561_out.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_6.addWidget(self.label_laser_561_out)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_6)
+
+        self.horizontalLayout_7 = QHBoxLayout()
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.label_laser_640 = QLabel(Form)
+        self.label_laser_640.setObjectName(u"label_laser_640")
+        self.label_laser_640.setMinimumSize(QSize(100, 0))
+        self.label_laser_640.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_7.addWidget(self.label_laser_640)
+
+        self.lineEdit_laser_ao_640 = QLineEdit(Form)
+        self.lineEdit_laser_ao_640.setObjectName(u"lineEdit_laser_ao_640")
+
+        self.horizontalLayout_7.addWidget(self.lineEdit_laser_ao_640)
+
+        self.label_laser_640_out = QLabel(Form)
+        self.label_laser_640_out.setObjectName(u"label_laser_640_out")
+        self.label_laser_640_out.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_7.addWidget(self.label_laser_640_out)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_7)
+
+        self.horizontalLayout_14 = QHBoxLayout()
+        self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
+        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_14.addItem(self.horizontalSpacer_9)
+
+        self.label_lasers_digital = QLabel(Form)
+        self.label_lasers_digital.setObjectName(u"label_lasers_digital")
+        self.label_lasers_digital.setFont(font)
+        self.label_lasers_digital.setAlignment(Qt.AlignCenter)
+
+        self.horizontalLayout_14.addWidget(self.label_lasers_digital)
+
+        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_14.addItem(self.horizontalSpacer_10)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_14)
+
+        self.horizontalLayout_16 = QHBoxLayout()
+        self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
+        self.label_laser_406 = QLabel(Form)
+        self.label_laser_406.setObjectName(u"label_laser_406")
+        self.label_laser_406.setMinimumSize(QSize(100, 0))
+        self.label_laser_406.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_16.addWidget(self.label_laser_406)
+
+        self.lineEdit_laser_do_405 = QLineEdit(Form)
+        self.lineEdit_laser_do_405.setObjectName(u"lineEdit_laser_do_405")
+
+        self.horizontalLayout_16.addWidget(self.lineEdit_laser_do_405)
+
+        self.label_laser_405_out_2 = QLabel(Form)
+        self.label_laser_405_out_2.setObjectName(u"label_laser_405_out_2")
+        self.label_laser_405_out_2.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_16.addWidget(self.label_laser_405_out_2)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_16)
+
+        self.horizontalLayout_15 = QHBoxLayout()
+        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
+        self.label_laser_489 = QLabel(Form)
+        self.label_laser_489.setObjectName(u"label_laser_489")
+        self.label_laser_489.setMinimumSize(QSize(100, 0))
+        self.label_laser_489.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_15.addWidget(self.label_laser_489)
+
+        self.lineEdit_laser_do_488 = QLineEdit(Form)
+        self.lineEdit_laser_do_488.setObjectName(u"lineEdit_laser_do_488")
+
+        self.horizontalLayout_15.addWidget(self.lineEdit_laser_do_488)
+
+        self.label_laser_488_out_2 = QLabel(Form)
+        self.label_laser_488_out_2.setObjectName(u"label_laser_488_out_2")
+        self.label_laser_488_out_2.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_15.addWidget(self.label_laser_488_out_2)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_15)
+
+        self.horizontalLayout_17 = QHBoxLayout()
+        self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
+        self.label_laser_562 = QLabel(Form)
+        self.label_laser_562.setObjectName(u"label_laser_562")
+        self.label_laser_562.setMinimumSize(QSize(100, 0))
+        self.label_laser_562.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_17.addWidget(self.label_laser_562)
+
+        self.lineEdit_laser_do_561 = QLineEdit(Form)
+        self.lineEdit_laser_do_561.setObjectName(u"lineEdit_laser_do_561")
+
+        self.horizontalLayout_17.addWidget(self.lineEdit_laser_do_561)
+
+        self.label_laser_561_out_2 = QLabel(Form)
+        self.label_laser_561_out_2.setObjectName(u"label_laser_561_out_2")
+        self.label_laser_561_out_2.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_17.addWidget(self.label_laser_561_out_2)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_17)
+
+        self.horizontalLayout_18 = QHBoxLayout()
+        self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
+        self.label_laser_641 = QLabel(Form)
+        self.label_laser_641.setObjectName(u"label_laser_641")
+        self.label_laser_641.setMinimumSize(QSize(100, 0))
+        self.label_laser_641.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_18.addWidget(self.label_laser_641)
+
+        self.lineEdit_laser_do_640 = QLineEdit(Form)
+        self.lineEdit_laser_do_640.setObjectName(u"lineEdit_laser_do_640")
+
+        self.horizontalLayout_18.addWidget(self.lineEdit_laser_do_640)
+
+        self.label_laser_640_out_2 = QLabel(Form)
+        self.label_laser_640_out_2.setObjectName(u"label_laser_640_out_2")
+        self.label_laser_640_out_2.setMinimumSize(QSize(180, 0))
+
+        self.horizontalLayout_18.addWidget(self.label_laser_640_out_2)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_18)
+
+        self.verticalSpacer = QSpacerItem(20, 658, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout.addItem(self.verticalSpacer)
+
 
         self.retranslateUi(Form)
 
@@ -264,16 +540,64 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
         self.label_vol_trig.setText(QCoreApplication.translate("Form", u"Volume trigger", None))
+#if QT_CONFIG(tooltip)
+        self.lineEdit_vol_trig.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Trigger start of each volume</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.lineEdit_vol_trig.setText("")
         self.label_vol_trig_out.setText(QCoreApplication.translate("Form", u"ctr", None))
         self.label_vol_trig_outputt.setText(QCoreApplication.translate("Form", u"Vol. trig. outputt", None))
+#if QT_CONFIG(tooltip)
+        self.lineEdit_vol_trig_outputt.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Trigger start of each volume</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.label_vol_trig_outputt_out.setText(QCoreApplication.translate("Form", u"PFI", None))
+        self.label_transmission_light.setText(QCoreApplication.translate("Form", u"transmission light", None))
+#if QT_CONFIG(tooltip)
+        self.lineEdit_transmission_light.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Trigger start of each volume</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_label_transmission_light_out.setText(QCoreApplication.translate("Form", u"digital out", None))
+        self.label_fluorescent_light.setText(QCoreApplication.translate("Form", u"fluorescent light", None))
+#if QT_CONFIG(tooltip)
+        self.lineEdit_fluo_light.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Trigger start of each volume</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_fluorescent_light_out.setText(QCoreApplication.translate("Form", u"digital out (None if not connected)", None))
         self.label_galvo.setText(QCoreApplication.translate("Form", u"Galvo", None))
+#if QT_CONFIG(tooltip)
+        self.lineEdit_galvo.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Analog Out for galvo scanner movement</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.label_galvo_out.setText(QCoreApplication.translate("Form", u"ao", None))
         self.label_camera1.setText(QCoreApplication.translate("Form", u"Camera 1", None))
+#if QT_CONFIG(tooltip)
+        self.lineEdit_camera1.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Trigger of camera 1 expositions</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.label_camera1_out.setText(QCoreApplication.translate("Form", u"digital out", None))
         self.label_camera2.setText(QCoreApplication.translate("Form", u"Camera 2", None))
+#if QT_CONFIG(tooltip)
+        self.lineEdit_camera2.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Trigger of camera 2 expositions</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.label_camera2_out.setText(QCoreApplication.translate("Form", u"digital out (optionnal)", None))
+        self.label_filter_wheel_1.setText(QCoreApplication.translate("Form", u"Filter wheel 1", None))
+#if QT_CONFIG(tooltip)
+        self.lineEdit_filter_wheel_1.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Trigger filter wheel</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_camera2_out_2.setText(QCoreApplication.translate("Form", u"digital out", None))
+        self.label_filter_wheel_2.setText(QCoreApplication.translate("Form", u"Filter wheel 2", None))
+        self.label_camera2_out_3.setText(QCoreApplication.translate("Form", u"digital in or out (optionnal)", None))
+        self.label_filter_ChannelFinished.setText(QCoreApplication.translate("Form", u"Channel finished", None))
+#if QT_CONFIG(tooltip)
+        self.lineEdit_ChannelFinished.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Trigger at the end of each channel for the computer (not used yet)</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_camera2_out_4.setText(QCoreApplication.translate("Form", u"PFI", None))
+        self.label_laser_blanking.setText(QCoreApplication.translate("Form", u"laser blanking", None))
+#if QT_CONFIG(tooltip)
+        self.lineEdit_laser_blanking.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Trigger le blanking AOTF laser blanking (not used)</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_laser_blanking_out.setText(QCoreApplication.translate("Form", u"digital out", None))
+        self.label_stage_triger.setText(QCoreApplication.translate("Form", u"stage triger", None))
+#if QT_CONFIG(tooltip)
+        self.lineEdit_stage_triger.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Trigger from the stage to start ls3 scanning</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_stage_triger_out.setText(QCoreApplication.translate("Form", u"PFI", None))
+        self.label_lasers_analog.setText(QCoreApplication.translate("Form", u"Lasers analog out", None))
         self.label_laser_405.setText(QCoreApplication.translate("Form", u"405", None))
         self.label_laser_405_out.setText(QCoreApplication.translate("Form", u"ao (None if not connected)", None))
         self.label_laser_488.setText(QCoreApplication.translate("Form", u"488", None))
@@ -282,7 +606,14 @@ class Ui_Form(object):
         self.label_laser_561_out.setText(QCoreApplication.translate("Form", u"ao (None if not connected)", None))
         self.label_laser_640.setText(QCoreApplication.translate("Form", u"640", None))
         self.label_laser_640_out.setText(QCoreApplication.translate("Form", u"ao (None if not connected)", None))
-        self.label_laser_blanking.setText(QCoreApplication.translate("Form", u"laser blanking", None))
-        self.label_laser_blanking_out.setText(QCoreApplication.translate("Form", u"digital out", None))
+        self.label_lasers_digital.setText(QCoreApplication.translate("Form", u"Lasers digital out", None))
+        self.label_laser_406.setText(QCoreApplication.translate("Form", u"405", None))
+        self.label_laser_405_out_2.setText(QCoreApplication.translate("Form", u"ao (None if not connected)", None))
+        self.label_laser_489.setText(QCoreApplication.translate("Form", u"488", None))
+        self.label_laser_488_out_2.setText(QCoreApplication.translate("Form", u"ao (None if not connected)", None))
+        self.label_laser_562.setText(QCoreApplication.translate("Form", u"561", None))
+        self.label_laser_561_out_2.setText(QCoreApplication.translate("Form", u"ao (None if not connected)", None))
+        self.label_laser_641.setText(QCoreApplication.translate("Form", u"640", None))
+        self.label_laser_640_out_2.setText(QCoreApplication.translate("Form", u"ao (None if not connected)", None))
     # retranslateUi
 

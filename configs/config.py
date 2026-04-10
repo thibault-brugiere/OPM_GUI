@@ -53,12 +53,16 @@ class experiment(object):
     def __init__(self):
         self.exp_name = 'Image'
         self.data_path = "D:/Projets_Python/OPM_GUI"
-        self.timepoints = 10
+        self.timepoints = 1
         self.time_intervals = 1.0 # in s
         self.total_duration = 10.0 # in s
+        self.mode = "standard"
         
         self.scanner_position = 0
         self.scan_range = 20
+        self.stage_scan_range = 300 # scan range for LS3 acquisition in µm
+        self.scanV_range = 0 # scan range for slow axis for LS3 acquisition in µm
+        self.scanV_overlap = 0.25 # in ratio
         self.aspect_ratio = 3
         self.n_steps = 0 # Calculé plus tard
         self.step_size = 0 # Calculé plus tard
@@ -71,18 +75,23 @@ class experiment(object):
 class microscope(object):
     def __init__(self):
         
-        self.tilt_angle = 45.0 #in degrees
+        self.tilt_angle = 40.0 #in degrees
         self.mag_total = 29.61
         
         # scanning galvo
-        self.volts_per_um = 0.05
-        self.galvo_response_time = 2.0  # A mesure in ms
+        self.volts_per_um = 0.01024
+        self.galvo_response_time = 0.3  # A mesure in ms
         self.galvo_flyback_time = 3.0 # A mesurer in ms
         
         # stage
         self.stage_port = 'COM10'
         
+        # Preview
+        self.trans_mirror_ser_num = 37009743
+        
         # Filters
+        self.filter_port = "COM?"
+        self.filter_changing_time = [55,70,85] # in ms
         self.filters = ['BFP','GFP','CY3.5','TexRed','empty5', 'empty6'] #should be 6 options
         
         # Lasers
@@ -92,20 +101,41 @@ class microscope(object):
                                         '561' : 5.0 / 100.0, # 5v max
                                         '640' : 5.0 / 100.0  # 5v max
                                         }
-        self.laser_response_time = 2.0 # in ms
+        self.laser_response_time = 20e-3 # in ms
+        self.OxxiusCombiner_port = "COM5"
+        
+        self.OxxiusCombiner_command = {"405" : None, # Régle digital modulation (dm) du laser 405
+                                       "488" : None, # Régle digital modulation (dm) du laser 488
+                                       "561" : "PPL2", # Régle digital modulation (dm) du laser 561
+                                       "640" : None, # Régle digital modulation (dm) du laser 640
+                                       } #Command send to the combiner to set laser power,
 
         # DAQ
         self.daq_channels = {"co_channel": "Dev1/ctr0", # ADD: trigger start of each volume
                              "co_terminal": "/Dev1/PFI0", # ADD: trigger start of each volume
+                             "transmission_light": "Dev1/port0/line12",
+                             "fluo_light": None,
                              "galvo": "Dev1/ao0", # Fait bouger le galvo pour le scanning
                              "camera_0": "Dev1/port0/line0", # Trigger l'exposition de la camera
                              "camera_1": "Dev1/port0/line1", # Trigger l'exposition de la deuxieme camera (si presente)
-                             "405" : "Dev1/ao1", # Régle la puissance du laser 405
-                             "488" : "Dev1/ao2",      # Régle la puissance du laser 488
-                             "561" : "Dev1/ao3", # Régle la puissance du laser 561
-                             "640" : None, # Régle la puissance du laser 640
-                             "laser_blanking" : "Dev1/port0/line3" # Trigger le blanking de l'AOTF du banc laser
+                             "filter_wheel_1": "Dev1/port0/line2", # Trigger de la roue de filtres
+                             "filter_wheel_2": "Dev1/port0/line3", # Trigger de la roue de filtres
+                             "channel_finished" : "/Dev1/PFI1", # Trigger at the end of each channel for the computer (not used yet)
+                             "laser_blanking" : "Dev1/port0/line4", # Trigger le blanking de l'AOTF du banc laser
+                             "stage_triger" : "Dev1/PFI2" # Trigger from the stage to start ls3 scanning
                              }
+        
+        self.daq_channels_laser_analog_out = {"405" : "Dev1/ao1", # Régle la puissance du laser 405
+                                              "488" : "Dev1/ao2",      # Régle la puissance du laser 488
+                                              "561" : None, # Régle la puissance du laser 561
+                                              "640" : "Dev1/ao3", # Régle la puissance du laser 640
+                                              }
+        
+        self.daq_channels_laser_digital_out = {"405" : "Dev1/port0/Line8", # Régle digital modulation (dm) du laser 405
+                                               "488" : "Dev1/port0/Line9", # Régle digital modulation (dm) du laser 488
+                                               "561" : "Dev1/port0/Line10", # Régle digital modulation (dm) du laser 561
+                                               "640" : "Dev1/port0/Line11", # Régle digital modulation (dm) du laser 640
+                                               }
         
         ##############################
         ## Microscope configuration ##
@@ -177,3 +207,58 @@ class microscope(object):
             ## Filters
             
             ## Dichroic
+            
+    def to_dict(self):
+        
+        microscope_dict = {
+            "tilt_angle" : self.tilt_angle,
+            "mag_total" : self.mag_total,
+            # scanning galvo
+            "volts_per_um" : self.volts_per_um,
+            "galvo_response_time" : self.galvo_response_time,  # A mesure in ms
+            "galvo_flyback_time" : self.galvo_flyback_time, # A mesurer in ms
+            
+            # stage
+            "stage_port" : self.stage_port,
+            "trans_mirror_ser_num" : self.trans_mirror_ser_num,
+            
+            # Filters
+            "filter_port" : self.filter_port,
+            "filter_changing_time" : self.filter_changing_time, # in ms
+            "filters" : self.filters, #should be 6 options
+            
+            # Lasers
+            "lasers" : self.lasers, # ["405","488","561","640"]
+            "volts_per_laser_percent" : self.volts_per_laser_percent, # 5v max
+            "laser_response_time" : self.laser_response_time, # in ms
+            "OxxiusCombiner_port" : self.OxxiusCombiner_port,
+            "OxxiusCombiner_command" : self.OxxiusCombiner_command,
+            
+            # NiDAQ
+            "daq_channels" : self.daq_channels,
+            "daq_channels_laser_analog_out" : self.daq_channels_laser_analog_out,
+            "daq_channels_laser_digital_out" : self.daq_channels_laser_digital_out
+            }
+        
+        return microscope_dict
+        
+    def from_dict(self, microscope_dict):
+
+        self.tilt_angle = microscope_dict["tilt_angle"]
+        self.mag_total = microscope_dict["mag_total"]
+        self.volts_per_um = microscope_dict["volts_per_um"]
+        self.galvo_response_time = microscope_dict["galvo_response_time"]
+        self.galvo_flyback_time = microscope_dict["galvo_flyback_time"]
+        self.stage_port = microscope_dict["stage_port"]
+        self.trans_mirror_ser_num = microscope_dict["trans_mirror_ser_num"]
+        self.filter_port = microscope_dict["filter_port"]
+        self.filter_changing_time = microscope_dict["filter_changing_time"]
+        self.filters = microscope_dict["filters"]
+        self.lasers = microscope_dict["lasers"]
+        self.volts_per_laser_percent = microscope_dict["volts_per_laser_percent"]
+        self.laser_response_time = microscope_dict["laser_response_time"]
+        self.OxxiusCombiner_port = microscope_dict["OxxiusCombiner_port"]
+        self.OxxiusCombiner_command = microscope_dict["OxxiusCombiner_command"]
+        self.daq_channels = microscope_dict["daq_channels"]
+        self.daq_channels_laser_analog_out = microscope_dict["daq_channels_laser_analog_out"]
+        self.daq_channels_laser_digital_out = microscope_dict["daq_channels_laser_digital_out"]
