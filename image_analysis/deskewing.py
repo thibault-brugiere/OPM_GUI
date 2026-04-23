@@ -130,6 +130,15 @@ def save_image(image: np.ndarray, name: str = "numpy_deskewed", path: str=''):
     output_file_path = f'{path}{name}.tif'
     tifffile.imwrite(output_file_path, image, compression='zlib')
     
+def deskew_opm(image: np.ndarray,
+               aspect_ratio : float,
+               theta_deg: float) -> np.ndarray:
+    
+    px_shift = px_shift_calculation(aspect_ratio, theta_deg, angle_unit="deg")
+    deskewed_image = deskew_numpy(image, px_shift_y=px_shift)
+    
+    return deskewed_image
+    
 ###############################################################################
 
 if __name__ == '__main__':

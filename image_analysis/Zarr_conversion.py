@@ -3,17 +3,21 @@
 Created on Wed Apr  1 16:45:35 2026
 
 @author: tbrugiere
+the progress_folder_callback, progress_file_callback and stop_requested_callback
+are present in the file GUI_pretreatement_worker.py file
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 import shutil
-from typing import Iterable, Sequence
+from typing import Sequence
 
 import numpy as np
 import tifffile
 import zarr
+
+import parsename
 
 
 def tiffs_to_zarr(file_path_list: Sequence[str | Path],
@@ -22,44 +26,47 @@ def tiffs_to_zarr(file_path_list: Sequence[str | Path],
                   overwrite: bool = False,
                   read_z_chunk: int | None = None,
                   zarr_format: int = 3,
-                  progress_callback = None) -> dict:
+                  progress_file_callback = None,
+                  stop_requested_callback = None) -> dict:
     """
-    Convert a sequence of 3D TIFF files of identical YX shape into one Zarr array
-    by concatenating them along Z.
+    Convert a sequence of 3D TIFF files with identical YX shape into a single
+    Zarr array by concatenating them along the Z axis.
 
-    The function keeps memory usage bounded by reading and writing only one
-    Z-chunk at a time.
+    Memory usage is bounded by reading and writing only one Z chunk at a time.
 
     Parameters
     ----------
     file_path_list : Sequence[str | Path]
-        Ordered list of TIFF files. Each file must have shape (Z, Y, X).
+        Ordered list of TIFF files. Each file must have shape ``(Z, Y, X)``.
     zarr_path : str | Path
-        Destination Zarr store path, e.g. ``"volume.zarr"``.
+        Destination path of the Zarr store, e.g. ``"volume.zarr"``.
     chunks : tuple[int, int, int] | None, optional
-        Zarr chunk shape in ``(Z, Y, X)`` order.
-        If ``None``, a conservative default is chosen.
+        Chunk shape of the output Zarr array in ``(Z, Y, X)`` order.
+        If ``None``, a conservative default is used.
     overwrite : bool, optional
-        If ``True``, overwrite an existing Zarr store.
+        If ``True``, overwrite the output store if it already exists.
     read_z_chunk : int | None, optional
-        Number of Z planes read from each TIFF at once.
-        If ``None``, uses ``chunks[0]`` when available, otherwise a default.
+        Number of Z planes to read from each TIFF file at once.
+        If ``None``, uses ``chunks[0]`` when available, otherwise a default value.
     zarr_format : int, optional
-        Zarr format version. Default is 3.
-    progress_callback : None, optionlal
-        External process use to follow the advancement of the program
-
-    Returns
-    -------
-    dict
-        Summary metadata containing shape, dtype, chunks and per-file Z sizes.
+        Zarr format version to use. Default is 3.
+    progress_file_callback : callable | None, optional
+        Callback used to report progress during file conversion.
+    stop_requested_callback : callable | None, optional
+        Callback used to request early interruption of the conversion.
 
     Raises
     ------
     ValueError
-        If input TIFF files are inconsistent.
+        If input TIFF files have inconsistent shape or incompatible metadata.
     FileExistsError
-        If the output store exists and ``overwrite=False``.
+        If the output store already exists and ``overwrite=False``.
+
+    Returns
+    -------
+    dict
+        Dictionary containing summary metadata of the generated Zarr array,
+        including shape, dtype, chunks, and per-file Z sizes.
     """
     if not file_path_list:
         raise ValueError("file_path_list must not be empty.")
@@ -123,10 +130,9 @@ def tiffs_to_zarr(file_path_list: Sequence[str | Path],
     global_z0 = 0
 
     for file_index, file_path in enumerate(file_paths):
-        if progress_callback is not None :
-            progress_callback(file_index,len(file_paths))
-        else:
-            print(f"[TIFF -> Zarr] file {file_index + 1}/{len(file_paths)}: {file_path.name}")
+
+        if stop_requested_callback is not None and stop_requested_callback() :
+            return
         
         arr = tifffile.imread(file_path)
         file_z = z_sizes[file_index]
@@ -139,7 +145,11 @@ def tiffs_to_zarr(file_path_list: Sequence[str | Path],
             zarr_array[dst_z0:dst_z1, :, :] = arr[local_z0:local_z1, :, :]
         
         del arr
-
+        
+        if progress_file_callback is not None :
+            progress_file_callback(file_index + 1,len(file_paths))
+        else:
+            print(f"[TIFF -> Zarr] file {file_index + 1}/{len(file_paths)}: {file_path.name}")
 
         global_z0 += file_z
 
@@ -157,43 +167,46 @@ def tiffs_to_zarr(file_path_list: Sequence[str | Path],
 
 def zarr_to_small_tiffs(zarr_path: str | Path,
                         output_dir: str | Path,
-                        z_sizes: Sequence[int],
+                        max_z_size: int,
                         base_name: str = "volume",
                         bigtiff: bool = True,
                         compression: str | None = None,
-                        progress_callback = None) -> list[str]:
+                        progress_file_callback = None,
+                        stop_requested_callback = None) -> list[str]:
     """
-    Export a Zarr array of shape (Z, Y, X) into several TIFF files by splitting
-    along Z according to ``z_sizes``.
+    Export a Zarr array of shape ``(Z, Y, X)`` into several TIFF files by
+    splitting it along Z into smaller stacks.
 
     Parameters
     ----------
     zarr_path : str | Path
-        Input Zarr store path.
+        Path to the input Zarr store.
     output_dir : str | Path
-        Destination directory for TIFF files.
-    z_sizes : Sequence[int]
-        Number of Z planes per output TIFF.
-        The sum must match the Z size of the Zarr array.
+        Destination directory for the output TIFF files.
+    max_z_size : int
+        Maximum number of Z planes per output TIFF file.
     base_name : str, optional
-        Prefix used for output filenames.
+        Prefix used for output TIFF filenames.
     bigtiff : bool, optional
+        Whether to write TIFF files using the BigTIFF format.
         Passed to ``tifffile.imwrite``.
     compression : str | None, optional
-        TIFF compression passed to ``tifffile.imwrite``.
-        Use ``None`` for fastest and simplest output.
-    progress_callback : None, optionlal
-        External process use to follow the advancement of the program
-
-    Returns
-    -------
-    list[str]
-        Written TIFF file paths.
+        Compression method passed to ``tifffile.imwrite``.
+        Use ``None`` for the simplest and fastest output.
+    progress_file_callback : callable | None, optional
+        Callback used to report progress during TIFF export.
+    stop_requested_callback : callable | None, optional
+        Callback used to request early interruption of the export.
 
     Raises
     ------
     ValueError
-        If the input Zarr array is not 3D or if ``z_sizes`` do not match Z.
+        If the input Zarr array is not 3D or if ``max_z_size`` is not valid.
+
+    Returns
+    -------
+    list[str]
+        List of written TIFF file paths.
     """
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -207,8 +220,15 @@ def zarr_to_small_tiffs(zarr_path: str | Path,
 
     total_z, _, _ = zarr_array.shape
     
-    if z_sizes is None:
+    if max_z_size is None:
         z_sizes = [zarr_array.shape[0]]
+    else :
+        n_files = zarr_array.shape[0] // max_z_size
+        rest_images = zarr_array.shape[0] % max_z_size
+        z_sizes = []
+        for k in range(n_files) :
+            z_sizes.append(max_z_size)
+        z_sizes.append(rest_images)
     
     z_sizes = [int(v) for v in z_sizes]
 
@@ -221,13 +241,17 @@ def zarr_to_small_tiffs(zarr_path: str | Path,
     start = 0
 
     for idx, file_z in enumerate(z_sizes):
+            
         end = start + file_z
         out_path = output_dir / f"{base_name}_file_{idx:04d}.tif"
 
-        if progress_callback is not None :
-            progress_callback(idx, len(z_sizes))
+        if progress_file_callback is not None :
+            progress_file_callback(idx + 1, len(z_sizes))
         else:
             print(f"[Zarr -> TIFF] file {idx + 1}/{len(z_sizes)}: {out_path.name}")
+            
+        if stop_requested_callback is not None and stop_requested_callback() :
+            return
 
         # This slice reads only the required sub-volume.
         block = np.asarray(zarr_array[start:end, :, :])
@@ -248,19 +272,18 @@ def zarr_to_small_tiffs(zarr_path: str | Path,
 def delete_zarr(path:str):
     """
     Delete a Zarr store (directory) and all its contents.
-
+    
     Parameters
     ----------
-    path : or Path
-        Path to the .zarr directory.
-
+    path : str | Path
+        Path to the Zarr directory (must end with '.zarr').
+    
     Raises
     ------
     FileNotFoundError
         If the path does not exist.
     ValueError
-        If the path is not a directory.
-        If the path is not a .zarr directory
+        If the path is not a directory or does not point to a '.zarr' store.
     """
     path = Path(path)
 
@@ -274,12 +297,124 @@ def delete_zarr(path:str):
         raise ValueError("Refusing to delete non-.zarr directory")
 
     shutil.rmtree(path)
+    
+def auto_convert_tiffs_to_zarr(folder :str,
+                               progress_file_callback = None,
+                               progress_folder_callback = None,
+                               stop_requested_callback=None):
+    """
+    Convert original tiff images acquired during LS3 experiment into zarr file
 
+    Parameters
+    ----------
+    folder : str
+        folder containing images to convert
+    progress_folder_callback : None, optional
+        External process use to follow the advancement of the program
+    progress_file_callback : None, optional
+        External process use to follow the advancement of the program
+    stop_requested_callback : None, optional
+        External process use to stop the advancement of the program
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    parse_ls3 = parsename.parse_ls3_filenames(folder)
+    processed_images = 0
+    total_images = len(parse_ls3["channels"]) * len(parse_ls3["positions"])
+    
+    for channel in parse_ls3["channels"]:
+        for position in parse_ls3["positions"]:
+    
+            files = []
+            for file in parse_ls3["files"]:
+                if file["channel"] == channel :
+                    if file["position"] == position :
+                        files.append(file['path'])
+            
+            zarr_path = folder + r"\Position_" + f"{position:04d}_{channel}_file.zarr"
+            
+            if progress_folder_callback is not None :
+                progress_folder_callback(processed_images, total_images, f"{position:04d}_{channel}_file")
+                processed_images += 1
+                
+            if stop_requested_callback is not None and stop_requested_callback() :
+                return
+
+            tiffs_to_zarr(files, zarr_path, overwrite=True,
+                          progress_file_callback = progress_file_callback,
+                          stop_requested_callback = stop_requested_callback)
+            
+    if progress_folder_callback is not None :
+        progress_folder_callback(processed_images, total_images, f"{position:04d}_{channel}_file")
+            
+def auto_convert_zarr_to_tiffs(folder: str,
+                               delete = False,
+                               max_z_size = None,
+                               progress_folder_callback = None,
+                               progress_file_callback = None,
+                               stop_requested_callback=None):
+    """
+    
+
+    Parameters
+    ----------
+    folder : str
+        folder containing images to convert
+    delete : bool, The default is False.
+        to delete automatically the processed files
+    max_z_size : TYPE, optional
+        Number of Z planes per output TIFF.
+        The sum must match the Z size of the Zarr array.
+        The default is None.
+    progress_folder_callback : None, optional
+        External process use to follow the advancement of the program
+    progress_file_callback : None, optional
+        External process use to follow the advancement of the program
+    stop_requested_callback : None, optional
+        External process use to stop the advancement of the program
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    parse_ls3_deskew = parsename.parse_ls3_deskew_foldernames(folder)
+    
+    processed_images = 0
+    total_images = len(parse_ls3_deskew["channels"]) * len(parse_ls3_deskew["positions"])
+    
+    for channel in parse_ls3_deskew["channels"]:
+        for position in parse_ls3_deskew["positions"]:
+            
+            if stop_requested_callback is not None and stop_requested_callback() :
+                return
+            
+            if progress_folder_callback is not None :
+                progress_folder_callback(processed_images, total_images, f"{position:04d}_{channel}_file")
+                processed_images += 1
+                
+            zarr_file = folder + r"\deskew_Position_" + f"{position:04d}_{channel}_file.zarr"
+            out = folder + r"\deskew_tif"          
+                
+            zarr_to_small_tiffs(zarr_file , out, max_z_size,
+                                f"deskew_Position_{position}_{channel}",
+                                progress_file_callback = progress_file_callback,
+                                stop_requested_callback = stop_requested_callback)
+            
+            if delete :
+                delete_zarr(zarr_file)
+                
+    if progress_folder_callback is not None :
+        progress_folder_callback(processed_images, total_images, f"{position:04d}_{channel}_file")
+        
 ##############################################################################
 
 if __name__ == "__main__" :
-    
-    import parsename
     import time as t
 
     folders = [
@@ -321,9 +456,9 @@ if __name__ == "__main__" :
             for position in parse_ls3_deskew["positions"]:
     
                 zarr_file = folder + r"\deskew_Position_" + f"{position:04d}_{channel}_file.zarr"
-                # out = folder + r"\deskew_tif"
-                # z_sizes = None
-                # zarr_to_small_tiffs(zarr_file , out, z_sizes, f"deskew_Position_{position}_{channel}")
+                out = folder + r"\deskew_tif"
+                z_sizes = None
+                zarr_to_small_tiffs(zarr_file , out, z_sizes, f"deskew_Position_{position}_{channel}")
                 delete_zarr(zarr_file)
         
     t1 = t.time()

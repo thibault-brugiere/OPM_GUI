@@ -9,6 +9,9 @@ cupyx
 This program us ls3 acquisition images in zarr format for more efficiency
 The theoritical maximum z plans is around 22337 sor 18.115mm
 (for 2000 pixels in y and anaspect ratio of 3.37 and a graphic card with 16gb of memorry)
+
+the progress_folder_callback, progress_file_callback and stop_requested_callback
+are present in the file GUI_pretreatement_worker.py file
 """
 import gc
 import math
@@ -19,36 +22,68 @@ import zarr
 from deskew_rotate_cupyx import deskew_and_rotate_opm as deskew_rotate
 from deskew_rotate_cupyx import _px_shift_calculation as px_shift_calculation
 import parsename
+from Zarr_conversion import delete_zarr
 
 import time as t
 
 def open_x_slices_zarr(buffer : np.ndarray, file_path:list,x_start:int, x_end:int):
+    """
+    Open a list of plans i x axis in a zarr file
+    Not used in the program
+
+    Parameters
+    ----------
+    buffer : np.ndarray
+        DESCRIPTION.
+    file_path : list
+        DESCRIPTION.
+    x_start : int
+        DESCRIPTION.
+    x_end : int
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    """
     file = file_path + r"\ZarrFiles.zarr"
     z = zarr.open(file, mode="r")
     return z[:, :, x_start:x_end]
 
-def auto_deskew_rotate_ls3(folder, max_shear_size : int = 2e9, progress_callback = None):
+def auto_deskew_rotate_ls3(folder, max_shear_size : int = 2e9,
+                           delete = False,
+                           progress_folder_callback = None,
+                           progress_file_callback = None,
+                           stop_requested_callback = None):
     """
-    Automaticallu deskew and rotate images from LS3 protocol contained in a folder.
+    Automaticalli deskew and rotate images from LS3 protocol contained in a folder.
     The images should be in a .zarr folder in the format : "Position_{:04d}_{str}_file.zarr"
     It save the images in the same folder in the zarr format : "deskew_Position_{:04d}_{str}_file.zarr"
 
     Parameters
     ----------
     folder : of str
-        folder containing the images to deskew and rotate
+        folder path containing the images to deskew and rotate
+    delete : bool, optionnal
+        If the program delete the original zarr file after process
     max_shear_size : int, optional, The default is 2e9.
         Maximum size in pixels of the image after shearing, should be 1/4 of
         the memorry of the graphic card. Lower it if necessary
-    progress_callback : None, optionlal
+    progress_folder_callback : None, optional
         External process use to follow the advancement of the program
+    progress_file_callback : None, optional
+        External process use to follow the advancement of the program
+    stop_requested_callback : None, optional
+        External process use to stop the advancement of the program
 
     Returns
     -------
     None.
 
     """
-    print(folder)
+
     parse_ls3 = parsename.parse_ls3_foldernames(folder)
     metadata = parsename.get_metadata(folder)
     
@@ -57,14 +92,22 @@ def auto_deskew_rotate_ls3(folder, max_shear_size : int = 2e9, progress_callback
         print("No image to process")
         return
         
-    if progress_callback is not None :
+    if progress_folder_callback is not None :
         total_images = len(parse_ls3["positions"]) * len(parse_ls3["channels"])
         processed_images = 0
                 
     for position in parse_ls3["positions"] :
-        print(f"Position : {position:04d}")
+        if progress_file_callback is None :
+            print(f"Position : {position:04d}")
+            
         for channel in parse_ls3["channels"]:
-            print(f"Channel : {channel}")
+            
+            if progress_file_callback is None :
+                print(f"Channel : {channel}")
+                
+            if progress_folder_callback is not None :
+                progress_folder_callback(processed_images, total_images,f"{position:04d}_{channel}_file.zarr")
+                processed_images += 1
             
             file = folder + r"\Position_"+ f"{position:04d}_{channel}_file.zarr"
             
@@ -85,13 +128,16 @@ def auto_deskew_rotate_ls3(folder, max_shear_size : int = 2e9, progress_callback
             
             step_size = math.ceil(x_slices / steps)
             
-            
+
+
             for k in range(steps):
                 
-                if progress_callback is not None :
-                    processed_images += 1
-                    progress_callback(k,steps,processed_images, total_images)
-                else:
+                if stop_requested_callback is not None and stop_requested_callback() :
+                    return
+                           
+                if progress_file_callback is not None :
+                    progress_file_callback(k+1,steps)
+                else :
                     print(f'\rpart {k + 1}/{steps}', end = "")
                 
                 out_volume_cp = deskew_rotate(
@@ -119,8 +165,15 @@ def auto_deskew_rotate_ls3(folder, max_shear_size : int = 2e9, progress_callback
                 
                 gc.collect()
                 cp.get_default_memory_pool().free_all_blocks()
+                
+            
+            if delete :
+                delete_zarr(file)
             
             print('')
+            
+    if progress_folder_callback is not None :
+        progress_folder_callback(processed_images, total_images,f"{position:04d}_{channel}_file.zarr")
                                 
             
 ###############################################################################

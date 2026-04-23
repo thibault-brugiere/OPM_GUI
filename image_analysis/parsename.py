@@ -19,28 +19,35 @@ _PATTERN_MDA = re.compile(r"^(?P<channel>.+?)_volume_(?P<image>\d{4})$")
 
 def parse_mda_filenames(folder: str | Path) -> dict[str, Any]:
     """
-    Analyse les noms de fichiers d'un dossier selon le motif :
+    Parse filenames in a folder following the pattern:
     {channel}_volume_{image:04d}
 
-    Le suffixe de fichier n'est pas pris en compte pour l'analyse
-    (ex. '.tif', '.tiff', '.npy').
+    The file extension is ignored during parsing
+    (e.g. '.tif', '.tiff').
 
-    :param folder:
-        Dossier contenant les images.
-    :type folder: str | Path
+    Only files matching the pattern are considered. Others are ignored.
 
-    :returns:
-        Dictionnaire contenant :
-            - ``files`` : liste triée des fichiers correspondants avec
-              ``path``, ``channel`` et ``image``
-            - ``channels`` : liste triée des canaux uniques
-            - ``images`` : liste triée des indices image uniques
-    :rtype: dict[str, Any]
+    Parameters
+    ----------
+    folder : str | Path
+        Folder containing the image files.
 
-    :raises FileNotFoundError:
-        Si le dossier n'existe pas.
-    :raises NotADirectoryError:
-        Si ``folder`` n'est pas un dossier.
+    Raises
+    ------
+    FileNotFoundError
+        If the folder does not exist.
+    NotADirectoryError
+        If ``folder`` is not a directory.
+
+    Returns
+    -------
+    dict[str, Any]
+        Dictionary containing:
+    - ``files``: list of dict with keys:
+        ``path`` (Path), ``channel`` (str), ``image`` (int),
+        sorted by (channel, image)
+    - ``channels``: sorted list of unique channel names
+    - ``images``: sorted list of unique image indices (int)
     """
     folder = Path(folder)
 
@@ -64,6 +71,9 @@ def parse_mda_filenames(folder: str | Path) -> dict[str, Any]:
 
         channel = match.group("channel")
         image = int(match.group("image"))
+        
+        if channel.startswith("deskew"):
+            continue
 
         parsed_files.append({
             "path": path,
@@ -87,30 +97,40 @@ _PATTERN_LS3 = re.compile(r"^Position_(?P<position>\d{4})_(?P<channel>[A-Za-z0-9
 
 def parse_ls3_filenames(folder: str | Path) -> dict[str, Any]:
     """
-    Analyse les noms de fichiers d'un dossier selon le motif :
+    Parse filenames in a folder following the pattern:
     Position_{position}_{channel}_file_{file:04d}
+    
+    The file extension is ignored during parsing
+    (e.g. '.tif', '.tiff', '.npy').
+    
+    Only files matching the pattern are considered. Others are ignored.
 
-    Le suffixe de fichier n'est pas pris en compte pour l'analyse
-    (ex. '.tif', '.tiff', '.npy').
+    Parameters
+    ----------
+    folder : str | Path
+        Folder containing the image files.
 
-    :param folder:
-        Dossier contenant les images.
-    :type folder: str | Path
+    Raises
+    ------
+    FileNotFoundError
+        If the folder does not exist.
+    NotADirectoryError
+        If ``folder`` is not a directory.
 
-    :returns:
-        Dictionnaire contenant :
-            - ``files`` : liste triée des fichiers correspondants avec
-              ``path``, ``channel`` et ``image``
-            - ``positions`` : listre triée des positions uniques
-            - ``channels`` : liste triée des canaux uniques
-            - ``files`` : liste triée des indices fichiers uniques
-    :rtype: dict[str, Any]
+    Returns
+    -------
+    dict[str, Any]
+    Dictionary containing:
+        - ``files``: list of dict with keys:
+          ``path`` (Path), ``position`` (int),
+          ``channel`` (str), ``file`` (int),
+          sorted by (position, channel, file)
+        - ``positions``: sorted list of unique positions (int)
+        - ``channels``: sorted list of unique channel names
+        - ``file_indices``: sorted list of unique file indices (int)
 
-    :raises FileNotFoundError:
-        Si le dossier n'existe pas.
-    :raises NotADirectoryError:
-        Si ``folder`` n'est pas un dossier.
     """
+
     folder = Path(folder)
 
     if not folder.exists():
@@ -227,26 +247,34 @@ _PATTERN_LS3_DESKEW_ZARR = re.compile(r"^deskew_Position_(?P<position>\d{4})_(?P
 
 def parse_ls3_deskew_foldernames(folder: str | Path) -> dict[str, Any]:
     """
-    Analyse les noms de fichiers d'un dossier selon le motif :
-    deskew_Position_{position}_{channel}_file
-    Le suffixe .zarr du dossier n'est pas pris en compte'
+    Parse folder names in a directory following the pattern:
+    Position_{position}_{channel}_file
 
-    :param folder:
-        Dossier contenant les images.
-    :type folder: str | Path
+    The '.zarr' suffix is ignored during parsing.
 
-    :returns:
-        Dictionnaire contenant :
-            - ``files`` : liste triée des fichiers correspondants avec
-              ``path``, ``channel`` et ``image``
-            - ``positions`` : listre triée des positions uniques
-            - ``channels`` : liste triée des canaux uniques
-    :rtype: dict[str, Any]
+    Only folders matching the pattern are considered. Others are ignored.
 
-    :raises FileNotFoundError:
-        Si le dossier n'existe pas.
-    :raises NotADirectoryError:
-        Si ``folder`` n'est pas un dossier.
+    Parameters
+    ----------
+    folder : str | Path
+        Folder containing the Zarr directories.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the folder does not exist.
+    NotADirectoryError
+        If ``folder`` is not a directory.
+
+    Returns
+    -------
+    dict[str, Any]
+        Dictionary containing:
+            - ``files``: list of dict with keys:
+              ``path`` (Path), ``position`` (int), ``channel`` (str),
+              sorted by (position, channel)
+            - ``positions``: sorted list of unique positions (int)
+            - ``channels``: sorted list of unique channel names
     """
     folder = Path(folder)
 
@@ -293,32 +321,35 @@ def parse_ls3_deskew_foldernames(folder: str | Path) -> dict[str, Any]:
 def get_metadata(folder, filename = "GUI_parameters.txt"):
     """
     Load microscope metadata from a JSON file and extract key parameters.
-    
-    The function expects a JSON file containing at least the following fields:
+
+    The JSON file must contain at least:
         - parameters["microscope"]["tilt_angle"]
         - parameters["experiment"]["aspect_ratio"]
-    
-    :param folder:
+
+    Parameters
+    ----------
+    folder : str | Path
         Directory containing the metadata file.
-    :type folder: str | Path
-    
-    :param filename:
+    filename : str, optional
         Name of the metadata file (default: "GUI_parameters.txt").
-    :type filename: str
-    
-    :returns:
-        Dictionary containing:
-            - ``angle`` : tilt angle of the microscope (float)
-            - ``aspect_ratio`` : voxel aspect ratio (float)
-    :rtype: dict[str, float]
-    
-    :raises FileNotFoundError:
+
+    Raises
+    ------
+    FileNotFoundError
         If the metadata file does not exist.
-    :raises KeyError:
+    KeyError
         If required fields are missing in the JSON structure.
-    :raises json.JSONDecodeError:
+    json.JSONDecodeError
         If the file is not a valid JSON.
+
+    Returns
+    -------
+    dict[str, float]
+        Dictionary containing:
+            - ``angle``: microscope tilt angle (float)
+            - ``aspect_ratio``: voxel aspect ratio (float)
     """
+    
     folder = Path(folder)
     file_path = os.path.join(folder, filename)
     if not os.path.exists(file_path):
@@ -332,6 +363,7 @@ def get_metadata(folder, filename = "GUI_parameters.txt"):
         "px_size": float(parameters["cameras"]["camera_0"]["sample_pixel_size"])}
 
 def get_preprocess_steps(folder, filename = "preprocess_parameters.txt"):
+
     folder = Path(folder)
     file_path = os.path.join(folder, filename)
     if not os.path.exists(file_path):
