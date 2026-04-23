@@ -264,7 +264,7 @@ class AcquisitionWorker(QObject):
             
             # Pour le dernier fichier, on ne récupérer qu'une partie des images du buffer
             if file_id == self.file_per_volume - 1 :
-                file = frame.buffer[0:self.images_per_file-1]
+                file = frame.buffer[0:self.images_in_last_file - 1]
             else:
                 file = frame.buffer
 
