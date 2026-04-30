@@ -170,7 +170,8 @@ def auto_deskew_rotate_ls3(folder, max_shear_size : int = 2e9,
             if delete :
                 delete_zarr(file)
             
-            print('')
+            if progress_file_callback is None :
+                print('')
             
     if progress_folder_callback is not None :
         progress_folder_callback(processed_images, total_images,f"{position:04d}_{channel}_file.zarr")

@@ -241,7 +241,7 @@ class AcquisitionWorker(QObject):
                 print(f"[ERROR] Unexpected object in save queue: {type(frame)}")
                 continue
 
-            buffer = frame.buffer
+            buffer = frame.buffer[0 : self.n_steps] # To get the right number of images saved
             volume_id = frame.volume_id
             channel = frame.channel
 
