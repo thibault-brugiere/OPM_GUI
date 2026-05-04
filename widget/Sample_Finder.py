@@ -109,7 +109,7 @@ class sample_finder_Window(QWidget, Ui_Form):
         try :
             self.mirror = Thorlabs.kinesis.MFF(self.mff_ser_num)
         except:
-            print('Can not connect to Thorlabs mirror')
+            print('[Sample Finder] Can not connect to Thorlabs mirror')
             self.pb_mirror.setEnabled(False)
         
             #
@@ -279,10 +279,11 @@ class sample_finder_Window(QWidget, Ui_Form):
             
     def pb_mirror_clicked(self):
         """Toggle the mirror in/out state and update the icon/label."""
-        if self.pb_mirror.isChecked():
-            self.mirror.move_to_state(0)
-        else:
-            self.mirror.move_to_state(1)
+        if self.mirror is not None :
+            if self.pb_mirror.isChecked():
+                self.mirror.move_to_state(0)
+            else:
+                self.mirror.move_to_state(1)
             
     def pb_fluo_clicked(self):
         """Toggle the fluorescence lamp on/off."""
@@ -525,9 +526,10 @@ class sample_finder_Window(QWidget, Ui_Form):
             # functions_daq.digital_out(False, self.daq_transmission)
             if self.tlcam is not None :
                 self.tlcam.close()
-            self.pb_mirror.setChecked(False)
-            self.pb_mirror_clicked()
-            self.mirror.close()
+            if self.mirror is not None :
+                self.pb_mirror.setChecked(False)
+                self.pb_mirror_clicked()
+                self.mirror.close()
             self.pb_transmission.setChecked(False)
             self.pb_transmission_clicked()
             self.pb_fluo.setChecked(False)
