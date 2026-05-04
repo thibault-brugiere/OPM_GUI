@@ -4,10 +4,12 @@ Created on Fri Apr 24 16:40:05 2026
 
 @author: tbrugiere
 """
-
+import numpy as np
 import os
 from pylablib.devices import Thorlabs
 import sys
+
+from PySide6.QtCore import QThread, Signal, QObject
 
 import pylablib as pll
 pll.par['devices/dlls/thorlabs_tlcam'] = r"C:\Program Files\Thorlabs\ThorImageCAM\Bin\thorlabs_tsi_camera_sdk.dll"
@@ -20,21 +22,32 @@ if __name__ == "__main__":
     
 from hardware.functions_super_agilis import functions_super_agilis as piezzo
     
-class remote_focus_stabilisation:
+class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement de new_data Signal
+    new_data = Signal(np.ndarray, dict) # signal Qt émis avec image + datas
+    
     def __init__(self, camera_sn = '36805', piezzo_port = 'COM6', NIDAQ_out = "Dev1/port0/Line13", parent = None):
+        super().__init__()
         self.camera_sn = camera_sn
         self.piezzo_port = piezzo_port
         self.NIDAQ_out = NIDAQ_out
         self.parent = parent
         
-        self.on_init()
-        
         self.tlcam = None
         
         self.frame = None
+        self.data = {"camera_connected" : False,
+                     "camera_sn" : camera_sn}
+        
+        self.on_init()
     
     def on_init(self):
-        pass
+        self.connect_camera()
+        
+        # Start camera acquisition in separate thread
+        self.camera_thread = TLCameraThread(self.tlcam)
+        self.camera_thread.new_frame.connect(self.store_frame) # Get the frame from camera thread process
+        self.tlcam.start_acquisition(nframes=2)
+        self.camera_thread.start()
     
     def connect_camera(self):
         self.tlcameras_list = Thorlabs.list_cameras_tlcam()
@@ -46,13 +59,47 @@ class remote_focus_stabilisation:
                 self.tlcam.set_exposure(10/1000)
             else :
                 self.tlcam = Thorlabs.ThorlabsTLCamera(serial=self.tlcameras_list[0])
+                self.tlcam.open()
+                self.tlcam.set_exposure(10/1000)
+                self.data["camera_sn"] = self.tlcameras_list[0]
         else :
-            self.label_message.setText("No camera connected")
-            self.desactivate_camera_options()
+            self.data["camera_connected"] = False
             self.tlcam = None
+            self.new_data.emit(self.preview_frame, self.data)
             
-    def get_image(self):
-        if self.tlcam is not None:
-            return None
-        else:
-            return None
+    def store_frame(self, frame):
+        """Receive a frame from the camera thread and store it (unless paused)."""
+        self.preview_frame = frame
+        self.new_data.emit(self.preview_frame, self.data)
+        
+    def stop(self):
+        pass
+        
+class TLCameraThread(QThread):
+    """
+    Thread dedicated to continuously reading images from the Thorlabs TLCamera.
+    Emits the most recent frame via the new_frame signal.
+    """
+    new_frame = Signal(np.ndarray)  # Signal émis à chaque nouvelle image
+
+    def __init__(self, tlcam):
+        super().__init__()
+        self.tlcam = tlcam
+        self.running = True  # Permet de contrôler l'arrêt propre du thread
+
+    def run(self):
+        """Main acquisition loop: read and emit frames continuously."""
+        while self.running:
+            frames = self.tlcam.read_multiple_images()
+            if frames:
+                frame = frames[-1]  # On prend la dernière image disponible
+
+                self.new_frame.emit(frame)  # Émettre l'image pour l'affichage
+            
+            self.msleep(30)
+
+    def stop(self):
+        """Stop acquisition loop cleanly."""
+        self.running = False
+        self.quit()
+        self.wait()

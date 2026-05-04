@@ -6,126 +6,880 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1082</width>
-    <height>710</height>
+    <width>1012</width>
+    <height>924</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QLabel" name="label_image_preview">
-   <property name="geometry">
-    <rect>
-     <x>330</x>
-     <y>20</y>
-     <width>720</width>
-     <height>540</height>
-    </rect>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>720</width>
-     <height>540</height>
-    </size>
-   </property>
-   <property name="palette">
-    <palette>
-     <active>
-      <colorrole role="Base">
-       <brush brushstyle="SolidPattern">
-        <color alpha="255">
-         <red>255</red>
-         <green>255</green>
-         <blue>255</blue>
-        </color>
-       </brush>
-      </colorrole>
-      <colorrole role="Window">
-       <brush brushstyle="SolidPattern">
-        <color alpha="255">
-         <red>153</red>
-         <green>153</green>
-         <blue>153</blue>
-        </color>
-       </brush>
-      </colorrole>
-     </active>
-     <inactive>
-      <colorrole role="Base">
-       <brush brushstyle="SolidPattern">
-        <color alpha="255">
-         <red>255</red>
-         <green>255</green>
-         <blue>255</blue>
-        </color>
-       </brush>
-      </colorrole>
-      <colorrole role="Window">
-       <brush brushstyle="SolidPattern">
-        <color alpha="255">
-         <red>153</red>
-         <green>153</green>
-         <blue>153</blue>
-        </color>
-       </brush>
-      </colorrole>
-     </inactive>
-     <disabled>
-      <colorrole role="Base">
-       <brush brushstyle="SolidPattern">
-        <color alpha="255">
-         <red>153</red>
-         <green>153</green>
-         <blue>153</blue>
-        </color>
-       </brush>
-      </colorrole>
-      <colorrole role="Window">
-       <brush brushstyle="SolidPattern">
-        <color alpha="255">
-         <red>153</red>
-         <green>153</green>
-         <blue>153</blue>
-        </color>
-       </brush>
-      </colorrole>
-     </disabled>
-    </palette>
-   </property>
-   <property name="autoFillBackground">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_message">
-   <property name="geometry">
-    <rect>
-     <x>340</x>
-     <y>590</y>
-     <width>47</width>
-     <height>13</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>TextLabel</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pb_stabilize">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>90</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Stabilize</string>
-   </property>
-  </widget>
+  <layout class="QHBoxLayout" name="horizontalLayout_11">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_5">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QPushButton" name="pb_laser_on">
+         <property name="text">
+          <string>Laser</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_laser_icon">
+         <property name="minimumSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_laser">
+         <property name="minimumSize">
+          <size>
+           <width>30</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>OFF</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <item>
+        <widget class="QPushButton" name="pb_stabilize">
+         <property name="text">
+          <string>Stabilize</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_stabilize_icon">
+         <property name="minimumSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_stabilize">
+         <property name="minimumSize">
+          <size>
+           <width>30</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>OFF</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <widget class="QLabel" name="label_serial_port">
+         <property name="text">
+          <string>Serial Port</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_devices">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the serial port to which the piezo controller is connected.&lt;/p&gt;&lt;p&gt;Ensure the correct port is chosen for proper communication&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_connection">
+         <property name="minimumSize">
+          <size>
+           <width>91</width>
+           <height>18</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Indicates whether the piezo controller is successfully connected via the selected port.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Not Connected</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_9">
+       <item>
+        <widget class="QLabel" name="label_step_size">
+         <property name="text">
+          <string>Step size (%)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="slider_step_size">
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the step size for piezo movement as a percentage of the total range.&lt;/p&gt;&lt;p&gt;Adjust between 21% and 100% to control the increment of each movement command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="value">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="sb_step_size">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the step size for piezo movement as a percentage of the total range.&lt;/p&gt;&lt;p&gt;Adjust between 21% and 100% to control the increment of each movement command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="value">
+          <number>100</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_10">
+       <item>
+        <spacer name="horizontalSpacer_6">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pb_move_bw1">
+         <property name="minimumSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 1 step backward.&lt;/p&gt;&lt;p&gt;Around 50nm to 250nm depending on step size&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>&lt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pb_move_fw1">
+         <property name="minimumSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 1 step forward.&lt;/p&gt;&lt;p&gt;Around 50nm to 250nm depending on step size&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>&gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_message">
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_image_preview">
+       <property name="minimumSize">
+        <size>
+         <width>720</width>
+         <height>540</height>
+        </size>
+       </property>
+       <property name="palette">
+        <palette>
+         <active>
+          <colorrole role="Base">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>255</red>
+             <green>255</green>
+             <blue>255</blue>
+            </color>
+           </brush>
+          </colorrole>
+          <colorrole role="Window">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>153</red>
+             <green>153</green>
+             <blue>153</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </active>
+         <inactive>
+          <colorrole role="Base">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>255</red>
+             <green>255</green>
+             <blue>255</blue>
+            </color>
+           </brush>
+          </colorrole>
+          <colorrole role="Window">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>153</red>
+             <green>153</green>
+             <blue>153</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </inactive>
+         <disabled>
+          <colorrole role="Base">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>153</red>
+             <green>153</green>
+             <blue>153</blue>
+            </color>
+           </brush>
+          </colorrole>
+          <colorrole role="Window">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>153</red>
+             <green>153</green>
+             <blue>153</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </disabled>
+        </palette>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <widget class="QComboBox" name="cb_LUT">
+             <item>
+              <property name="text">
+               <string>Grayscale</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="cb_preview_zoom">
+             <item>
+              <property name="text">
+               <string>Image Zoom</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>50%</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>100%</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>200%</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>300%</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>400%</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <item>
+                <widget class="QSlider" name="slider_min_grayscale">
+                 <property name="maximum">
+                  <number>1022</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="sb_min_grayscale">
+                 <property name="maximum">
+                  <number>1022</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_min_grayscale">
+                 <property name="text">
+                  <string>Min</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_2">
+               <item>
+                <widget class="QSlider" name="slider_max_grayscale">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>1023</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="sb_max_grayscale">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>1023</number>
+                 </property>
+                 <property name="value">
+                  <number>1023</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_max_grayscale">
+                 <property name="text">
+                  <string>Max</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout">
+             <item>
+              <widget class="QPushButton" name="pb_minmax_grayscale">
+               <property name="toolTip">
+                <string>Automatically adjust the minimum and maximum grey values based on the image histogram.</string>
+               </property>
+               <property name="text">
+                <string>Min / Max</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pb_auto_grayscale">
+               <property name="toolTip">
+                <string>Automatically adjust the minimum and maximum grey values based on the image histogram.</string>
+               </property>
+               <property name="text">
+                <string>Auto</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pb_reset_grayscale">
+               <property name="toolTip">
+                <string>Reset the minimum and maximum grey values to their default settings.</string>
+               </property>
+               <property name="text">
+                <string>Reset</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_histogram_greyvalue">
+         <property name="minimumSize">
+          <size>
+           <width>400</width>
+           <height>250</height>
+          </size>
+         </property>
+         <property name="palette">
+          <palette>
+           <active>
+            <colorrole role="Base">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>255</green>
+               <blue>255</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>150</red>
+               <green>150</green>
+               <blue>150</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </active>
+           <inactive>
+            <colorrole role="Base">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>255</green>
+               <blue>255</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>150</red>
+               <green>150</green>
+               <blue>150</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </inactive>
+           <disabled>
+            <colorrole role="Base">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>150</red>
+               <green>150</green>
+               <blue>150</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>150</red>
+               <green>150</green>
+               <blue>150</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </disabled>
+          </palette>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_graph">
+       <property name="minimumSize">
+        <size>
+         <width>720</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="palette">
+        <palette>
+         <active>
+          <colorrole role="Base">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>255</red>
+             <green>255</green>
+             <blue>255</blue>
+            </color>
+           </brush>
+          </colorrole>
+          <colorrole role="Window">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>153</red>
+             <green>153</green>
+             <blue>153</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </active>
+         <inactive>
+          <colorrole role="Base">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>255</red>
+             <green>255</green>
+             <blue>255</blue>
+            </color>
+           </brush>
+          </colorrole>
+          <colorrole role="Window">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>153</red>
+             <green>153</green>
+             <blue>153</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </inactive>
+         <disabled>
+          <colorrole role="Base">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>153</red>
+             <green>153</green>
+             <blue>153</blue>
+            </color>
+           </brush>
+          </colorrole>
+          <colorrole role="Window">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>153</red>
+             <green>153</green>
+             <blue>153</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </disabled>
+        </palette>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>sb_min_grayscale</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>slider_min_grayscale</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>747</x>
+     <y>599</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>644</x>
+     <y>599</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>slider_min_grayscale</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>sb_min_grayscale</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>644</x>
+     <y>599</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>747</x>
+     <y>599</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sb_max_grayscale</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>slider_max_grayscale</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>743</x>
+     <y>629</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>642</x>
+     <y>629</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>slider_max_grayscale</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>sb_max_grayscale</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>642</x>
+     <y>629</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>743</x>
+     <y>629</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>slider_step_size</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>sb_step_size</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>141</x>
+     <y>129</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>129</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sb_step_size</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>slider_step_size</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>229</x>
+     <y>129</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>141</x>
+     <y>129</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
