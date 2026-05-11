@@ -95,6 +95,8 @@ class MultidimensionalAcquisition:
                                                  self.config.experiment.exp_name)
         save_metadata(self.config, self.save_dir)
         self.config.copy_parameters(self.save_dir)
+        # self.config.copy_parameters(self.save_dir,
+        #                             f'{self.config.experiment.exp_name}_GUI_parameters') # TODO : il faut modifier le pré-traitement pour que cela fonctionne avec le nom de fichier
 
         # Placeholders for hardware
         self.cameras_acquisition = []

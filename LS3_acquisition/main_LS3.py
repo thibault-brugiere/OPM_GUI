@@ -71,6 +71,8 @@ class Light_sheet_stabilized_scanning:
                                                  self.config.experiment.exp_name)
         save_metadata(self.config, self.save_dir)
         self.config.copy_parameters(self.save_dir)
+        # self.config.copy_parameters(self.save_dir,
+        #                             self.config.experiment.exp_name) # TODO : il faut modifier le pré-traitement pour que cela fonctionne avec le nom de fichier
 
         # Placeholders for hardware
         self.cameras_acquisition = []

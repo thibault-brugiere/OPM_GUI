@@ -317,7 +317,8 @@ class AcquisitionWorker(QObject):
         print("========================\n")
 
     def _append_acquisition_summary(self):
-        log_file = os.path.join(self.save_dir, "log.txt")
+        folder = os.path.basename(os.path.normpath(self.save_dir))
+        log_file = os.path.join(self.save_dir, f"{folder}_log.txt")
         try:
             with open(log_file, "a") as f:
                 f.write("\n=== Acquisition Summary ===\n")

@@ -47,4 +47,10 @@ Created on Tue Sep  2 09:03:43 2025
 # TODO : Save positions for multi-position acquisition
 # TODO : apply selected LUT
 # TODO : mettre la sn de la caméra dans les paramétres du microscope
+
+    #######################
+    # Imahe pre-treatment #
+    #######################
+# TODO : Afficher le nomde d'images détectées + canaux etc.
+# TODO : mettre les images créées dans un dossier deskew
 """
