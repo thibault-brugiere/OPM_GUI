@@ -60,6 +60,7 @@ class functions_super_agilis():
                 # print(f"Response: {response}")
         except serial.SerialException as e:
             print(f"Error opening serial port: {e}")
+            return '0000'
             
         return response
             

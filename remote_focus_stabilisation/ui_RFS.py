@@ -15,17 +15,17 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QLabel,
-    QPushButton, QSizePolicy, QSlider, QSpacerItem,
-    QSpinBox, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QLCDNumber,
+    QLabel, QPushButton, QSizePolicy, QSlider,
+    QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
 
 class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(1012, 924)
-        self.horizontalLayout_11 = QHBoxLayout(Form)
-        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
+        Form.resize(1085, 924)
+        self.horizontalLayout_13 = QHBoxLayout(Form)
+        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.horizontalLayout_6 = QHBoxLayout()
@@ -109,6 +109,26 @@ class Ui_Form(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_8)
 
+        self.horizontalLayout_12 = QHBoxLayout()
+        self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
+        self.label_calibrate = QLabel(Form)
+        self.label_calibrate.setObjectName(u"label_calibrate")
+
+        self.horizontalLayout_12.addWidget(self.label_calibrate)
+
+        self.pb_calibrate = QPushButton(Form)
+        self.pb_calibrate.setObjectName(u"pb_calibrate")
+        self.pb_calibrate.setCheckable(True)
+
+        self.horizontalLayout_12.addWidget(self.pb_calibrate)
+
+        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_12.addItem(self.horizontalSpacer_9)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_12)
+
         self.horizontalLayout_9 = QHBoxLayout()
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
         self.label_step_size = QLabel(Form)
@@ -166,6 +186,60 @@ class Ui_Form(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_10)
 
+        self.horizontalLayout_11 = QHBoxLayout()
+        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
+        self.label_position = QLabel(Form)
+        self.label_position.setObjectName(u"label_position")
+        self.label_position.setMinimumSize(QSize(61, 16))
+
+        self.horizontalLayout_11.addWidget(self.label_position)
+
+        self.lcdNumber_Position = QLCDNumber(Form)
+        self.lcdNumber_Position.setObjectName(u"lcdNumber_Position")
+        self.lcdNumber_Position.setMinimumSize(QSize(150, 23))
+        palette = QPalette()
+        brush = QBrush(QColor(255, 170, 0, 255))
+        brush.setStyle(Qt.BrushStyle.SolidPattern)
+        palette.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.WindowText, brush)
+        brush1 = QBrush(QColor(255, 255, 255, 255))
+        brush1.setStyle(Qt.BrushStyle.SolidPattern)
+        palette.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Button, brush1)
+        brush2 = QBrush(QColor(255, 206, 57, 255))
+        brush2.setStyle(Qt.BrushStyle.SolidPattern)
+        palette.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Light, brush2)
+        palette.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Midlight, brush1)
+        brush3 = QBrush(QColor(158, 105, 0, 255))
+        brush3.setStyle(Qt.BrushStyle.SolidPattern)
+        palette.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Dark, brush3)
+        brush4 = QBrush(QColor(0, 0, 0, 255))
+        brush4.setStyle(Qt.BrushStyle.SolidPattern)
+        palette.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Text, brush4)
+        palette.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.ButtonText, brush4)
+        palette.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.WindowText, brush)
+        palette.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Button, brush1)
+        palette.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Light, brush2)
+        palette.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Midlight, brush1)
+        palette.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Dark, brush3)
+        palette.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Text, brush4)
+        palette.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.ButtonText, brush4)
+        palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, brush3)
+        palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Button, brush1)
+        palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Light, brush2)
+        palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Midlight, brush1)
+        palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Dark, brush3)
+        palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, brush3)
+        palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, brush3)
+        self.lcdNumber_Position.setPalette(palette)
+
+        self.horizontalLayout_11.addWidget(self.lcdNumber_Position)
+
+        self.horizontalSpacer_8 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_11.addItem(self.horizontalSpacer_8)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_11)
+
         self.label_message = QLabel(Form)
         self.label_message.setObjectName(u"label_message")
         self.label_message.setMinimumSize(QSize(60, 120))
@@ -177,25 +251,23 @@ class Ui_Form(object):
         self.verticalLayout_5.addItem(self.verticalSpacer_3)
 
 
-        self.horizontalLayout_11.addLayout(self.verticalLayout_5)
+        self.horizontalLayout_13.addLayout(self.verticalLayout_5)
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.label_image_preview = QLabel(Form)
         self.label_image_preview.setObjectName(u"label_image_preview")
         self.label_image_preview.setMinimumSize(QSize(720, 540))
-        palette = QPalette()
-        brush = QBrush(QColor(255, 255, 255, 255))
-        brush.setStyle(Qt.BrushStyle.SolidPattern)
-        palette.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
-        brush1 = QBrush(QColor(153, 153, 153, 255))
-        brush1.setStyle(Qt.BrushStyle.SolidPattern)
-        palette.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush1)
-        palette.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
-        palette.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush1)
-        palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush1)
-        palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush1)
-        self.label_image_preview.setPalette(palette)
+        palette1 = QPalette()
+        palette1.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush1)
+        brush5 = QBrush(QColor(153, 153, 153, 255))
+        brush5.setStyle(Qt.BrushStyle.SolidPattern)
+        palette1.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush5)
+        palette1.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush1)
+        palette1.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush5)
+        palette1.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush5)
+        palette1.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush5)
+        self.label_image_preview.setPalette(palette1)
         self.label_image_preview.setAutoFillBackground(True)
 
         self.verticalLayout_4.addWidget(self.label_image_preview)
@@ -323,16 +395,16 @@ class Ui_Form(object):
         self.label_histogram_greyvalue = QLabel(Form)
         self.label_histogram_greyvalue.setObjectName(u"label_histogram_greyvalue")
         self.label_histogram_greyvalue.setMinimumSize(QSize(400, 250))
-        palette1 = QPalette()
-        palette1.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
-        brush2 = QBrush(QColor(150, 150, 150, 255))
-        brush2.setStyle(Qt.BrushStyle.SolidPattern)
-        palette1.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush2)
-        palette1.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
-        palette1.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush2)
-        palette1.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush2)
-        palette1.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush2)
-        self.label_histogram_greyvalue.setPalette(palette1)
+        palette2 = QPalette()
+        palette2.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush1)
+        brush6 = QBrush(QColor(150, 150, 150, 255))
+        brush6.setStyle(Qt.BrushStyle.SolidPattern)
+        palette2.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush6)
+        palette2.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush1)
+        palette2.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush6)
+        palette2.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush6)
+        palette2.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush6)
+        self.label_histogram_greyvalue.setPalette(palette2)
         self.label_histogram_greyvalue.setAutoFillBackground(True)
 
         self.horizontalLayout_5.addWidget(self.label_histogram_greyvalue)
@@ -343,20 +415,20 @@ class Ui_Form(object):
         self.label_graph = QLabel(Form)
         self.label_graph.setObjectName(u"label_graph")
         self.label_graph.setMinimumSize(QSize(720, 100))
-        palette2 = QPalette()
-        palette2.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
-        palette2.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush1)
-        palette2.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
-        palette2.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush1)
-        palette2.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush1)
-        palette2.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush1)
-        self.label_graph.setPalette(palette2)
+        palette3 = QPalette()
+        palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush1)
+        palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush5)
+        palette3.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush1)
+        palette3.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush5)
+        palette3.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush5)
+        palette3.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush5)
+        self.label_graph.setPalette(palette3)
         self.label_graph.setAutoFillBackground(True)
 
         self.verticalLayout_4.addWidget(self.label_graph)
 
 
-        self.horizontalLayout_11.addLayout(self.verticalLayout_4)
+        self.horizontalLayout_13.addLayout(self.verticalLayout_4)
 
 
         self.retranslateUi(Form)
@@ -386,6 +458,8 @@ class Ui_Form(object):
         self.label_connection.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Indicates whether the piezo controller is successfully connected via the selected port.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.label_connection.setText(QCoreApplication.translate("Form", u"Not Connected", None))
+        self.label_calibrate.setText(QCoreApplication.translate("Form", u"Calibrate", None))
+        self.pb_calibrate.setText(QCoreApplication.translate("Form", u"calibrate", None))
         self.label_step_size.setText(QCoreApplication.translate("Form", u"Step size (%)", None))
 #if QT_CONFIG(tooltip)
         self.slider_step_size.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Set the step size for piezo movement as a percentage of the total range.</p><p>Adjust between 21% and 100% to control the increment of each movement command</p></body></html>", None))
@@ -401,6 +475,7 @@ class Ui_Form(object):
         self.pb_move_fw1.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Move the piezo 1 step forward.</p><p>Around 50nm to 250nm depending on step size</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_move_fw1.setText(QCoreApplication.translate("Form", u">", None))
+        self.label_position.setText(QCoreApplication.translate("Form", u"Position (\u00b5m)", None))
         self.label_message.setText(QCoreApplication.translate("Form", u"TextLabel", None))
         self.label_image_preview.setText("")
         self.cb_LUT.setItemText(0, QCoreApplication.translate("Form", u"Grayscale", None))
