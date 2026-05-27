@@ -9,14 +9,16 @@ warnings.filterwarnings("ignore", message="Mean of empty slice")
 warnings.filterwarnings("ignore", message="invalid value encountered")
 
 import contextlib
+import math
 import numpy as np
 import os
-import pandas as pd
+from pathlib import Path
 from pylablib.devices import Thorlabs
 from scipy.stats import linregress
 import sys
 import threading
 import time
+import tifffile
 
 from palm_tracer.Processing import Palm
 
@@ -36,32 +38,55 @@ from hardware.functions_super_agilis import functions_super_agilis as piezzo
 class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement de new_data Signal
     new_data = Signal(np.ndarray, dict) # signal Qt émis avec image + datas
     
-    def __init__(self, camera_sn = '36805', piezzo_port = None, NIDAQ_out = "Dev1/port0/Line13", parent = None):
+    def __init__(self,
+                 camera_sn = '36805',
+                 piezzo_port = None,
+                 NIDAQ_out = "Dev1/port0/Line13",
+                 period_s = 60,
+                 folder_path = Path(r"D:\Images_OPM\Metrologie-Developpement\20260527_RFS"),
+                 parent = None):
+        
+        """
+        
+
+        Parameters
+        ----------
+        camera_sn : str, optional
+            Serial number of the thorlabs camera used for stabilisation.
+            The default is '36805'.
+        piezzo_port : str, optional
+            port COM number of the piezzo controller (ex. "COM6")
+        NIDAQ_out : str, optional
+            Digital out of the NiDAQ that controls the 488nm laser for stabilisation.
+            The default is "Dev1/port0/Line13".
+        folder_path : Path, optional
+            Path of the folder to save datas of stabilisation
+        """
+        
         super().__init__()
         self.camera_sn = camera_sn
         self.piezzo_port = piezzo_port
         self.NIDAQ_out = NIDAQ_out
+        self.folder = folder_path
+        
         self.parent = parent
         
-        self.tlcam = None
-        
-        self.piezzo_position = 0.0
-        self.frame = None
-        self.camera_sn = camera_sn
+        self.on_init()
     
     def on_init(self):
         self.data_image = {"camera_connected" : False,
                      "camera_sn" : self.camera_sn,
-                     "calibration_data" : None}
+                     "calibration_data" : None,
+                     "displacement" : 0.0,
+                     "piezzo_displacement" : 0.0,}
         
         self.connect_camera()
         
-        self.palm = Palm()
-        self._last_palm = 0.0
-        self._palm_wait = 0.5
+        self.palm = Palm() # To measure the center of mass of the spot on the camera
         
         self.preview_frame = None
         self.mode = 'preview'
+        self.stabilisation_run = False
         
         # Start camera acquisition in separate thread
         self.camera_thread = TLCameraThread(self.tlcam)
@@ -69,21 +94,26 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         self.tlcam.start_acquisition(nframes=2)
         self.camera_thread.start()
         
-        # Get values for stabilization :
-        self.calibration_data = {
-            "x_displacement" : None,
-            "y_displacement" : None,
-            "r2x" : None,
-            "r2y" : None,
-            "fw_step" : None,
-            "bw_step" : None,
-            "x_spot_pos" : None,
-            "y_spot_pos" : None,
-            }
+        # Create values for stabilization :
+        self.original_position = None
+        self.displacement = None
+        self.piezzo_position = 0.0
+        self.frame = None
         
-        self.data_image["calibration_data"] = self.calibration_data
-    
+        self.calibration = Calibration()
+        
+        self.data_image["calibration_data"] = self.calibration.get_calibration_data()
+        
     def set_piezzo_port(self, piezzo_port):
+        """
+        
+
+        Parameters
+        ----------
+        piezzo_port : str
+            port COM number of the piezzo controller (ex. "COM6")
+
+        """
         self.piezzo_port = piezzo_port
     
     def connect_camera(self):
@@ -118,12 +148,31 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         print('ça fonctionne')
         
         
-    def calibration(self, sampling = 10):
+    def start_calibration(self, sampling = 10):
+        """
+        
+
+        Parameters
+        ----------
+        sampling : int, optional
+            Number of point used in each direction for calibration. The default is 10.
+        """
         if self.piezzo_port is None :
             print("Pizzo port not set")
             return
         
         self.mode = "calibration"
+        
+        self.calibration.px_per_um_x = 3.01
+        self.calibration.px_per_um_y = 3.43
+        self.calibration.calculate_px_per_um_euclidian()
+        self.calibration.r2x = 0.9977
+        self.calibration.r2y = 0.9981
+        self.calibration.fw_step = 0.172
+        self.calibration.bw_step = -0.190
+        self.calibration.calibrated = True
+        
+        return
         
         self.camera_thread.set_mode("on_demand")
         x_list = []
@@ -146,43 +195,279 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                 self.camera_thread.request_frame()
                 self.camera_thread.frame_event.wait(timeout=1.0)
                 x,y = self.store_frame(self.camera_thread.frame)
-                x_image.append(x)
-                y_image.append(y)
-                
-            x = np.mean(x_image)
-            y = np.mean(y_image)
+                if x is not None :
+                    x_image.append(x)
+                    y_image.append(y)
             
-            x_list.append(x)
-            y_list.append(y)
-            piezzo_positions.append(self.piezzo_position)
-
-            print(f"{x:.2f} - {y:.2f} - {self.piezzo_position:.3f}")
+            if len(x_image) > 0 :
+                x = np.mean(x_image)
+                y = np.mean(y_image)
+            
+                x_list.append(x)
+                y_list.append(y)
+                piezzo_positions.append(self.piezzo_position)
     
-        regres_x = linregress(piezzo_positions, x_list)
-        regres_y = linregress(piezzo_positions, y_list)
-        
-        fw_step = (piezzo_positions[sampling - 1] - piezzo_positions[0]) / sampling
-        bw_step = (piezzo_positions[2*sampling] - piezzo_positions[sampling + 1]) / sampling
-        
-        self.calibration_data["x_displacement"] = regres_x.slope
-        self.calibration_data["y_displacement"] = regres_y.slope
-        self.calibration_data["r2x"] = regres_x.rvalue ** 2
-        self.calibration_data["r2y"] = regres_y.rvalue ** 2
-        self.calibration_data["fw_step"] = fw_step
-        self.calibration_data["bw_step"] = bw_step
-        
-        if (regres_x.rvalue ** 2) > 0.98 and (regres_y.rvalue ** 2) > 0.98 :
-            print('Calibration successful ')
+                print(f"{x:.2f} - {y:.2f} - {self.piezzo_position:.3f}")
+            
+            else :
+                print("None - None - None")
+            
+            self.save_image(f"RFS_{self.piezzo_position:.4f}")
+    
+        if len(x_list) >= 2 :
+            if len(x_list) < 5 :
+                print("Bad calibration, not enough points")
+                    
+            regres_x = linregress(piezzo_positions, x_list)
+            regres_y = linregress(piezzo_positions, y_list)
+            
+            fw_step = (piezzo_positions[sampling - 1] - piezzo_positions[0]) / sampling
+            bw_step = (piezzo_positions[2*sampling] - piezzo_positions[sampling + 1]) / sampling
+            
+            self.calibration.px_per_um_x = regres_x.slope
+            self.calibration.px_per_um_y = regres_y.slope
+            self.calibration.calculate_px_per_um_euclidian()
+            self.calibration.r2x = regres_x.rvalue ** 2
+            self.calibration.r2y = regres_y.rvalue ** 2
+            self.calibration.fw_step = fw_step
+            self.calibration.bw_step = bw_step
+            self.calibration.calibrated = True
+            
+            if (regres_x.rvalue ** 2) > 0.98 and (regres_y.rvalue ** 2) > 0.98 :
+                print('Calibration successful ')
+            else :
+                print(f'Calibration failed: poor linear regression : r²x =  {(regres_x.rvalue ** 2):.4f},  r²y =  {(regres_y.rvalue ** 2):.4f}')
+                
+            print(f'axe x : {regres_x.slope:.2f} px/µm - r² : {(regres_x.rvalue ** 2):.4f}')
+            print(f'axe x : {regres_y.slope:.2f} px/µm - r² : {(regres_y.rvalue ** 2):.4f}')
+            print(f"fw step : {fw_step:.3f} - bw step = {bw_step:.3f}")
+            
         else :
-            print(f'Calibration failed: poor linear regression : r²x =  {(regres_x.rvalue ** 2):.4f},  r²y =  {(regres_y.rvalue ** 2):.4f}')
+            print("Images too bad for caliration")
             
-        print(f'axe x : {regres_x.slope:.2f} ps/µm - r² : {(regres_x.rvalue ** 2):.4f}')
-        print(f'axe x : {regres_y.slope:.2f} ps/µm - r² : {(regres_y.rvalue ** 2):.4f}')
-        print(f"fw step : {fw_step:.3f} - bw step = {bw_step:.3f}")
-            
+        self.data_image["calibration_data"] = self.calibration.get_calibration_data()
         self.mode = "preview"
         self.camera_thread.set_mode("preview")
         
+    def stabilisation(self, kp = 0.5, max_steps = 5, max_correction_in_row = 5, period_s = 60, drift_threshold = 0.5):
+        """
+        
+
+        Parameters
+        ----------
+        kp : float, optional
+            agressivity of the stabilisation, should be between 0 and 1. The default is 0.5.
+        max_steps : int, optional
+            Maximum steps of the piezzo in one correction. The default is 5.
+        max_correction_in_row : int, optional
+            maximum correction steps in a row. The default is 5.
+        period_s : int, optional
+            Time in seconds between two corrections during stabilisation. Should be < 10.
+            The default is 60.
+        drift_threshold : float, optional.
+            Maximum displacement in px on the camera from the original position before correction
+
+        Raises
+        ------
+        ValueError
+            If kp is not between 0 and 1.
+        """
+
+        if self.piezzo_port is None :
+            print("Pizzo port not set")
+            return
+        
+        if self.calibration.calibrated == False :
+            print("stabilisation should be calibrated befor stabilisation")
+            return
+        
+        if period_s < 10 :
+            period_s = 10
+            print("period_s too small, set to 10s")
+            
+        if kp > 1 or kp < 0 :
+            raise ValueError(f"kp shoulb be between 0 and 1, actual value {kp}")
+        
+        self.stabilisation_run = True
+        self.mode = "stabilisation"
+        self.camera_thread.set_mode("on_demand")
+        
+        timer = QElapsedTimer()
+        
+        get_position = True
+        
+        file_path = os.path.join(self.folder, "stabilization_log.txt")
+        
+        with open(file_path, "a", encoding="utf-8") as file:
+            file.write('current_time,x,y,displacement,piezzo_displacement\n')
+            file.flush()
+            
+        correction_count = 0
+        
+        timer.start()
+                
+        while self.mode == "stabilisation" :
+
+            timer.start()
+        
+            if correction_count < max_correction_in_row :
+                
+                x_image = []
+                y_image = []
+                
+                for i in range(10) :
+                    
+                    self.camera_thread.frame_event.clear()
+                    self.camera_thread.request_frame()
+                    self.camera_thread.frame_event.wait(timeout=1.0)
+                    x,y = self.store_frame(self.camera_thread.frame)
+                    
+                    if x is not None :
+                        x_image.append(x)
+                        y_image.append(y)
+                
+                if len(x_image) > 0 :
+                    x = np.mean(x_image)
+                    y = np.mean(y_image)
+                    
+                    if get_position :
+                        self.calibration.x_spot_pos = x
+                        self.calibration.y_spot_pos = y
+                        get_position = False
+                        
+                    displacement, piezzo_displacement = self.calibration.calculate_displacement(x, y)
+                    
+                    if abs(displacement) > drift_threshold :
+                        
+                        if abs(piezzo_displacement) > 2 :
+                            piezzo_displacement = int(round(piezzo_displacement * kp))
+                            piezzo_displacement = int(max(-max_steps , min(max_steps, piezzo_displacement)))
+                    
+                    else :
+                        piezzo_displacement = 0
+                    
+                    current_time = time.strftime("%H:%M:%S")
+                    
+                    print(f'{current_time} - {x:.2f} - {y:.2f} - {displacement:.3f} - {piezzo_displacement}')
+                    
+                    self.data_image["displacement"] = displacement
+                    self.data_image["piezzo_displacement"] = piezzo_displacement
+                    
+                    with open(file_path, "a", encoding="utf-8") as file:
+                        file.write(f'{current_time},{x:.2f},{y:.2f},{displacement:.3f},{piezzo_displacement}\n')
+                        file.flush()
+                        
+                    if abs(displacement) > drift_threshold :
+                        piezzo.send_command(f'XR{piezzo_displacement}', self.piezzo_port)
+                        
+                        correction_count += 1
+                        
+                        
+                    else : # If you just made a correction, you check that it is ok, if no you restart the correction
+                    
+                        correction_count = 0
+                    
+                        while self.mode == "stabilisation" and timer.elapsed() < (period_s * 1000) :
+                            time.sleep(0.01) # Attendre 0 ms
+
+            else :
+                correction_count = 0
+                
+                while self.mode == "stabilisation" and timer.elapsed() < (period_s * 1000) :
+                    time.sleep(0.01) # Attendre 0 ms
+                    
+        self.camera_thread.set_mode("preview")
+        
+    def stop_stabilisation(self):
+        if self.mode == "stabilisation" :
+            print('stop stabilisation')
+            self.mode = "preview"
+        
+    def timelaps(self, period_s = 60):
+        """
+        Timelaps acquisition of 
+
+        Parameters
+        ----------
+        frames : TYPE, optional
+            DESCRIPTION. The default is 200.
+        period_s : TYPE, optional
+            DESCRIPTION. The default is 300.
+
+        Returns
+        -------
+        None.
+
+        """
+        if self.piezzo_port is None :
+            print("Pizzo port not set")
+            return
+        
+        self.mode == "timelaps"
+        self.camera_thread.set_mode("on_demand")
+        
+        timer = QElapsedTimer()
+        
+        get_position = True
+        
+        file_path = os.path.join(self.folder, "timelaps_log.txt")
+        
+        with open(file_path, "a", encoding="utf-8") as file:
+            file.write('current_time,x,y,displacement,piezzo_displacement\n')
+            file.flush()
+            
+        self.mode = "timelaps"
+        self.camera_thread.set_mode("on_demand")
+        
+        while self.mode == "timelaps" :
+
+            timer.start()
+            
+            x_image = []
+            y_image = []
+            
+            for i in range(10) :
+                
+                self.camera_thread.frame_event.clear()
+                self.camera_thread.request_frame()
+                self.camera_thread.frame_event.wait(timeout=1.0)
+                x,y = self.store_frame(self.camera_thread.frame)
+                
+                if x is not None :
+                    x_image.append(x)
+                    y_image.append(y)
+            
+            if len(x_image) > 0 :
+                x = np.mean(x_image)
+                y = np.mean(y_image)
+                
+                if get_position :
+                    self.calibration.x_spot_pos = x
+                    self.calibration.y_spot_pos = y
+                    get_position = False
+                    
+                displacement, piezzo_displacement = self.calibration.calculate_displacement(x, y)
+                
+                current_time = time.strftime("%H:%M:%S")
+                
+                print(f'{current_time} - {x:.2f} - {y:.2f} - {displacement:.3f} - {piezzo_displacement}')
+                
+                self.data_image["displacement"] = displacement
+                self.data_image["piezzo_displacement"] = piezzo_displacement
+                
+                with open(file_path, "a", encoding="utf-8") as file:
+                    file.write(f'{current_time},{x:.2f},{y:.2f},{displacement:.3f},{piezzo_displacement}\n')
+                    file.flush()
+            
+            # self.save_image(f"{frame*5} min_{x:.3f}_{y:.3f}.tif")
+            
+            while self.mode == "timelaps" and timer.elapsed() < (period_s * 1000) :
+                time.sleep(0.01) # Attends 10ms
+                
+    def stop_timelaps(self):
+        if self.mode == "timelaps" :
+            print('stop timelaps')
+            self.mode = "preview"
         
     def _get_center(self):
         if self.preview_frame is not None :
@@ -190,7 +475,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             cy, cx = h // 2, w // 2
             crop = self.preview_frame[cy - 256 : cy + 256,cx - 256 : cx + 256 ]
             # threshold = self.palm.auto_threshold(self.preview_frame, np.array([30], dtype=np.float64))  # paramètre juste la ROI
-            threshold = 20
+            threshold = 45
             with contextlib.redirect_stdout(open(os.devnull, 'w')): # To avoid print from palm
                 localizations = self.palm.localization(crop, threshold, False, 4, np.array([15, 1, 2, 0], dtype=np.float64))
                 
@@ -198,8 +483,8 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             if n_points == 1 :
                 x = float(localizations.loc[0,"X"])
                 y = float(localizations.loc[0,"Y"])
-                if self.mode == "preview" :
-                    print(f'{x:.2f} - {y:.2f}')
+                # if self.mode == "preview" :
+                #     print(f'{x:.2f} - {y:.2f}')
                 return x, y
             elif n_points == 0 :
                 print("no point detected")
@@ -210,6 +495,19 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         else :
             print("no frame")
             return None, None
+        
+    def save_image(self, name: str) :
+        return
+        if self.preview_frame is None :
+            return
+        
+        file_path = os.path.join(self.folder, name)
+        
+        try :
+            tifffile.imwrite(file_path, self.preview_frame)
+            
+        except Exception as e:
+            print(f"Failed to save frame:\n{str(e)}.tif")
         
     def get_piezzo_position(self):
         "Get the current position of the device and display it"
@@ -234,6 +532,68 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                 self.tlcam.close()
             except Exception:
                 pass
+            
+class Calibration():
+    def __init__(self) :
+        self.calibrated = False
+        self.px_per_um_x = None
+        self.px_per_um_y = None
+        self.px_per_um_euclidian = None
+        self.r2x = None
+        self.r2y = None
+        self.fw_step = None
+        self.bw_step = None
+        self.x_spot_pos = None,
+        self.y_spot_pos = None
+            
+    def calculate_px_per_um_euclidian(self) :
+        self.px_per_um_euclidian = math.sqrt(self.px_per_um_x ** 2 + self.px_per_um_y ** 2)
+        if self.px_per_um_euclidian == 0 :
+            raise ValueError("euclidian displacement of the spot cannot be 0")
+            
+    def get_calibration_data(self):
+        calibration_data = {
+            "calibrated" : self.calibrated,
+            "px_per_um_x" : self.px_per_um_x,
+            "px_per_um_y" : self.px_per_um_y,
+            "px_per_um_euclidian" : self.px_per_um_euclidian,
+            "r2x" : self.r2x,
+            "r2y" : self.r2y,
+            "fw_step" : self.fw_step,
+            "bw_step" : self.bw_step,
+            "x_spot_pos" : self.x_spot_pos,
+            "y_spot_pos" : self.y_spot_pos,
+            }
+        
+        return calibration_data
+    
+    def calculate_displacement(self, x , y):
+        if self.px_per_um_euclidian is None :
+            raise ValueError("px_per_um_euclidian is None")
+        
+        if self.x_spot_pos is None :
+            raise ValueError("x_spot_pos is None")
+        
+        if self.y_spot_pos is None :
+            raise ValueError("y_spot_pos is None")
+            
+        dx = self.x_spot_pos - x
+        dy = self.y_spot_pos - y
+        
+        sign = -1 if dx < 0 else 1
+        
+        pixel_displacement = math.sqrt(dx ** 2 + dy ** 2) * sign
+        
+        um_displacement = pixel_displacement / self.px_per_um_euclidian
+        
+        if um_displacement < 0 :
+            piezzo_displacement = -int(um_displacement / self.bw_step)
+        else :
+            piezzo_displacement = int(um_displacement / self.fw_step)
+                    
+        return um_displacement, piezzo_displacement
+                
+                
         
 class TLCameraThread(QThread):
     """
@@ -242,7 +602,7 @@ class TLCameraThread(QThread):
     """
     new_frame = Signal(np.ndarray)  # Signal émis à chaque nouvelle image
 
-    def __init__(self, tlcam, period_ms = 100):
+    def __init__(self, tlcam, period_ms = 1000):
         super().__init__()
         self.tlcam = tlcam
         self.period = period_ms

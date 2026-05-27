@@ -156,7 +156,6 @@ class sample_finder_Window(QWidget, Ui_Form):
         self.preview_zoom = 0.33
         self.is_preview = False # If there is a preview image displayed
         self.is_preview_paused = False # If preview is paused
-        self.preview_frame = None # frame actually displayed
         self.histogram_greyvalue = None
         self.histogram_greyvalue_thread = None
         

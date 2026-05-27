@@ -23,7 +23,7 @@ import time as t
 import pylablib as pll
 pll.par['devices/dlls/thorlabs_tlcam'] = r"C:\Program Files\Thorlabs\ThorImageCAM\Bin\thorlabs_tsi_camera_sdk.dll"
 
-from PySide6.QtCore import QTimer, QThread, Signal
+from PySide6.QtCore import QTimer, QThread, Signal, Qt
 from PySide6.QtWidgets import QApplication, QWidget
 from PySide6.QtGui import QPixmap, QImage
 
@@ -44,6 +44,10 @@ class RFS_window(QWidget, Ui_Form):
     """
     
     start_calibration = Signal()
+    start_timelaps = Signal()
+    stop_timelaps = Signal()
+    start_stabilisation = Signal()
+    stop_stabilisation = Signal()
     
     def __init__(self, camera_sn = '36805', NIDAQ_out = "Dev1/port0/Line13", piezzo_step = [4,47], parent = None):
         super().__init__(parent)
@@ -65,7 +69,13 @@ class RFS_window(QWidget, Ui_Form):
         self.stabilisation.new_data.connect(self.store_frame) # Channel received   
         self.stabilisationThread.started.connect(self.stabilisation.on_init)
         
-        self.start_calibration.connect(self.stabilisation.calibration)
+        self.start_calibration.connect(self.stabilisation.start_calibration)
+        self.start_timelaps.connect(self.stabilisation.timelaps)
+        self.stop_timelaps.connect(self.stabilisation.stop_timelaps,
+                                   Qt.DirectConnection)
+        self.start_stabilisation.connect(self.stabilisation.stabilisation)
+        self.stop_stabilisation.connect(self.stabilisation.stop_stabilisation,
+                                        Qt.DirectConnection)
         
         self.stabilisationThread.start()
         
@@ -156,17 +166,21 @@ class RFS_window(QWidget, Ui_Form):
         if self.pb_laser_on.isChecked():
             self.label_laser_icon.setPixmap(self.Red_Light_Icon_On)
             self.label_laser.setText('ON ')
+            self.start_timelaps.emit()
         else :
             self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
             self.label_laser.setText('OFF')
+            self.stop_timelaps.emit()
     
     def pb_stabilize_clicked(self):
         if self.pb_stabilize.isChecked():
             self.label_stabilize_icon.setPixmap(self.Green_Light_Icon_On)
             self.label_stabilize.setText('ON ')
+            self.start_stabilisation.emit()
         else :
             self.label_stabilize_icon.setPixmap(self.Green_Light_Icon_Off)
             self.label_stabilize.setText('OFF')
+            self.stop_stabilisation.emit()
             
     def comboBox_devices_indexChanged(self):
         """"set the self.piezzo_port and self.connection status as well as the interface
