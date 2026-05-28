@@ -105,6 +105,7 @@ class ls3_mannager(QWidget, Ui_Form):
             # Pixel shift between two images of the volume for deskewing
         self.pixel_shift = compute_px_shift(self.ls3.config.experiment.aspect_ratio,
                                             self.ls3.config.microscope.tilt_angle,
+                                            self.ls3.config.cameras[0].binning,
                                             unit = "deg")
         
         self.ellapsed_time = time.time()

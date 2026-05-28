@@ -100,6 +100,7 @@ class mda_mannager(QWidget, Ui_Form):
             # Pixel shift between two images of the volume for deskewing
         self.pixel_shift = compute_px_shift(self.mda.config.experiment.aspect_ratio,
                                             self.mda.config.microscope.tilt_angle,
+                                            self.mda.config.cameras[0].binning,
                                             unit = "deg")
         
         self.ellapsed_time = time.time()

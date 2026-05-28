@@ -13,6 +13,7 @@ from PySide6.QtGui import qRgb
 def _calculate_image_size(camera_vsize: int,
                           camera_hsize: int,
                           camera_pixel_size: int,
+                          binning: int,
                           experiment_scan_range: int,
                           experiment_scanV_range: int,
                           scanV_overlap: float,
@@ -34,6 +35,8 @@ def _calculate_image_size(camera_vsize: int,
         size of the field of view in the horizontal axis of the camera
     camera_pixel_size : int
         size of the pixels of the camera in µm
+    binning : int
+        binning of the camera during acquisition, should be 1,2 or 4
     experiment_scan_range : int
         size of the imaging field in the scanning axis (scanR axis)
     experiment_scanV_range : int
@@ -61,18 +64,18 @@ def _calculate_image_size(camera_vsize: int,
     
     angle_rad = np.deg2rad(microscope_tilt_angle)
     
-    px_shift = math.ceil(experiment_aspect_ratio / math.tan(angle_rad))
-    step_size = camera_pixel_size * experiment_aspect_ratio / np.sin(angle_rad)
+    px_shift = math.ceil(experiment_aspect_ratio / math.tan(angle_rad)/binning)
+    step_size = camera_pixel_size * experiment_aspect_ratio / np.sin(angle_rad) / binning
     n_steps = experiment_scan_range / step_size
     
-    image_vsize = int(camera_vsize + n_steps * px_shift + 1)
+    image_vsize = int((camera_vsize + n_steps * px_shift + 1)/binning)
     
-    scanV_overlap_px = scanV_overlap * camera_vsize
+    scanV_overlap_px = scanV_overlap * camera_vsize / binning
     
     if n_lines == 1 :
-        image_hsize = camera_hsize
+        image_hsize = camera_hsize / binning
     else:
-        image_hsize = (camera_hsize - scanV_overlap_px) * n_lines + scanV_overlap_px
+        image_hsize = (camera_hsize / binning - scanV_overlap_px) * n_lines + scanV_overlap_px
     
     return int(image_hsize), int(image_vsize), int(px_shift), int(scanV_overlap_px)
 
@@ -106,6 +109,7 @@ def create_ls3_image(ls3):
         ls3.config.cameras[0].vsize,
         ls3.config.cameras[0].hsize,
         ls3.config.cameras[0].sample_pixel_size,
+        ls3.config.cameras[0].binning,
         ls3.config.experiment.stage_scan_range,
         ls3.config.experiment.scanV_range,
         ls3.config.experiment.scanV_overlap,
