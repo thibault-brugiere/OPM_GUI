@@ -64,7 +64,7 @@ def crop_stack(arr: cp.ndarray, x1: int, y1: int, x2: int, y2: int, gpu_id: int 
         # y then x
         return arr[..., y1 : y2 + 1, x1 : x2 + 1]
 
-def _px_shift_calculation(aspect_ratio:float, angle:float, angle_unit:str = "rad", tolerance = 0.0001) -> int:
+def _px_shift_calculation(aspect_ratio:float, angle:float, binning: int = 1, angle_unit:str = "rad", tolerance = 0.0001) -> int:
     """
     Compute the integer pixel shift per Z step required for OPM deskewing.
 
@@ -79,6 +79,8 @@ def _px_shift_calculation(aspect_ratio:float, angle:float, angle_unit:str = "rad
         Voxel aspect ratio (typically dz / dx). should be > 0
     angle : float
         Tilt angle of the oblique plane.
+    binning : int
+        Binning used on the camera during acquisition, should be 1,2 or 4
     angle_unit : str, optional
         Unit of the input angle: ``"rad"`` for radians or ``"deg"`` for
         degrees (default: ``"rad"``).
@@ -98,7 +100,7 @@ def _px_shift_calculation(aspect_ratio:float, angle:float, angle_unit:str = "rad
     if angle <= - math.pi or angle >= math.pi :
         raise ValueError(f'angle should be > 0 and < math.pi : {angle}')
                                                          
-    px_shift = aspect_ratio/math.tan(angle)
+    px_shift = aspect_ratio/math.tan(angle)/binning
     
     int_px_shift = round(px_shift)
     
@@ -316,6 +318,7 @@ def deskew_and_rotate_opm(
         dy_um: float,
         aspect_ratio : float,
         theta_deg: float,
+        binning: int = 1,
         order: int = 1) -> np.ndarray:
     """
     Full OPM pipeline:
@@ -334,10 +337,10 @@ def deskew_and_rotate_opm(
         ratio between dy and dz in the image
     theta_deg : float
         Rotation angle in degrees.
+    binning : int, optional
+        Binning used on the camera during acquisition, should be 1,2 or 4
     order : int, optional
         Interpolation order.
-    cval : float, optional
-        Constant fill value outside boundaries.
 
     Returns
     -------
@@ -347,10 +350,10 @@ def deskew_and_rotate_opm(
     
     _, size_y, _ = volume.shape
     
-    
     dz_um = dy_um * aspect_ratio
+    dy_um = dy_um * binning
     
-    shift_y_px_per_plane = _px_shift_calculation(aspect_ratio, theta_deg, angle_unit = "deg")
+    shift_y_px_per_plane = _px_shift_calculation(aspect_ratio, theta_deg, binning, angle_unit = "deg")
     
     sheared = _shear_integer_y(volume, shift_y_px_per_plane)
     

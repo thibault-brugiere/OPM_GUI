@@ -86,14 +86,16 @@ def auto_deskew_rotate_mda(folder, only_deskew = False,
             if only_deskew :
                 out_volume_np = deskew_opm(volume_zyx,
                                            aspect_ratio = metadata["aspect_ratio"],
-                                           theta_deg = metadata["angle"])
+                                           theta_deg = metadata["angle"],
+                                           binning = metadata["binning"])
                 output_file_path = f'{folder}/deskew_{name}'
                 
             else :
                 volume_zyx_cp = cp.asarray(volume_zyx)
                 out_volume = deskew_rotate(volume_zyx_cp, dy_um = metadata["px_size"],
                                            aspect_ratio = metadata["aspect_ratio"],
-                                           theta_deg = metadata["angle"])
+                                           theta_deg = metadata["angle"],
+                                           binning = metadata["binning"])
                 out_volume_np = cp.asnumpy(out_volume)
                 output_file_path = f'{folder}/deskew-rotate_{name}'
 
@@ -145,9 +147,7 @@ def auto_deskew_rotate_ls3(folder, max_shear_size = 2e9, max_size_bytes = 15e9,
         processed_images = 0
         
     for position in parse_ls3["positions"] :
-        print(f"Position : {position:04d}")
         for channel in parse_ls3["channels"]:
-            print(f"Channel : {channel}")
             
             file_path_list = []
             size_list = []
@@ -184,14 +184,11 @@ def auto_deskew_rotate_ls3(folder, max_shear_size = 2e9, max_size_bytes = 15e9,
                 end = start + size_list[k]
                 volume_zyx[start : end,:,:] = tifffile.imread(file_path)
                 start = end 
-                
-                print(f'\rcharged : {k} / {len(parse_ls3["index"])-1}', end = "")
-            print("")
             
             
             z, y, x_slices = volume_zyx.shape                    
             
-            px_shift = px_shift_calculation(metadata["aspect_ratio"], metadata["angle"], angle_unit = "deg")
+            px_shift = px_shift_calculation(metadata["aspect_ratio"], metadata["angle"], metadata["binning"], angle_unit = "deg")
             shear_size_zy = z * ( z - 1 ) * px_shift + z * y # during shearing
             max_step_size = max_shear_size / shear_size_zy
             
@@ -202,20 +199,19 @@ def auto_deskew_rotate_ls3(folder, max_shear_size = 2e9, max_size_bytes = 15e9,
             for k in range(steps):
                 if progress_folder_callback is not None :
                     processed_images += 1
-                    progress_folder_callback(processed_images, total_images)
+                    progress_folder_callback(processed_images, total_images, progress_folder_callback)
                 if progress_file_callback is not None :
                     progress_file_callback(k,steps)
                     
                 if stop_requested_callback is not None and stop_requested_callback():
                     return
-                
-                print(f'\rpart {k + 1}/{steps}', end = "")
 
                 out_volume_cp = deskew_rotate(
                     cp.asarray(volume_zyx[:, :, k*step_size : min((k+1) * step_size, x_slices)]),
                     dy_um = metadata["px_size"],
                     aspect_ratio = metadata["aspect_ratio"],
-                    theta_deg = metadata["angle"])
+                    theta_deg = metadata["angle"],
+                    binning = metadata["binning"])
                 
                 if k == 0 :
                     z,y = out_volume_cp.shape[-3],out_volume_cp.shape[-2]
@@ -227,14 +223,9 @@ def auto_deskew_rotate_ls3(folder, max_shear_size = 2e9, max_size_bytes = 15e9,
                 cp.get_default_memory_pool().free_all_blocks()
             
             del volume_zyx
-            
-            print('')
-            print('saving')
                     
-            output_file_path = f'{folder}/test_dekew-rotate_{name}.tif'
+            output_file_path = f'{folder}/1step-dekew-rotate_{name}.tif'
             tifffile.imwrite(output_file_path, out_volume_np, bigtiff=True)
-            
-            print('')
             
             del out_volume_np
 

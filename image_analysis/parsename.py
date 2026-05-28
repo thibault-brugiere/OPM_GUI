@@ -360,7 +360,8 @@ def get_metadata(folder, filename = "GUI_parameters.txt"):
     return {
         "angle": float(parameters["microscope"]["tilt_angle"]),
         "aspect_ratio": float(parameters["experiment"]["aspect_ratio"]),
-        "px_size": float(parameters["cameras"]["camera_0"]["sample_pixel_size"])}
+        "px_size": float(parameters["cameras"]["camera_0"]["sample_pixel_size"]),
+        "binning":   int(parameters["cameras"]["camera_0"]["binning"])}
 
 def get_preprocess_steps(folder, filename = "preprocess_parameters.txt"):
 

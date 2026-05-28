@@ -37,12 +37,12 @@ def deskew_numpy(volume: np.ndarray, px_shift_y: int = 0, px_shift_x: int = 0) -
 
     return deskewed
 
-def compute_px_shift(aspect_ratio, angle, unit = "rad") -> int:
+def compute_px_shift(aspect_ratio, angle, binning, unit = "rad") -> int:
     if unit == "deg":
         angle_rad = angle * math.pi / 180
     else:
         angle_rad = angle
-    px = aspect_ratio / math.tan(angle_rad)
+    px = aspect_ratio / math.tan(angle_rad) / binning
     rounded = round(px)
     if not math.isclose(px, rounded, rel_tol=1e-4):
         raise ValueError(f"Invalid aspect ratio: pixel shift = {px}")

@@ -32,7 +32,7 @@ def legalize_voxel_aspect_ratio(aspect_ratio:float, angle:float):
     """
     return max(int(round(aspect_ratio / math.tan(angle))), 1) * math.tan(angle)
 
-def px_shift_calculation(aspect_ratio:float, angle:float, angle_unit:str = "rad") -> int:
+def px_shift_calculation(aspect_ratio:float, angle:float, binning: int = 1, angle_unit:str = "rad") -> int:
     """
     Compute the integer pixel shift per Z step required for OPM deskewing.
 
@@ -47,6 +47,8 @@ def px_shift_calculation(aspect_ratio:float, angle:float, angle_unit:str = "rad"
         Voxel aspect ratio (typically dz / dx).
     angle : float
         Tilt angle of the oblique plane.
+    binning : int
+        Binning used on the camera during acquisition, should be 1,2 or 4
     angle_unit : str, optional
         Unit of the input angle: ``"rad"`` for radians or ``"deg"`` for
         degrees (default: ``"rad"``).
@@ -64,7 +66,7 @@ def px_shift_calculation(aspect_ratio:float, angle:float, angle_unit:str = "rad"
     """
     angle = angle if angle_unit == "rad" else np.deg2rad(angle)
                                                          
-    px_shift = aspect_ratio/math.tan(angle)
+    px_shift = aspect_ratio/math.tan(angle)/binning
     
     int_px_shift = round(px_shift)
     
@@ -132,9 +134,10 @@ def save_image(image: np.ndarray, name: str = "numpy_deskewed", path: str=''):
     
 def deskew_opm(image: np.ndarray,
                aspect_ratio : float,
-               theta_deg: float) -> np.ndarray:
+               theta_deg: float,
+               binning: int) -> np.ndarray:
     
-    px_shift = px_shift_calculation(aspect_ratio, theta_deg, angle_unit="deg")
+    px_shift = px_shift_calculation(aspect_ratio, theta_deg, binning, angle_unit="deg")
     deskewed_image = deskew_numpy(image, px_shift_y=px_shift)
     
     return deskewed_image

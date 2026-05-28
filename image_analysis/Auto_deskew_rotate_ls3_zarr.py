@@ -117,7 +117,7 @@ def auto_deskew_rotate_ls3(folder, max_shear_size : int = 2e9,
               
             x_slices = x
             
-            px_shift = px_shift_calculation(metadata["aspect_ratio"], metadata["angle"], angle_unit = "deg")
+            px_shift = px_shift_calculation(metadata["aspect_ratio"], metadata["angle"], metadata["binning"] ,angle_unit = "deg")
             shear_size_zy = z * ( z - 1 ) * px_shift + z * y # during shearing
             max_step_size = max_shear_size / shear_size_zy
             
@@ -144,7 +144,8 @@ def auto_deskew_rotate_ls3(folder, max_shear_size : int = 2e9,
                     volume[:, :, k*step_size:min((k+1) * step_size, x_slices)],
                     dy_um = metadata["px_size"],
                     aspect_ratio = metadata["aspect_ratio"],
-                    theta_deg = metadata["angle"])
+                    theta_deg = metadata["angle"],
+                    binning = metadata["binning"])
                 
                 if k == 0 :
                     z,y = out_volume_cp.shape[-3],out_volume_cp.shape[-2]
