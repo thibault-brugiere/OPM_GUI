@@ -600,6 +600,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.camera[self.camera_id].binning = binning
         
+        self.label_volume_duration_update()
+        
     def label_fov_size_set_text(self):
         'show the size of the fild of view in µm depending on camera settings'
         sample_pixel_size = self.camera[self.camera_id].sample_pixel_size
@@ -680,6 +682,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         message = functions_ui.label_volume_duration(self.experiment.scan_range,
                                                      self.camera[self.camera_id].sample_pixel_size ,
                                                      self.experiment.aspect_ratio,
+                                                     self.camera[self.camera_id].binning,
                                                      self.microscope.tilt_angle,
                                                      self.preview_channel.exposure_time,
                                                      self.camera[self.camera_id].vsize,

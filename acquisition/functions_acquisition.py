@@ -22,7 +22,7 @@ class functions_acquisition():
         aspect_ratio : Int
         
         tilt_angle : Float
-            Angle of the lightsheet of the microscope.
+            Angle of the lightsheet of the microscope in radians
 
         Returns
         -------
@@ -42,7 +42,7 @@ class functions_acquisition():
 
         return n_steps, step_size, scan_range
     
-    def legalize_aspect_ratio(sample_pixel_size, aspect_ratio, tilt_angle):
+    def legalize_aspect_ratio(sample_pixel_size, aspect_ratio, tilt_angle, binning):
         """
         Return a value of the aspect ratio that leads to en integer number of
         pixel shift between two images
@@ -54,14 +54,16 @@ class functions_acquisition():
         aspect_ratio : Int or Float
             Ratio between the z and x axis of the voxel
         tilt_angle : Float
-            Angle of the lightsheet of the microscope.
+            Angle of the lightsheet of the microscope in radians
+        binning : int
+            Binning of the camera, should be 1,2 or 4
 
         Returns
         -------
         aspect_ratio : Float
         
             """
-        step = aspect_ratio / np.tan(tilt_angle)
-        step = int(np.round(step , 0))
+        step = aspect_ratio / np.tan(tilt_angle)/binning
+        step = int(np.round(step , 0) * binning)
         aspect_ratio = np.tan(tilt_angle) * step
         return aspect_ratio

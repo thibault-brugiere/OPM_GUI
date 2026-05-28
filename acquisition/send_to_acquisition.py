@@ -73,7 +73,8 @@ def send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list
     #
     experiment.aspect_ratio = fa.legalize_aspect_ratio(camera_list[0].sample_pixel_size,
                                                        experiment.aspect_ratio,
-                                                       microscope.tilt_angle*math.pi/180)
+                                                       math.radians(microscope.tilt_angle),
+                                                       camera_list[0].binning)
     
     experiment.n_steps, experiment.step_size, experiment.scan_range = fa.calculate_size_Z(experiment.scan_range,
                                                                                           camera_list[0].sample_pixel_size,

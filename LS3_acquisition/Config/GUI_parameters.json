@@ -8,12 +8,12 @@
             "sample_pixel_size": 0.15535292131036815,
             "hsize": 2048,
             "hpos": 1192,
-            "vsize": 256,
-            "vpos": 1056,
-            "exposure_time": 0.03,
+            "vsize": 1024,
+            "vpos": 672,
+            "exposure_time": 0.01,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
-            "image_readout_time": 0.0009940363636363637
+            "image_readout_time": 0.003800727272727273
         }
     },
     "channels": {
@@ -22,7 +22,7 @@
             "is_active": true,
             "channel_order": null,
             "laser_is_active": {
-                "405": false,
+                "405": true,
                 "488": false,
                 "561": false,
                 "640": false
@@ -35,24 +35,24 @@
             },
             "filter": "BFP",
             "camera": 0,
-            "exposure_time": 30.0
+            "exposure_time": 10.0
         }
     },
     "experiment": {
         "exp_name": "Image",
-        "data_path": "D:/Projets_Python/OPM_GUI/Images/20260423_testLS3",
+        "data_path": "D:/Projets_Python/OPM_GUI/Images/2026052_tests",
         "timepoints": 1,
         "time_intervals": 1.0,
         "total_duration": 10.0,
         "mode": "LS3",
         "scanner_position": 0,
-        "scan_range": 20.279883589761845,
-        "stage_scan_range": 1000,
+        "scan_range": 19.468688246171375,
+        "stage_scan_range": 300,
         "scanV_range": 0,
         "scanV_overlap": 0.25,
-        "aspect_ratio": 3.3563985247091197,
-        "n_steps": 26,
-        "step_size": 0.8111953435904738,
+        "aspect_ratio": 5.03459778706368,
+        "n_steps": 17,
+        "step_size": 1.216793015385711,
         "slit_aperture": 800
     },
     "microscope": {

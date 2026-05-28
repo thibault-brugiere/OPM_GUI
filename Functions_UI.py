@@ -217,7 +217,7 @@ class functions_ui():
     # Scanner
     #
     
-    def label_volume_duration(scan_range, sample_pixel_size, aspect_ratio, tilt_angle,
+    def label_volume_duration(scan_range, sample_pixel_size, aspect_ratio, binning, tilt_angle,
                               exposure_time, vsize, line_readout_time, galvo_response_time, mode):
         """
         Return a label for the interface containing the number of steps / volume
@@ -229,8 +229,10 @@ class functions_ui():
             
         sample_pixel_size : float (µm)
             size of each pixels in the sample
-        aspect_ratio : int
-            
+        aspect_ratio : Int or Float
+            Ratio between the z and x axis of the voxel
+        binning : int
+            Binning of the camera, should be 1,2 or 4
         tilt_angle : float (°)
             angle of the lightsheet
         exposure_time : float (ms)
@@ -248,16 +250,15 @@ class functions_ui():
         -------
         message : str
         """
-        aspect_ratio = fa.legalize_aspect_ratio(sample_pixel_size, aspect_ratio, tilt_angle)
-        
-        step_size = aspect_ratio * sample_pixel_size / np.sin(tilt_angle * math.pi / 180)
+        aspect_ratio = fa.legalize_aspect_ratio(sample_pixel_size, aspect_ratio, math.radians(tilt_angle), binning)
+        step_size = aspect_ratio * sample_pixel_size / np.sin(math.radians(tilt_angle))
         n_steps = 1 + int(round(scan_range / step_size))
         image_readout_time = (vsize / 2 + 8) * line_readout_time * 1000 # in ms
         
-        if mode == "standard" :
-            estimated_time = n_steps * (exposure_time + max(image_readout_time, galvo_response_time)) + galvo_response_time * 2
-        elif mode == "fast" :
+        if mode == "fast" :
             estimated_time = n_steps * exposure_time + galvo_response_time * 2
+        else :
+            estimated_time = n_steps * (exposure_time + max(image_readout_time, galvo_response_time)) + galvo_response_time * 2
         
         message  = f'Number of frames/volume/color: {str(n_steps)}\n'
         message += f'Legalized aspect ratio: {round(aspect_ratio,3)}\n'
