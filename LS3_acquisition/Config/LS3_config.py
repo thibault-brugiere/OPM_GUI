@@ -7,6 +7,7 @@ Created on Tue Jul  8 14:00:18 2025
 
 import json
 import os
+from pathlib import Path
 import shutil
 
 from configs.config import camera, channel_config, experiment, microscope
@@ -67,7 +68,7 @@ class config():
         dirname = self.dirname
         file_path = os.path.join(dirname, filename)   # Construct full path to the file
         
-        destination = os.path.join(dest, 'GUI_parameters.txt')
+        destination = os.path.join(dest, f'{Path(dest).name}_GUI_parameters.txt')
         
         shutil.copy(file_path,destination)
         

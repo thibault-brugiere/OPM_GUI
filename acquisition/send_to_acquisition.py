@@ -23,6 +23,7 @@ def send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list
     - microscope : parameters of the microscope, as define in config.py, modified from UI
     - dirname (str) : folder where the file is saved
     - filename (str): Nom du fichier JSON.
+        The default is 'GUI_parameters.json'.
     """
 
     cameras = {}

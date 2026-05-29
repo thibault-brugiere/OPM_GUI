@@ -4,6 +4,7 @@ import math
 import numpy as np
 import queue
 import os
+from pathlib import Path
 import threading
 from tqdm import tqdm
 from tifffile import imwrite
@@ -317,8 +318,7 @@ class AcquisitionWorker(QObject):
         print("========================\n")
 
     def _append_acquisition_summary(self):
-        folder = os.path.basename(os.path.normpath(self.save_dir))
-        log_file = os.path.join(self.save_dir, f"{folder}_log.txt")
+        log_file = os.path.join(self.save_dir, f"{Path(self.save_dir).name}_log.txt")
         try:
             with open(log_file, "a") as f:
                 f.write("\n=== Acquisition Summary ===\n")

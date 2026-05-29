@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from pathlib import Path
 from datetime import datetime
 
 def prepare_saving_directory(base_path, exp_name):
@@ -33,7 +34,7 @@ def save_metadata(config, save_path):
     - save_path: str
         Path to the directory where log.txt will be written.
     """
-    log_file = os.path.join(save_path, "log.txt")
+    log_file = os.path.join(save_path, f"{Path(save_path).name}_log.txt")
     with open(log_file, "w") as f:
         f.write("Experiment Metadata Log\n")
         f.write("=======================\n")
@@ -54,7 +55,7 @@ def save_metadata(config, save_path):
         f.write("\n")
         
 def add_acquisition_stats(stats, save_path):
-    log_file = os.path.join(save_path, "log.txt")
+    log_file = os.path.join(save_path, f"{Path(save_path).name}_log.txt")
     with open(log_file, "w") as f:
         try:
             with open(log_file, "a") as f:

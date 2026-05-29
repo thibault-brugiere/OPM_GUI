@@ -331,7 +331,7 @@ def get_metadata(folder, filename = "GUI_parameters.txt"):
     folder : str | Path
         Directory containing the metadata file.
     filename : str, optional
-        Name of the metadata file (default: "GUI_parameters.txt").
+        En of the name of the metadata file (default: "GUI_parameters.txt").
 
     Raises
     ------
@@ -353,7 +353,14 @@ def get_metadata(folder, filename = "GUI_parameters.txt"):
     folder = Path(folder)
     file_path = os.path.join(folder, filename)
     if not os.path.exists(file_path):
-        raise FileNotFoundError(f"No metadata file found: {file_path}")
+        file_path = None
+        for file in os.listdir(folder): # Essaye de trouve un fichier finissant par ce nom
+            if file.endswith(filename):
+                file_path = os.path.join(folder, file)
+                break
+        if file_path is None :
+            file_path = os.path.join(folder, filename)
+            raise FileNotFoundError(f"No metadata file found: {file_path}")
         
     with open(file_path, 'r') as json_file:
         parameters = json.load(json_file)
