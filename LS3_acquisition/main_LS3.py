@@ -230,9 +230,13 @@ class Light_sheet_stabilized_scanning:
         return {
                 "SCANR_start" : (self.config.experiment.stage_scan_range / 2 + scan_origin) / 1000,
                 "SCANR_stop" : (-self.config.experiment.stage_scan_range / 2 + scan_origin) / 1000, #en mm
-                "SCANV_start" : (self.config.experiment.scanV_range / 2 + v_origin) / 1000 if self.n_channels == 1 else v_pos / 1000,
-                "SCANV_stop" : (-self.config.experiment.scanV_range / 2 + v_origin) / 1000 if self.n_channels == 1 else v_pos / 1000,
-                "SCANV_lines" : self.n_lines if self.n_channels == 1 else 1,
+                # Same method is naw used for 1 channel
+                # "SCANV_start" : (self.config.experiment.scanV_range / 2 + v_origin) / 1000 if self.n_channels == 1 else v_pos / 1000,
+                # "SCANV_stop" : (-self.config.experiment.scanV_range / 2 + v_origin) / 1000 if self.n_channels == 1 else v_pos / 1000,
+                "SCANV_start" : v_pos / 1000,
+                "SCANV_stop" : v_pos / 1000,
+                # "SCANV_lines" : self.n_lines if self.n_channels == 1 else 1,
+                "SCANV_lines" : 1,
                 "axis": self.scan_axis
                 }
     
@@ -285,7 +289,9 @@ class Light_sheet_stabilized_scanning:
                       'stage': 'moving'
                       }
         
-        lines_to_set = self.n_lines if self.n_channels != 1 else 1 #If the is only one channel, the scanning is made in one step
+        # Same method is naw used for 1 channel
+        # lines_to_set = self.n_lines if self.n_channels != 1 else 1 #If the is only one channel, the scanning is made in one step
+        lines_to_set = self.n_lines
         v_positions = self._get_v_pos()
         total_volumes = 0
 
