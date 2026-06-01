@@ -51,6 +51,4 @@ Created on Tue Sep  2 09:03:43 2025
     #######################
     # Image pre-treatment #
     #######################
-# TODO : Afficher le nomde d'images détectées + canaux etc.
-# TODO : mettre les images créées dans un dossier deskew
 """

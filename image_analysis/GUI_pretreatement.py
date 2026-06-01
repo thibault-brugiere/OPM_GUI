@@ -197,34 +197,51 @@ class PretreatementWindow(QWidget, Ui_Form):
             self.parse_ls3_file = parse_ls3_filenames(self.folder_path)
             self.parse_ls3_folder = parse_ls3_foldernames(self.folder_path)
             self.parse_ls3_deskew = parse_ls3_deskew_foldernames(self.folder_path)
+            file_detected = False
             
             if len(self.parse_mda['files']) != 0: # If MDA experiment is detected
-                self.label_parameters.setText("MDA detected")
+                nfiles = len(self.parse_mda['files'])
+                nchannels = len(self.parse_mda['channels'])
+                nimages = len(self.parse_mda['images'])
+                self.label_parameters.setText(f"MDA detected\n{nfiles} files\n{nchannels} channels\n{nimages} images")
                 self.pb_start_MDAdeskew.setEnabled(True)
                 self.cb_only_deskew.setEnabled(True)
-                return
+                file_detected = True
                 
-            
             if len(self.parse_ls3_deskew['files']) != 0: # If images already deskewed detected
-                self.label_parameters.setText("LS3 file detected")
+                nfiles = len(self.parse_ls3_deskew['files'])
+                npositions = len(self.parse_ls3_deskew['positions'])
+                nchannels = len(self.parse_ls3_deskew['channels'])
+                self.label_parameters.setText(f"LS3 detected\n{nfiles} files\n{npositions} positions\n{nchannels} channels")
                 self.pb_TIFFconvert.setEnabled(True)
                 self.cb_delete_zarr.setEnabled(True)
+                file_detected = True
                 
-            
             if len(self.parse_ls3_folder['files']) != 0: # If images already in zarr detected
-                self.label_parameters.setText("LS3 file detected")
+                nfiles = len(self.parse_ls3_folder['files'])
+                npositions = len(self.parse_ls3_folder['positions'])
+                nchannels = len(self.parse_ls3_folder['channels'])
+                self.label_parameters.setText(f"LS3 detected\n{nfiles} files\n{npositions} positions\n{nchannels} channels")
                 self.pb_start_LS3deskew_ZARR.setEnabled(True)
                 self.cb_delete_zarr.setEnabled(True)
+                file_detected = True
                 
-            
             if len(self.parse_ls3_file['files']) != 0: # If ls3 images detected
-                self.label_parameters.setText("LS3 file detected")
+                nfiles = len(self.parse_ls3_file['files'])
+                npositions = len(self.parse_ls3_file['positions'])
+                nchannels = len(self.parse_ls3_file['channels'])
+                nindex = len(self.parse_ls3_file['index'])
+                self.label_parameters.setText(f"LS3 detected\n{nfiles} files\n{npositions} positions\n{nchannels} channels\n{nindex} files / channel")
                 self.pb_start_LS3deskew.setEnabled(True)
                 self.pb_ZARRconvert.setEnabled(True)
                 self.cb_delete_zarr.setEnabled(True)
                 self.cb_try_no_ZARR.setEnabled(True)
+                file_detected = True
                 
             self.label_parameters.adjustSize()
+            
+            if not file_detected :
+                self.label_parameters.setText("no file detected")
         
         else :
             self.label_parameters.setText("Select a folder")

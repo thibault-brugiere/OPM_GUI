@@ -88,7 +88,9 @@ def auto_deskew_rotate_mda(folder, only_deskew = False,
                                            aspect_ratio = metadata["aspect_ratio"],
                                            theta_deg = metadata["angle"],
                                            binning = metadata["binning"])
-                output_file_path = f'{folder}/deskew_{name}'
+                if not os.path.isdir(f'{folder}/deskew') :
+                    os.makedirs(f'{folder}/deskew')
+                output_file_path = f'{folder}/deskew/deskew_{name}'
                 
             else :
                 volume_zyx_cp = cp.asarray(volume_zyx)
@@ -97,7 +99,9 @@ def auto_deskew_rotate_mda(folder, only_deskew = False,
                                            theta_deg = metadata["angle"],
                                            binning = metadata["binning"])
                 out_volume_np = cp.asnumpy(out_volume)
-                output_file_path = f'{folder}/deskew-rotate_{name}'
+                if not os.path.isdir(f'{folder}/deskew-rotate') :
+                    os.makedirs(f'{folder}/deskew-rotate')
+                output_file_path = f'{folder}/deskew-rotate/deskew-rotate_{name}'
 
             
             tifffile.imwrite(output_file_path, out_volume_np, bigtiff=True, compression='zlib')
