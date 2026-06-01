@@ -37,12 +37,12 @@ from hardware.functions_super_agilis import functions_super_agilis as piezzo
 
 class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement de new_data Signal
     new_data = Signal(np.ndarray, dict) # signal Qt émis avec image + datas
+    new_stabilisation = Signal(dict)
     
     def __init__(self,
                  camera_sn = '36805',
                  piezzo_port = None,
                  NIDAQ_out = "Dev1/port0/Line13",
-                 period_s = 60,
                  folder_path = Path(r"D:\Images_OPM\Metrologie-Developpement\20260527_RFS"),
                  parent = None):
         
@@ -78,7 +78,12 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                      "camera_sn" : self.camera_sn,
                      "calibration_data" : None,
                      "displacement" : 0.0,
-                     "piezzo_displacement" : 0.0,}
+                     "piezzo_displacement" : 0.0,
+                     }
+        
+        self.data_stabilisation = {"displacement" : 0.0,
+                                   "piezzo_displacement" : 0.0,
+                                   }
         
         self.connect_camera()
         
@@ -86,7 +91,10 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         
         self.preview_frame = None
         self.mode = 'preview'
-        self.stabilisation_run = False
+        
+        # Parameters for stabilisation and timelaps
+        self.stabilisation_period_s = 60
+        self.timelaps_period_s = 60
         
         # Start camera acquisition in separate thread
         self.camera_thread = TLCameraThread(self.tlcam)
@@ -99,6 +107,8 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         self.displacement = None
         self.piezzo_position = 0.0
         self.frame = None
+        
+        self.laser_on = False
         
         self.calibration = Calibration()
         
@@ -163,16 +173,16 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         
         self.mode = "calibration"
         
-        self.calibration.px_per_um_x = 3.01
-        self.calibration.px_per_um_y = 3.43
-        self.calibration.calculate_px_per_um_euclidian()
-        self.calibration.r2x = 0.9977
-        self.calibration.r2y = 0.9981
-        self.calibration.fw_step = 0.172
-        self.calibration.bw_step = -0.190
-        self.calibration.calibrated = True
+        # self.calibration.px_per_um_x = 3.01
+        # self.calibration.px_per_um_y = 3.43
+        # self.calibration.calculate_px_per_um_euclidian()
+        # self.calibration.r2x = 0.9977
+        # self.calibration.r2y = 0.9981
+        # self.calibration.fw_step = 0.172
+        # self.calibration.bw_step = -0.190
+        # self.calibration.calibrated = True
         
-        return
+        # return
         
         self.camera_thread.set_mode("on_demand")
         x_list = []
@@ -249,7 +259,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         self.mode = "preview"
         self.camera_thread.set_mode("preview")
         
-    def stabilisation(self, kp = 0.5, max_steps = 5, max_correction_in_row = 5, period_s = 60, drift_threshold = 0.5):
+    def stabilisation(self, kp = 0.5, max_steps = 5, max_correction_in_row = 5, drift_threshold = 0.5):
         """
         
 
@@ -261,9 +271,6 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             Maximum steps of the piezzo in one correction. The default is 5.
         max_correction_in_row : int, optional
             maximum correction steps in a row. The default is 5.
-        period_s : int, optional
-            Time in seconds between two corrections during stabilisation. Should be < 10.
-            The default is 60.
         drift_threshold : float, optional.
             Maximum displacement in px on the camera from the original position before correction
 
@@ -281,14 +288,13 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             print("stabilisation should be calibrated befor stabilisation")
             return
         
-        if period_s < 10 :
-            period_s = 10
+        if self.stabilisation_period_s < 10 :
+            self.stabilisation_period_s = 10
             print("period_s too small, set to 10s")
             
         if kp > 1 or kp < 0 :
             raise ValueError(f"kp shoulb be between 0 and 1, actual value {kp}")
         
-        self.stabilisation_run = True
         self.mode = "stabilisation"
         self.camera_thread.set_mode("on_demand")
         
@@ -350,8 +356,9 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                     
                     print(f'{current_time} - {x:.2f} - {y:.2f} - {displacement:.3f} - {piezzo_displacement}')
                     
-                    self.data_image["displacement"] = displacement
-                    self.data_image["piezzo_displacement"] = piezzo_displacement
+                    self.data_stabilisation["displacement"] = displacement
+                    self.data_stabilisation["piezzo_displacement"] = piezzo_displacement
+                    self.new_stabilisation.emit(self.data_stabilisation)
                     
                     with open(file_path, "a", encoding="utf-8") as file:
                         file.write(f'{current_time},{x:.2f},{y:.2f},{displacement:.3f},{piezzo_displacement}\n')
@@ -367,13 +374,13 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                     
                         correction_count = 0
                     
-                        while self.mode == "stabilisation" and timer.elapsed() < (period_s * 1000) :
+                        while self.mode == "stabilisation" and timer.elapsed() < (self.stabilisation_period_s * 1000) :
                             time.sleep(0.01) # Attendre 0 ms
 
             else :
                 correction_count = 0
                 
-                while self.mode == "stabilisation" and timer.elapsed() < (period_s * 1000) :
+                while self.mode == "stabilisation" and timer.elapsed() < (self.stabilisation_period_s * 1000) :
                     time.sleep(0.01) # Attendre 0 ms
                     
         self.camera_thread.set_mode("preview")
@@ -383,20 +390,8 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             print('stop stabilisation')
             self.mode = "preview"
         
-    def timelaps(self, period_s = 60):
+    def timelaps(self):
         """
-        Timelaps acquisition of 
-
-        Parameters
-        ----------
-        frames : TYPE, optional
-            DESCRIPTION. The default is 200.
-        period_s : TYPE, optional
-            DESCRIPTION. The default is 300.
-
-        Returns
-        -------
-        None.
 
         """
         if self.piezzo_port is None :
@@ -461,7 +456,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             
             # self.save_image(f"{frame*5} min_{x:.3f}_{y:.3f}.tif")
             
-            while self.mode == "timelaps" and timer.elapsed() < (period_s * 1000) :
+            while self.mode == "timelaps" and timer.elapsed() < (self.timelaps_period_s * 1000) :
                 time.sleep(0.01) # Attends 10ms
                 
     def stop_timelaps(self):
@@ -487,7 +482,8 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                 #     print(f'{x:.2f} - {y:.2f}')
                 return x, y
             elif n_points == 0 :
-                print("no point detected")
+                if self.laser_on :
+                    print("no point detected")
                 return None, None
             else :
                 print('more than 1 point detected')

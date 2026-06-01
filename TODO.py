@@ -39,7 +39,6 @@ Created on Tue Sep  2 09:03:43 2025
     ###################
     # LS3 acquisition #
     ###################
-# TODO : probléme sur le LS3 acquisition 1 channel, plus de 2 lignes ?
 
     #################
     # Sample Finder #
@@ -50,9 +49,8 @@ Created on Tue Sep  2 09:03:43 2025
 # TODO : mettre la sn de la caméra dans les paramétres du microscope
 
     #######################
-    # Imahe pre-treatment #
+    # Image pre-treatment #
     #######################
 # TODO : Afficher le nomde d'images détectées + canaux etc.
-# TODO : sauver les métadatas avec le nom de l'expérience et utiliser ce fichier
 # TODO : mettre les images créées dans un dossier deskew
 """

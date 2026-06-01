@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'ui_RFS.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.3
+## Created by: Qt User Interface Compiler version 6.10.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -23,11 +23,28 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(1085, 924)
-        self.horizontalLayout_13 = QHBoxLayout(Form)
-        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
+        Form.resize(1085, 1024)
+        self.horizontalLayout_15 = QHBoxLayout(Form)
+        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.horizontalLayout_14 = QHBoxLayout()
+        self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
+        self.label_saving = QLabel(Form)
+        self.label_saving.setObjectName(u"label_saving")
+
+        self.horizontalLayout_14.addWidget(self.label_saving)
+
+        self.pb_saving = QPushButton(Form)
+        self.pb_saving.setObjectName(u"pb_saving")
+        self.pb_saving.setMinimumSize(QSize(60, 0))
+        self.pb_saving.setMaximumSize(QSize(60, 16777215))
+
+        self.horizontalLayout_14.addWidget(self.pb_saving)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_14)
+
         self.horizontalLayout_6 = QHBoxLayout()
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.pb_laser_on = QPushButton(Form)
@@ -77,12 +94,66 @@ class Ui_Form(object):
 
         self.horizontalLayout_7.addWidget(self.label_stabilize)
 
+        self.sb_stabilise_time = QSpinBox(Form)
+        self.sb_stabilise_time.setObjectName(u"sb_stabilise_time")
+        self.sb_stabilise_time.setMinimum(10)
+        self.sb_stabilise_time.setMaximum(600)
+        self.sb_stabilise_time.setValue(60)
+
+        self.horizontalLayout_7.addWidget(self.sb_stabilise_time)
+
+        self.label_stabilise_time = QLabel(Form)
+        self.label_stabilise_time.setObjectName(u"label_stabilise_time")
+
+        self.horizontalLayout_7.addWidget(self.label_stabilise_time)
+
         self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_7.addItem(self.horizontalSpacer_3)
 
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_7)
+
+        self.horizontalLayout_13 = QHBoxLayout()
+        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
+        self.pb_timelaps = QPushButton(Form)
+        self.pb_timelaps.setObjectName(u"pb_timelaps")
+        self.pb_timelaps.setCheckable(True)
+
+        self.horizontalLayout_13.addWidget(self.pb_timelaps)
+
+        self.label_timelaps_icon = QLabel(Form)
+        self.label_timelaps_icon.setObjectName(u"label_timelaps_icon")
+        self.label_timelaps_icon.setMinimumSize(QSize(32, 32))
+        self.label_timelaps_icon.setMaximumSize(QSize(32, 32))
+
+        self.horizontalLayout_13.addWidget(self.label_timelaps_icon)
+
+        self.label_timelaps = QLabel(Form)
+        self.label_timelaps.setObjectName(u"label_timelaps")
+        self.label_timelaps.setMinimumSize(QSize(30, 0))
+
+        self.horizontalLayout_13.addWidget(self.label_timelaps)
+
+        self.sb_timelaps_time = QSpinBox(Form)
+        self.sb_timelaps_time.setObjectName(u"sb_timelaps_time")
+        self.sb_timelaps_time.setMinimum(10)
+        self.sb_timelaps_time.setMaximum(600)
+        self.sb_timelaps_time.setValue(60)
+
+        self.horizontalLayout_13.addWidget(self.sb_timelaps_time)
+
+        self.label_timelaps_time = QLabel(Form)
+        self.label_timelaps_time.setObjectName(u"label_timelaps_time")
+
+        self.horizontalLayout_13.addWidget(self.label_timelaps_time)
+
+        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_13.addItem(self.horizontalSpacer_10)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_13)
 
         self.horizontalLayout_8 = QHBoxLayout()
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
@@ -251,7 +322,7 @@ class Ui_Form(object):
         self.verticalLayout_5.addItem(self.verticalSpacer_3)
 
 
-        self.horizontalLayout_13.addLayout(self.verticalLayout_5)
+        self.horizontalLayout_15.addLayout(self.verticalLayout_5)
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
@@ -394,7 +465,7 @@ class Ui_Form(object):
 
         self.label_histogram_greyvalue = QLabel(Form)
         self.label_histogram_greyvalue.setObjectName(u"label_histogram_greyvalue")
-        self.label_histogram_greyvalue.setMinimumSize(QSize(400, 250))
+        self.label_histogram_greyvalue.setMinimumSize(QSize(400, 200))
         palette2 = QPalette()
         palette2.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush1)
         brush6 = QBrush(QColor(150, 150, 150, 255))
@@ -414,7 +485,7 @@ class Ui_Form(object):
 
         self.label_graph = QLabel(Form)
         self.label_graph.setObjectName(u"label_graph")
-        self.label_graph.setMinimumSize(QSize(720, 100))
+        self.label_graph.setMinimumSize(QSize(720, 250))
         palette3 = QPalette()
         palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush1)
         palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush5)
@@ -428,7 +499,7 @@ class Ui_Form(object):
         self.verticalLayout_4.addWidget(self.label_graph)
 
 
-        self.horizontalLayout_13.addLayout(self.verticalLayout_4)
+        self.horizontalLayout_15.addLayout(self.verticalLayout_4)
 
 
         self.retranslateUi(Form)
@@ -444,12 +515,19 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
+        self.label_saving.setText(QCoreApplication.translate("Form", u"TextLabel", None))
+        self.pb_saving.setText(QCoreApplication.translate("Form", u"saving", None))
         self.pb_laser_on.setText(QCoreApplication.translate("Form", u"Laser", None))
         self.label_laser_icon.setText("")
         self.label_laser.setText(QCoreApplication.translate("Form", u"OFF", None))
         self.pb_stabilize.setText(QCoreApplication.translate("Form", u"Stabilize", None))
         self.label_stabilize_icon.setText("")
         self.label_stabilize.setText(QCoreApplication.translate("Form", u"OFF", None))
+        self.label_stabilise_time.setText(QCoreApplication.translate("Form", u"T(s)", None))
+        self.pb_timelaps.setText(QCoreApplication.translate("Form", u"timelaps", None))
+        self.label_timelaps_icon.setText("")
+        self.label_timelaps.setText(QCoreApplication.translate("Form", u"OFF", None))
+        self.label_timelaps_time.setText(QCoreApplication.translate("Form", u"T(s)", None))
         self.label_serial_port.setText(QCoreApplication.translate("Form", u"Serial Port", None))
 #if QT_CONFIG(tooltip)
         self.comboBox_devices.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Select the serial port to which the piezo controller is connected.</p><p>Ensure the correct port is chosen for proper communication</p></body></html>", None))

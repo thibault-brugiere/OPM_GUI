@@ -16,15 +16,14 @@ pyside6-uic D:/Projets_Python/OPM_GUI/remote_focus_stabilisation/ui_RFS.ui -o D:
 import atexit
 import numpy as np
 import os
-from pylablib.devices import Thorlabs
 import sys
 import time as t
 
 import pylablib as pll
 pll.par['devices/dlls/thorlabs_tlcam'] = r"C:\Program Files\Thorlabs\ThorImageCAM\Bin\thorlabs_tsi_camera_sdk.dll"
 
-from PySide6.QtCore import QTimer, QThread, Signal, Qt
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtCore import QTimer, QThread, Signal, Qt, QElapsedTimer
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog
 from PySide6.QtGui import QPixmap, QImage
 
 # Ajoutez le dossier parent au sys.path si le fichier est exécuté directement
@@ -34,8 +33,10 @@ if __name__ == "__main__":
     sys.path.append(parent_dir)
     
 from remote_focus_stabilisation.ui_RFS import Ui_Form
+from remote_focus_stabilisation.Tools.plots import create_stabilisation_plot
 from remote_focus_stabilisation.main_stabilisation import remote_focus_stabilisation
 from hardware.functions_super_agilis import functions_super_agilis as piezzo
+from hardware.functions_DAQ import functions_daq
 
 from Functions_UI import functions_ui
 
@@ -59,6 +60,17 @@ class RFS_window(QWidget, Ui_Form):
         self.piezzo_step = piezzo_step # Values for the same and minimum piezzo step (~200nm)
         
         #
+        # Check the DAQ connection
+        #
+        
+        self.connected_daq = functions_daq.get_connected_daq_devices()
+
+        if len(self.connected_daq) == 0 :
+            print('WARNING: No ni-DAQ detected ! laser might be off')
+        
+        functions_daq.digital_out(False, self.NIDAQ_out) # Force the transmission light OFF
+        
+        #
         # Stabilization worker
         #
         
@@ -66,7 +78,8 @@ class RFS_window(QWidget, Ui_Form):
                                                         NIDAQ_out = NIDAQ_out)
         self.stabilisationThread = QThread()
         self.stabilisation.moveToThread(self.stabilisationThread)
-        self.stabilisation.new_data.connect(self.store_frame) # Channel received   
+        self.stabilisation.new_data.connect(self.store_frame) # Channel received
+        self.stabilisation.new_stabilisation.connect(self.update_graph)
         self.stabilisationThread.started.connect(self.stabilisation.on_init)
         
         self.start_calibration.connect(self.stabilisation.start_calibration)
@@ -103,6 +116,15 @@ class RFS_window(QWidget, Ui_Form):
         self.piezzo_connected = False # Connexion of the piezzo
         self.piezzo_position = 0.0 # Position of the piezzo in µm
         
+        self.laser_on = False
+        self.calibrated = False
+        
+        # Data for the graph
+        self.timer_graph = QElapsedTimer()
+        self.timer_graph.start()
+        self.displacements = []
+        self.piezzo_displacements = []
+        
         #
         # Detect material
         #
@@ -136,15 +158,17 @@ class RFS_window(QWidget, Ui_Form):
         self.pb_move_bw1.setIcon(self.bw1_icon)
         self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
         self.label_stabilize_icon.setPixmap(self.Green_Light_Icon_Off)
+        self.label_timelaps_icon.setPixmap(self.Green_Light_Icon_Off)
         
         self.tools_desactivation()
         
         ##############################################
         ## Connection between functions and buttons ##
         ##############################################
-        
+        self.pb_saving.clicked.connect(self.pb_saving_clicked)
         self.pb_laser_on.clicked.connect(self.pb_laser_on_clicked)
         self.pb_stabilize.clicked.connect(self.pb_stabilize_clicked)
+        self.pb_timelaps.clicked.connect(self.pb_timelaps_clicked)
         self.comboBox_devices.currentIndexChanged.connect(self.comboBox_devices_indexChanged)
         self.pb_calibrate.clicked.connect(self.pb_calibrate_clicked)
         self.sb_step_size.valueChanged.connect(self.sb_step_size_value_changed)
@@ -161,26 +185,57 @@ class RFS_window(QWidget, Ui_Form):
     #
     # Functions called by buttons
     #
+    def pb_saving_clicked(self):
+        folder = QFileDialog.getExistingDirectory(self, "Select Data Directory")
+        if folder is not None :
+            self.stabilisation.folder = folder
+
+            self.label_saving.setText(folder)
     
     def pb_laser_on_clicked(self):
         if self.pb_laser_on.isChecked():
             self.label_laser_icon.setPixmap(self.Red_Light_Icon_On)
             self.label_laser.setText('ON ')
-            self.start_timelaps.emit()
+            functions_daq.digital_out(True, self.NIDAQ_out) # Force the transmission light OFF
+            self.laser_on = True
+            self.stabilisation.laser_on = True
         else :
             self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
             self.label_laser.setText('OFF')
-            self.stop_timelaps.emit()
+            functions_daq.digital_out(False, self.NIDAQ_out) # Force the transmission light OFF
+            self.laser_on = False
+            self.stabilisation.laser_on = False
     
     def pb_stabilize_clicked(self):
         if self.pb_stabilize.isChecked():
-            self.label_stabilize_icon.setPixmap(self.Green_Light_Icon_On)
-            self.label_stabilize.setText('ON ')
-            self.start_stabilisation.emit()
+            if self.laser_on and self.piezzo_connected and self.calibrated :
+                self.label_stabilize_icon.setPixmap(self.Green_Light_Icon_On)
+                self.label_stabilize.setText('ON ')
+                self.stabilisation.stabilisation_period_s = self.sb_stabilise_time.value()
+                self.start_stabilisation.emit()
+                self.pb_laser_on.setDisabled(True)
+                self.pb_timelaps.setDisabled(True)
+            else :
+                self.pb_stabilize.setChecked(False)
         else :
             self.label_stabilize_icon.setPixmap(self.Green_Light_Icon_Off)
             self.label_stabilize.setText('OFF')
             self.stop_stabilisation.emit()
+            self.pb_laser_on.setEnabled(True)
+            self.pb_timelaps.setEnabled(True)
+            
+    def pb_timelaps_clicked(self) :
+        if self.pb_timelaps.isChecked():
+            self.label_timelaps_icon.setPixmap(self.Green_Light_Icon_On)
+            self.label_timelaps.setText('ON ')
+            self.stabilisation.timelaps_period_s = self.sb_timelaps_time.value()
+            self.start_timelaps.emit()
+            self.pb_stabilize.setDisabled(True)
+        else :
+            self.label_timelaps_icon.setPixmap(self.Green_Light_Icon_Off)
+            self.label_timelaps.setText('OFF')
+            self.stop_timelaps.emit()
+            self.pb_stabilize.setEnabled(True)
             
     def comboBox_devices_indexChanged(self):
         """"set the self.piezzo_port and self.connection status as well as the interface
@@ -205,7 +260,11 @@ class RFS_window(QWidget, Ui_Form):
         self.set_step_size()
     
     def pb_calibrate_clicked(self):
-        self.start_calibration.emit()
+        if self.laser_on :
+            self.start_calibration.emit()
+            self.calibrated = True
+        else :
+            self.label_message.setText("Laser should be on")    
             
     def sb_step_size_value_changed(self):
         """"set the step size in negative and positive direction
@@ -313,6 +372,9 @@ class RFS_window(QWidget, Ui_Form):
         self.slider_step_size.setDisabled(inactive)
         self.pb_move_bw1.setDisabled(inactive)
         self.pb_move_fw1.setDisabled(inactive)
+        self.pb_stabilize.setDisabled(inactive)
+        self.pb_timelaps.setDisabled(inactive)
+        self.pb_calibrate.setDisabled(inactive)
         
     def set_label_connection(self):
         "set self.label_connection depending in the device connection"
@@ -386,17 +448,32 @@ class RFS_window(QWidget, Ui_Form):
             self.label_image_preview.setPixmap(QPixmap.fromImage(cropped))
             self.label_message.setText(f'camera connected : {self.preview_data["camera_connected"]}')
             self.label_message.adjustSize()
-            
+                
         elif self.preview_frame is None :
             self.label_image_preview.setText("No image!")
             self.label_message.setText(f'camera connected : {self.preview_data["camera_connected"]}')
             self.label_message.adjustSize()
+                
+    def update_graph(self, data):
+            self.displacements.append(data["displacement"])
+            self.piezzo_displacements.append(data["piezzo_displacement"])
+                
+            size = self.label_graph.size()
+            w , h = size.width() , size.height()
+            
+            plot = create_stabilisation_plot(self.displacements,
+                                             self.piezzo_displacements,
+                                             w,
+                                             h,)
+            
+            self.label_graph.setPixmap(QPixmap.fromImage(plot))
+        
             
     def closeEvent(self, event):
         """Stop worker threads before closing the window."""
     
         try:
-    
+            
             if hasattr(self, "stabilisationThread"):
                 self.stabilisationThread.quit()
                 self.stabilisationThread.wait()
