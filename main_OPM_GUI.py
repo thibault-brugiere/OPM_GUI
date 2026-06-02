@@ -363,6 +363,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ## Tools
         self.action_Align_O2_O3.triggered.connect(self.openAlign_O2_O3)
         self.action_Piezo.triggered.connect(self.launch_pizo_program)
+        self.action_UI_Laser.triggered.connect(self.launch_laser_program)
         self.action_Z_Stack.triggered.connect(self.acquire_Z_Stack)
         self.action_Sample_finder.triggered.connect(self.opensample_finder)
         
@@ -1365,6 +1366,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     def launch_pizo_program(self):
         "launch program for piezo between O2 and O3 : CONEX-SAG_Utility "
         shortcut_path = os.path.join(os.path.dirname(__file__), 'shortcuts', 'CONEX-SAG_Utility')
+        self.launch_program(shortcut_path)
+        
+    def launch_laser_program(self):
+        shortcut_path = os.path.join(os.path.dirname(__file__), 'shortcuts', 'OxxiusLasers')
         self.launch_program(shortcut_path)
         
     def acquire_Z_Stack(self):

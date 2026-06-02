@@ -10,6 +10,7 @@ This widget connects to a Thorlabs camera (TLCamera via pylablib) and allows:
 """
 
 import atexit
+import json
 import numpy as np
 import os
 from pylablib.devices import Thorlabs
@@ -32,6 +33,7 @@ if __name__ == "__main__":
     
 from hardware.functions_DAQ import functions_daq
 from widget.ui_sample_finder import Ui_Form
+from configs.config import microscope
 
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
@@ -88,12 +90,12 @@ class sample_finder_Window(QWidget, Ui_Form):
         self.mirror = None
             
         if self.microscope is None :
+            self._load_microscope_settings()
+            
+        try:
+            self.mff_ser_num = self.microscope.trans_mirror_ser_num
+        except:
             self.mff_ser_num = 37009743
-        else:
-            try:
-                self.mff_ser_num = self.microscope.trans_mirror_ser_num
-            except:
-                self.mff_ser_num = 37009743
                 
         if self.microscope is None:
             self.daq_transmission = "Dev1/port0/line12"
@@ -119,9 +121,14 @@ class sample_finder_Window(QWidget, Ui_Form):
         self.tlcameras_list = Thorlabs.list_cameras_tlcam()
         
         if len(self.tlcameras_list) >=1:
-            self.tlcam = Thorlabs.ThorlabsTLCamera(serial=self.tlcameras_list[0])
-            self.tlcam.open()
-            self.tlcam.set_exposure(10/1000)
+            if self.microscope.trans_camera_ser_num in self.tlcameras_list :
+                self.tlcam = Thorlabs.ThorlabsTLCamera(self.microscope.trans_camera_ser_num)
+                self.tlcam.open()
+                self.tlcam.set_exposure(10/1000)
+            else :
+                self.tlcam = Thorlabs.ThorlabsTLCamera(serial=self.tlcameras_list[0])
+                self.tlcam.open()
+                self.tlcam.set_exposure(10/1000)
         else :
             self.label_message.setText("No camera connected")
             self.desactivate_camera_options()
@@ -236,6 +243,19 @@ class sample_finder_Window(QWidget, Ui_Form):
         self.comboBox_illuminator.setEnabled(False)
         self.pb_fluo.setEnabled(False)
         
+    
+    def _load_microscope_settings(self):
+        self.microscope = microscope()
+        file_path = os.path.join(parent_dir, 'configs/microscope_settings.json')
+        if os.path.exists(file_path):
+            try :
+                with open(file_path, 'r') as file:
+                    microscope_dict = json.load(file)
+                    
+                self.microscope.from_dict(microscope_dict)
+            except :
+                print("failed to load microscope dictionnary")
+                
     def desactivate_camera_options(self):
         """Disable the whole widget when no camera is connected."""
         self.setDisabled(True)

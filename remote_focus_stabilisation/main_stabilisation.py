@@ -135,10 +135,10 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                 self.tlcam.open()
                 self.tlcam.set_exposure(10/1000)
             else :
-                self.tlcam = Thorlabs.ThorlabsTLCamera(serial=self.tlcameras_list[0])
+                self.tlcam = Thorlabs.ThorlabsTLCamera(serial=self.tlcameras_list[1])
                 self.tlcam.open()
                 self.tlcam.set_exposure(10/1000)
-                self.data_image["camera_sn"] = self.tlcameras_list[0]
+                self.data_image["camera_sn"] = self.tlcameras_list[1]
                 
             self.data_image["camera_connected"] = True
             

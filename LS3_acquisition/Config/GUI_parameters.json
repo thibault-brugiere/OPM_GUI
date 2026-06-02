@@ -6,11 +6,11 @@
             "vchipsize": 2368,
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
-            "hsize": 512,
+            "hsize": 700,
             "hpos": 1960,
             "vsize": 512,
             "vpos": 928,
-            "exposure_time": 0.01,
+            "exposure_time": 0.03,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
             "image_readout_time": 0.0019296
@@ -35,20 +35,20 @@
             },
             "filter": "GFP",
             "camera": 0,
-            "exposure_time": 10.0
+            "exposure_time": 30.0
         }
     },
     "experiment": {
         "exp_name": "Image",
-        "data_path": "D:/Images_OPM/Metrologie-Developpement/20260528_TestBinning",
+        "data_path": "D:/Images_OPM/Metrologie-Developpement/20260601_TestLS3_1channel",
         "timepoints": 1,
         "time_intervals": 1.0,
         "total_duration": 10.0,
         "mode": "LS3",
         "scanner_position": 0,
         "scan_range": 20.279883589761845,
-        "stage_scan_range": 150,
-        "scanV_range": 0,
+        "stage_scan_range": 500,
+        "scanV_range": 500,
         "scanV_overlap": 0.25,
         "aspect_ratio": 3.3563985247091197,
         "n_steps": 26,
