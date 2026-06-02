@@ -59,7 +59,7 @@ class functions_super_agilis():
                 response = ser.readline().decode('ascii').strip()
                 # print(f"Response: {response}")
         except serial.SerialException as e:
-            print(f"Error opening serial port: {e}")
+            print(f"Error opening serial port and no response: {e}")
             return '0000'
             
         return response

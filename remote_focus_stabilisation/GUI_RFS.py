@@ -78,9 +78,10 @@ class RFS_window(QWidget, Ui_Form):
                                                         NIDAQ_out = NIDAQ_out)
         self.stabilisationThread = QThread()
         self.stabilisation.moveToThread(self.stabilisationThread)
+        self.stabilisationThread.started.connect(self.stabilisation.on_init)
+        
         self.stabilisation.new_data.connect(self.store_frame) # Channel received
         self.stabilisation.new_stabilisation.connect(self.update_graph)
-        self.stabilisationThread.started.connect(self.stabilisation.on_init)
         
         self.start_calibration.connect(self.stabilisation.start_calibration)
         self.start_timelaps.connect(self.stabilisation.timelaps)
@@ -215,6 +216,8 @@ class RFS_window(QWidget, Ui_Form):
                 self.start_stabilisation.emit()
                 self.pb_laser_on.setDisabled(True)
                 self.pb_timelaps.setDisabled(True)
+                self.sb_stabilise_time.setDisabled(True)
+                self.pb_timelaps.setDisabled(True)
             else :
                 self.pb_stabilize.setChecked(False)
         else :
@@ -222,6 +225,8 @@ class RFS_window(QWidget, Ui_Form):
             self.label_stabilize.setText('OFF')
             self.stop_stabilisation.emit()
             self.pb_laser_on.setEnabled(True)
+            self.pb_timelaps.setEnabled(True)
+            self.sb_stabilise_time.setEnabled(True)
             self.pb_timelaps.setEnabled(True)
             
     def pb_timelaps_clicked(self) :
@@ -403,6 +408,9 @@ class RFS_window(QWidget, Ui_Form):
         None.
 
         """
+        if not self.piezzo_connected :
+            return
+        
         backward = self.piezzo_step[0] # Values for the same and minimum step (~200nm)
         forward = self.piezzo_step[1]
         

@@ -71,7 +71,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         
         self.parent = parent
         
-        self.on_init()
+        # self.on_init()
     
     def on_init(self):
         self.data_image = {"camera_connected" : False,
@@ -182,6 +182,10 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         # self.calibration.bw_step = -0.190
         # self.calibration.calibrated = True
         
+        # print(f'axe x : {self.calibration.px_per_um_x:.2f} px/µm - r² : {( self.calibration.r2x ** 2):.4f}')
+        # print(f'axe x : {self.calibration.px_per_um_y:.2f} px/µm - r² : {(self.calibration.r2y ** 2):.4f}')
+        # print(f"fw step : {self.calibration.fw_step:.3f} - bw step = {self.calibration.bw_step:.3f}")
+        
         # return
         
         self.camera_thread.set_mode("on_demand")
@@ -286,6 +290,10 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         
         if self.calibration.calibrated == False :
             print("stabilisation should be calibrated befor stabilisation")
+            return
+        
+        if self.mode != "preview":
+            print(f'Can not start timelaps, {self.mode} running')
             return
         
         if self.stabilisation_period_s < 10 :
@@ -396,6 +404,10 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         """
         if self.piezzo_port is None :
             print("Pizzo port not set")
+            return
+        
+        if self.mode != "preview":
+            print(f'Can not start timelaps, {self.mode} running')
             return
         
         self.mode == "timelaps"
@@ -528,6 +540,16 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                 self.tlcam.close()
             except Exception:
                 pass
+            
+    def closeEvent(self, event):
+    
+        if self.tlcam is not None:
+            try:
+                self.tlcam.close()
+            except Exception as e:
+                print(f"Error while closing camera: {e}")
+    
+        event.accept()
             
 class Calibration():
     def __init__(self) :

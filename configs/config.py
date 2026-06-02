@@ -88,6 +88,8 @@ class microscope(object):
         
         # Preview
         self.trans_mirror_ser_num = 37009743
+        self.trans_camera_ser_num = 31842
+        self.stabilise_camera_ser_num = 36805
         
         # Filters
         self.filter_port = "COM?"
@@ -220,7 +222,11 @@ class microscope(object):
             
             # stage
             "stage_port" : self.stage_port,
+            
+            # Preview
             "trans_mirror_ser_num" : self.trans_mirror_ser_num,
+            "trans_camera_ser_num" : self.trans_camera_ser_num,
+            "stabilise_camera_ser_num" : self.stabilise_camera_ser_num,
             
             # Filters
             "filter_port" : self.filter_port,
@@ -251,6 +257,8 @@ class microscope(object):
         self.galvo_flyback_time = microscope_dict["galvo_flyback_time"]
         self.stage_port = microscope_dict["stage_port"]
         self.trans_mirror_ser_num = microscope_dict["trans_mirror_ser_num"]
+        self.trans_camera_ser_num = microscope_dict["trans_camera_ser_num"]
+        self.stabilise_camera_ser_num = microscope_dict["stabilise_camera_ser_num"]
         self.filter_port = microscope_dict["filter_port"]
         self.filter_changing_time = microscope_dict["filter_changing_time"]
         self.filters = microscope_dict["filters"]
