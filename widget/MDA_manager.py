@@ -98,10 +98,15 @@ class mda_mannager(QWidget, Ui_Form):
         self.volumes_recived = 0
         
             # Pixel shift between two images of the volume for deskewing
-        self.pixel_shift = compute_px_shift(self.mda.config.experiment.aspect_ratio,
-                                            self.mda.config.microscope.tilt_angle,
-                                            self.mda.config.cameras[0].binning,
-                                            unit = "deg")
+        if self.mda.config.experiment.mode == "single_plane" :
+            self.total_timepoints = int(np.ceil(self.mda.config.experiment.timepoints / 100))
+            self.pixel_shift = 0 # Previex image will be a maximum projection of 100 images
+            
+        else :
+            self.pixel_shift = compute_px_shift(self.mda.config.experiment.aspect_ratio,
+                                                self.mda.config.microscope.tilt_angle,
+                                                self.mda.config.cameras[0].binning,
+                                                unit = "deg")
         
         self.ellapsed_time = time.time()
         

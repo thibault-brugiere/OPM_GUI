@@ -964,6 +964,8 @@ class Ui_MainWindow(object):
         self.spinBox_scanV_overlap = QSpinBox(self.centralwidget)
         self.spinBox_scanV_overlap.setObjectName(u"spinBox_scanV_overlap")
         self.spinBox_scanV_overlap.setMaximum(50)
+        self.spinBox_scanV_overlap.setSingleStep(1)
+        self.spinBox_scanV_overlap.setValue(25)
 
         self.horizontalLayout_40.addWidget(self.spinBox_scanV_overlap)
 
@@ -1188,8 +1190,20 @@ class Ui_MainWindow(object):
         self.pb_fast_acquisition.setObjectName(u"pb_fast_acquisition")
         self.pb_fast_acquisition.setFont(font)
         self.pb_fast_acquisition.setAutoFillBackground(False)
+        self.pb_fast_acquisition.setCheckable(True)
 
         self.horizontalLayout_25.addWidget(self.pb_fast_acquisition)
+
+        self.horizontalSpacer_19 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_25.addItem(self.horizontalSpacer_19)
+
+        self.pb_single_plan_acquisition = QPushButton(self.centralwidget)
+        self.pb_single_plan_acquisition.setObjectName(u"pb_single_plan_acquisition")
+        self.pb_single_plan_acquisition.setFont(font)
+        self.pb_single_plan_acquisition.setCheckable(True)
+
+        self.horizontalLayout_25.addWidget(self.pb_single_plan_acquisition)
 
         self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -1538,7 +1552,7 @@ class Ui_MainWindow(object):
 "Pixels above this value will appear white.", None))
 #endif // QT_CONFIG(tooltip)
         self.label_max_grayscale.setText(QCoreApplication.translate("MainWindow", u"Max", None))
-        self.pb_MinMax_grayscale.setText(QCoreApplication.translate("MainWindow", u"PushButton", None))
+        self.pb_MinMax_grayscale.setText(QCoreApplication.translate("MainWindow", u"Min / Max", None))
 #if QT_CONFIG(tooltip)
         self.pb_auto_grayscale.setToolTip(QCoreApplication.translate("MainWindow", u"Automatically adjust the minimum and maximum grey values based on the image histogram.", None))
 #endif // QT_CONFIG(tooltip)
@@ -1568,6 +1582,8 @@ class Ui_MainWindow(object):
         self.pb_fast_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Start image acquisition using the Fast Acquisition program.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_fast_acquisition.setText(QCoreApplication.translate("MainWindow", u"Fast\n"
+"Acquisition", None))
+        self.pb_single_plan_acquisition.setText(QCoreApplication.translate("MainWindow", u"Single Plane\n"
 "Acquisition", None))
 #if QT_CONFIG(tooltip)
         self.pb_multidimensional_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"Start a multidimensional acquisition, including multiple channels, positions, or timepoints.", None))

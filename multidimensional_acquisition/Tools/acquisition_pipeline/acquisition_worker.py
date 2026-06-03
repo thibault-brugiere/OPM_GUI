@@ -76,12 +76,18 @@ class AcquisitionWorker(QObject):
         
         self.n_frames = self.n_steps * self.timepoints * len(self.channel_names)
         self.n_volumes = self.timepoints * len(self.channel_names)
+        self.frame_in_last_file = 0
         
         if self.mode == "standard" :
             self.steps_per_volume = n_steps
         elif self.mode == "fast" :
             # En mode fast les volumes sont composés de n_steps + 1 images (sauf le dernier)
             self.steps_per_volume = n_steps + 1
+        elif self.mode == "single_plane" :
+            self.steps_per_volume = 100
+            self.n_steps = 100
+            self.n_volumes = int(np.ceil(self.timepoints / self.steps_per_volume))
+            self.frame_in_last_file = int(self.timepoints - self.steps_per_volume * (self.n_volumes - 1))
 
         self.save_type = save_type.upper()
 
@@ -185,11 +191,15 @@ class AcquisitionWorker(QObject):
             for frame in frames:
                 
                 # --------- Calcul du nombre d'images attendues pour ce volume ----------
-                # Dernier volume : attendre seulement n_steps (pas n_steps + 1)
+                # Dernier volume pour "fast": attendre seulement n_steps (pas n_steps + 1)
+                # pour "single frame"
                 if (actual_volume == self.n_volumes - 1) :
                     expected_slices = self.n_steps
                     if self.mode == "fast" :
                         current_buffer[self.n_steps] = 0
+                    elif self.mode == "single_plane" :
+                        current_buffer[self.frame_in_last_file]
+                        expected_slices = self.frame_in_last_file
                 else:
                     expected_slices = self.steps_per_volume  # (n_steps+1) en fast, n_steps sinon
 
@@ -241,8 +251,11 @@ class AcquisitionWorker(QObject):
             if not isinstance(frame, ImageFrame):
                 print(f"[ERROR] Unexpected object in save queue: {type(frame)}")
                 continue
-
-            buffer = frame.buffer[0 : self.n_steps] # To get the right number of images saved
+            
+            if self.mode == "single_plane" and (frame.volume_id == self.n_volumes - 1) :
+                buffer = frame.buffer[0 : self.frame_in_last_file] # To get the right number of images saved
+            else :
+                buffer = frame.buffer[0 : self.n_steps] # To get the right number of images saved
             volume_id = frame.volume_id
             channel = frame.channel
 

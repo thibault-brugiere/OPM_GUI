@@ -1953,6 +1953,12 @@ scanning parameters</string>
           <property name="maximum">
            <number>50</number>
           </property>
+          <property name="singleStep">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>25</number>
+          </property>
          </widget>
         </item>
         <item>
@@ -2211,7 +2217,7 @@ Pixels above this value will appear white.</string>
             <item>
              <widget class="QPushButton" name="pb_MinMax_grayscale">
               <property name="text">
-               <string>PushButton</string>
+               <string>Min / Max</string>
               </property>
              </widget>
             </item>
@@ -2466,6 +2472,43 @@ Pixels above this value will appear white.</string>
           <property name="text">
            <string>Fast
 Acquisition</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_19">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pb_single_plan_acquisition">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start image acquisition using the Fast single plane program.&lt;/p&gt;&lt;p&gt;Needs to set number of channels to 1 and Scan Range to 0.0&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Single Plane
+Acquisition</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
           </property>
          </widget>
         </item>

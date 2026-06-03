@@ -38,6 +38,7 @@ from multidimensional_acquisition.Tools.acquisition_pipeline.count_worker import
 from multidimensional_acquisition.Tools.saving import prepare_saving_directory, save_metadata
 from multidimensional_acquisition.Tools.signal_generators.multi_channel import generate_channel_signals
 from multidimensional_acquisition.Tools.signal_generators.multi_channel_ultra_fast import generate_channel_signals as generate_signals_fast
+from multidimensional_acquisition.Tools.signal_generators.single_plane import generate_single_plan_signals as generate_signals_single_plan
 
 class MultidimensionalAcquisition:
     def __init__(self, hcams=None, filterwheel = None, frequency=1e5):
@@ -54,7 +55,7 @@ class MultidimensionalAcquisition:
         self.config = config(dirname=config_path)
         self.n_channels = len(self.config.channels)
         
-        if self.config.experiment.mode not in ["fast","standard"]:
+        if self.config.experiment.mode not in ["fast","standard","single_plane"]:
             raise NameError("LS3 Error: not the right experiment mode: {self.config.experiment.mode}")
         
         self.filterseq = [] # Liste des filtres dans l'ordre utilisé
@@ -62,7 +63,20 @@ class MultidimensionalAcquisition:
             self.filterseq.append(self.config.channels[n].filter)
             
         self.filters_mouve = mouvement_sequence(self.config.microscope.filters , self.filterseq)
+        
+        if self.config.experiment.mode == "single_plane" :
+            min_exposure_time = math.ceil(100*self.config.cameras[0].image_readout_time*1000)/100
+            if self.config.experiment.channels[0].exposure_time < min_exposure_time:
+                self.config.experiment.channels[0].exposure_time = min_exposure_time
+                print(f"[INFO] Exposure time to low for {self.config.experiment.channel[0]}, exposure time set to {min_exposure_time}ms")
+            self.config.experiment.time_intervals = self.config.experiment.channels[0].exposure_time / 1000
             
+            self.volume_tensions_library = generate_signals_single_plan(self.config.cameras,
+                                                                        self.config.channels,
+                                                                        self.config.experiment,
+                                                                        self.config.microscope,
+                                                                        frequency = self.frequency)
+                
         if self.config.experiment.mode == "standard" :
             self.volume_tensions_library = generate_channel_signals(self.config.cameras,
                                                                     self.config.channels,
@@ -81,23 +95,23 @@ class MultidimensionalAcquisition:
                                                                  self.config.channels,
                                                                  self.config.experiment,
                                                                  self.config.microscope,
-                                                                 frequency = 1e5)
+                                                                 frequency = self.frequency)
             print("[Main MDA] channel signals generated")
-            
-        volume_duration = len(self.volume_tensions_library['tensions_galvo']) / self.frequency
-        print(f'[Main MDA] volume duration : {volume_duration} s')
-        if volume_duration > self.config.experiment.time_intervals + 0.001:
-            self.config.experiment.time_intervals = volume_duration + 0.001
-            print(f"[INFO] Time interval too short. Adjusted to : {volume_duration + 0.001} s to match volume duration.")
+        
+        
+        if self.config.experiment.mode == "standard" or self.config.experiment.mode == "fast" :
+            volume_duration = len(self.volume_tensions_library['tensions_galvo']) / self.frequency
+            print(f'[Main MDA] volume duration : {volume_duration} s')
+            if volume_duration > self.config.experiment.time_intervals + 0.001:
+                self.config.experiment.time_intervals = volume_duration + 0.001
+                print(f"[INFO] Time interval too short. Adjusted to : {volume_duration + 0.001} s to match volume duration.")
         
         # Prepare saving directory and metadata
         self.save_dir = prepare_saving_directory(self.config.experiment.data_path,
                                                  self.config.experiment.exp_name)
         save_metadata(self.config, self.save_dir)
         self.config.copy_parameters(self.save_dir)
-        # self.config.copy_parameters(self.save_dir,
-        #                             f'{self.config.experiment.exp_name}_GUI_parameters') # TODO : il faut modifier le pré-traitement pour que cela fonctionne avec le nom de fichier
-
+        
         # Placeholders for hardware
         self.cameras_acquisition = []
         self.acquisition_workers = []

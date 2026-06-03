@@ -127,7 +127,11 @@ class camera_acquisition():
             self.hcam.cav["trigger_mode"] = 1 # 1=normal, 2=start
             self.hcam.cav["trigger_active"] = 3 # 1=edge, 2=level, 3=syncreadout
             # self.hcam.cav["trigger_global_exposure"] = 5 # 3 = delayed,  2 = global reset, # 5 Global reset ?
-        
+            
+        elif self.experiment.mode == "single_plane" :
+            self.hcam.cav["trigger_mode"] = 1 # 1=normal, 2=start
+            self.hcam.cav["trigger_active"] = 3 # 1=edge, 2=level, 3=syncreadout
+            
         self.hcam.cav["trigger_polarity"] = 2 # 1=negative, 2=positive
         self.hcam.cav["trigger_delay"] = 0 # in µs
         

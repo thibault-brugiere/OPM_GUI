@@ -257,6 +257,8 @@ class functions_ui():
         
         if mode == "fast" :
             estimated_time = n_steps * exposure_time + galvo_response_time * 2
+        elif mode == "single_plane":
+            estimated_time = n_steps * exposure_time
         else :
             estimated_time = n_steps * (exposure_time + max(image_readout_time, galvo_response_time)) + galvo_response_time * 2
         
