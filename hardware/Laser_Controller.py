@@ -233,7 +233,7 @@ class LaserController:
         Note :
             S'il n'est pas possible d'envoyer une commande au laser, vérifier 
             via le Gui du que la comment ?CDC renvoie 1. sinon envoyer
-            la commande CDC = 1
+            la commande CDC 1
             
             Voici la liste des fonctions utiles pour le laser oxxius.
             PLn xx :  set the laser power of the line n to xx mw

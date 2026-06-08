@@ -198,7 +198,7 @@ class AcquisitionWorker(QObject):
                     if self.mode == "fast" :
                         current_buffer[self.n_steps] = 0
                     elif self.mode == "single_plane" :
-                        current_buffer[self.frame_in_last_file]
+                        current_buffer[self.frame_in_last_file - 1]
                         expected_slices = self.frame_in_last_file
                 else:
                     expected_slices = self.steps_per_volume  # (n_steps+1) en fast, n_steps sinon

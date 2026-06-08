@@ -68,7 +68,7 @@ class MultidimensionalAcquisition:
             min_exposure_time = math.ceil(100*self.config.cameras[0].image_readout_time*1000)/100
             if self.config.experiment.channels[0].exposure_time < min_exposure_time:
                 self.config.experiment.channels[0].exposure_time = min_exposure_time
-                print(f"[INFO] Exposure time to low for {self.config.experiment.channel[0]}, exposure time set to {min_exposure_time}ms")
+                print(f"[INFO] Exposure time to low for {self.config.experiment.channels[0].channel_id}, exposure time set to {min_exposure_time}ms")
             self.config.experiment.time_intervals = self.config.experiment.channels[0].exposure_time / 1000
             
             self.volume_tensions_library = generate_signals_single_plan(self.config.cameras,
