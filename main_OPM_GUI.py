@@ -343,6 +343,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             ## Acquisition
         self.pb_fast_acquisition.clicked.connect(self.pb_fast_acquisition_clicked_connect)
         self.pb_single_plan_acquisition.clicked.connect(self.pb_single_plan_acquisition_clicked_connect)
+        self.pb_multi_position_acquisition.clicked.connect(self.pb_multi_position_acquisition_clicked_connect)
         self.pb_multidimensional_acquisition.clicked.connect(self.pb_multidimensional_acquisition_clicked_connect)
         self.pb_LS3_acquisition.clicked.connect(self.pb_LS3_acquisition_clicked_connect)
         
@@ -1275,6 +1276,13 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.spinBox_channel_exposure_time.setMinimum(0.01)
                 
             self.label_volume_duration_update()
+        
+    def pb_multi_position_acquisition_clicked_connect(self):
+        print("Multi position acquisition not implemented yet")
+        self.status_bar.showMessage("Multi position acquisition  not implemented yet")
+        return
+    
+        self.experiment.mode = "multi_position"
             
     def pb_multidimensional_acquisition_clicked_connect(self):
         if self.pb_fast_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
