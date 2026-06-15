@@ -14,7 +14,7 @@ import sys
 import time as t
 
 from PySide6.QtCore import QTimer, QThread, Signal, Qt, QElapsedTimer
-from PySide6.QtWidgets import QApplication, QWidget, QFileDialog
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
 from PySide6.QtWidgets import QCheckBox, QLineEdit, QSpinBox, QDoubleSpinBox, QPushButton
 from PySide6.QtGui import QPixmap, QImage, QIcon
 
@@ -41,6 +41,8 @@ class multi_position_edditor(QWidget, Ui_Form):
         self.on_init()
             
     def on_init(self):
+        self.setWindowTitle('Multi position')
+        
         self.stage_connected = False
         if self.port is not None :
             if self.test_port() :
@@ -115,10 +117,12 @@ class multi_position_edditor(QWidget, Ui_Form):
         self._refresh_table()
     
     def pb_remove_all_positions_clicked(self):
-        for _ in range(len(self.positions)) :
-            self.positions.remove(0)
-        
-        self._refresh_table()
+        message = "Would you like to\nreinitialize all the position\nif Yes, all positions will be deleted"
+        if self.ask_user(message = message):
+            for _ in range(len(self.positions)) :
+                self.positions.remove(0)
+            
+            self._refresh_table()
     
     def pb_sort_snake_clicked(self):
         self.positions.sort_snake_xy()
@@ -249,8 +253,9 @@ class multi_position_edditor(QWidget, Ui_Form):
         self._refresh_table()
         
     def remove_position(self,r):
-        self.positions.remove(r)
-        self._refresh_table()
+        if self.ask_user() :
+            self.positions.remove(r)
+            self._refresh_table()
             
     def _create_icon(self, path:str):
         if __name__ == "__main__": # Si jamais la fenêtre est appelée depuis ce fichier
@@ -259,6 +264,31 @@ class multi_position_edditor(QWidget, Ui_Form):
             icon_path = path
             
         return QIcon(icon_path)
+    
+    def ask_user(self, title = "Confirm deletion", message = "Would you like to delete position ?"):
+        result = QMessageBox.question(self,
+                                      title,
+                                      message,
+                                      (QMessageBox.Yes |
+                                       QMessageBox.No))
+        
+        if result == QMessageBox.Yes :
+            return True
+        else:
+            return False
+    
+    def closeEvent(self, event):
+        
+        result = QMessageBox.question(self,
+                                      "Confirm Exit...",
+                                      "Do you want to exit ?",
+                                      (QMessageBox.Yes |
+                                       QMessageBox.No))
+        if result == QMessageBox.Yes:
+            
+            event.accept()
+        else:
+            event.ignore()
 
 
 ##############################################################################
