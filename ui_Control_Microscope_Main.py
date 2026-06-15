@@ -1188,22 +1188,31 @@ class Ui_MainWindow(object):
 
         self.pb_fast_acquisition = QPushButton(self.centralwidget)
         self.pb_fast_acquisition.setObjectName(u"pb_fast_acquisition")
-        self.pb_fast_acquisition.setFont(font)
+        font2 = QFont()
+        font2.setPointSize(10)
+        font2.setBold(False)
+        self.pb_fast_acquisition.setFont(font2)
         self.pb_fast_acquisition.setAutoFillBackground(False)
         self.pb_fast_acquisition.setCheckable(True)
 
         self.horizontalLayout_25.addWidget(self.pb_fast_acquisition)
 
+        self.pb_single_plan_acquisition = QPushButton(self.centralwidget)
+        self.pb_single_plan_acquisition.setObjectName(u"pb_single_plan_acquisition")
+        self.pb_single_plan_acquisition.setFont(font2)
+        self.pb_single_plan_acquisition.setCheckable(True)
+
+        self.horizontalLayout_25.addWidget(self.pb_single_plan_acquisition)
+
         self.horizontalSpacer_19 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_25.addItem(self.horizontalSpacer_19)
 
-        self.pb_single_plan_acquisition = QPushButton(self.centralwidget)
-        self.pb_single_plan_acquisition.setObjectName(u"pb_single_plan_acquisition")
-        self.pb_single_plan_acquisition.setFont(font)
-        self.pb_single_plan_acquisition.setCheckable(True)
+        self.pb_multi_position_acquisition = QPushButton(self.centralwidget)
+        self.pb_multi_position_acquisition.setObjectName(u"pb_multi_position_acquisition")
+        self.pb_multi_position_acquisition.setFont(font)
 
-        self.horizontalLayout_25.addWidget(self.pb_single_plan_acquisition)
+        self.horizontalLayout_25.addWidget(self.pb_multi_position_acquisition)
 
         self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -1584,6 +1593,8 @@ class Ui_MainWindow(object):
         self.pb_fast_acquisition.setText(QCoreApplication.translate("MainWindow", u"Fast\n"
 "Acquisition", None))
         self.pb_single_plan_acquisition.setText(QCoreApplication.translate("MainWindow", u"Single Plane\n"
+"Acquisition", None))
+        self.pb_multi_position_acquisition.setText(QCoreApplication.translate("MainWindow", u"Multi Position\n"
 "Acquisition", None))
 #if QT_CONFIG(tooltip)
         self.pb_multidimensional_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"Start a multidimensional acquisition, including multiple channels, positions, or timepoints.", None))

@@ -175,7 +175,7 @@ class LaserController:
             return
         
         if self.OxxiusCombiner_command[channel] is None :
-            pass
+            return
         
         # Clamp percent to [0, 100] for safety (adjust if you allow >100%).
         power = max(0.0, min(100.0, float(power)))

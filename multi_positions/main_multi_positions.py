@@ -170,7 +170,7 @@ class multi_position_edditor(QWidget, Ui_Form):
             
             pb_icons = [self._create_icon('Icons/Arrows_09.png'),
                         self._create_icon('Icons/Arrows_10.png'),
-                        "Move to", "Reset", "Remove"]
+                        "Move to", "Set", "Remove"]
             column = 5
             
             for i, fun in enumerate(pb_functions) :
@@ -195,19 +195,21 @@ class multi_position_edditor(QWidget, Ui_Form):
         
     def set_name(self, r):
         line_edit = self.table_positions.cellWidget(r,1)
-        name = line_edit.text()
-        self.positions[r].name = name
+        if line_edit is not None :
+            name = line_edit.text()
+            self.positions[r].name = name
         
     def set_axe_value(self, r, column, axe):
         sb = self.table_positions.cellWidget(r, column)
-        if axe == "x" :
-            self.positions[r].x = sb.value()
-        elif axe == "y" :
-            self.positions[r].y = sb.value()
-        elif axe == "z" :
-            self.positions[r].z = sb.value()
-        else :
-            raise ValueError(f"Axe should be x, y or z, actually {axe}")
+        if sb is not None :
+            if axe == "x" :
+                self.positions[r].x = sb.value()
+            elif axe == "y" :
+                self.positions[r].y = sb.value()
+            elif axe == "z" :
+                self.positions[r].z = sb.value()
+            else :
+                raise ValueError(f"Axe should be x, y or z, actually {axe}")
             
     def get_axe_value(self, r, axe:str) :
         if axe == "x" :

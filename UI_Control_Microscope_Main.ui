@@ -2459,8 +2459,8 @@ Pixels above this value will appear white.</string>
           <property name="font">
            <font>
             <pointsize>10</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
+            <weight>50</weight>
+            <bold>false</bold>
            </font>
           </property>
           <property name="toolTip">
@@ -2471,6 +2471,24 @@ Pixels above this value will appear white.</string>
           </property>
           <property name="text">
            <string>Fast
+Acquisition</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pb_single_plan_acquisition">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Single Plane
 Acquisition</string>
           </property>
           <property name="checkable">
@@ -2492,7 +2510,7 @@ Acquisition</string>
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pb_single_plan_acquisition">
+         <widget class="QPushButton" name="pb_multi_position_acquisition">
           <property name="font">
            <font>
             <pointsize>10</pointsize>
@@ -2500,15 +2518,9 @@ Acquisition</string>
             <bold>true</bold>
            </font>
           </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start image acquisition using the Fast single plane program.&lt;/p&gt;&lt;p&gt;Needs to set number of channels to 1 and Scan Range to 0.0&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
           <property name="text">
-           <string>Single Plane
+           <string>Multi Position
 Acquisition</string>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
           </property>
          </widget>
         </item>

@@ -93,7 +93,7 @@ def parse_mda_filenames(folder: str | Path) -> dict[str, Any]:
         "images": sorted(images_set),
     }
 
-_PATTERN_LS3 = re.compile(r"^Position_(?P<position>\d{4})_(?P<channel>[A-Za-z0-9]+)_file_(?P<index>\d{4})$")
+_PATTERN_LS3 = re.compile(r"^Position_(?P<position>\d{4})_(?P<channel>[A-Za-z0-9.-]+)_file_(?P<index>\d{4})$")
 
 def parse_ls3_filenames(folder: str | Path) -> dict[str, Any]:
     """
@@ -177,7 +177,7 @@ def parse_ls3_filenames(folder: str | Path) -> dict[str, Any]:
         "index": sorted(index_set),
     }
 
-_PATTERN_LS3_ZARR = re.compile(r"^Position_(?P<position>\d{4})_(?P<channel>[A-Za-z0-9]+)_file$")
+_PATTERN_LS3_ZARR = re.compile(r"^Position_(?P<position>\d{4})_(?P<channel>[A-Za-z0-9.-]+)_file$")
 
 def parse_ls3_foldernames(folder: str | Path) -> dict[str, Any]:
     """
@@ -243,7 +243,7 @@ def parse_ls3_foldernames(folder: str | Path) -> dict[str, Any]:
         "channels": sorted(channels_set),
     }
 
-_PATTERN_LS3_DESKEW_ZARR = re.compile(r"^deskew_Position_(?P<position>\d{4})_(?P<channel>[A-Za-z0-9]+)_file$")
+_PATTERN_LS3_DESKEW_ZARR = re.compile(r"^deskew_Position_(?P<position>\d{4})_(?P<channel>[A-Za-z0-9.-]+)_file$")
 
 def parse_ls3_deskew_foldernames(folder: str | Path) -> dict[str, Any]:
     """

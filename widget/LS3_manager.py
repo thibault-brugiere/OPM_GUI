@@ -87,7 +87,7 @@ class ls3_mannager(QWidget, Ui_Form):
         # Values for displaying, calculation
         #
         
-        self.total_timepoints = self.ls3.config.experiment.timepoints
+        self.total_timepoints = 1 #self.ls3.config.experiment.timepoints
         self.total_lines = self.ls3.n_lines
         self.total_channels = len(self.ls3.config.channels)
         self.total_images = self.total_timepoints * self.ls3.config.experiment.n_steps * self.total_channels * self.total_lines

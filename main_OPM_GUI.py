@@ -1300,25 +1300,25 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.pb_laser_emission.setChecked(False)
             self.pb_laser_emission_clicked()
         if self.active_channels and self.active_channels[0] != 'None' :
-            try:
-                channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
-                send_to_multidimensionnal_acquisition(self.camera,
-                                                      self.filterWheel,
-                                                      channel_acquisition,
-                                                      self.experiment,
-                                                      self.microscope,
-                                                      dirname = 'multidimensional_acquisition/Config',
-                                                      filename = 'GUI_parameters.json')
+            # try:
+            channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
+            send_to_multidimensionnal_acquisition(self.camera,
+                                                  self.filterWheel,
+                                                  channel_acquisition,
+                                                  self.experiment,
+                                                  self.microscope,
+                                                  dirname = 'multidimensional_acquisition/Config',
+                                                  filename = 'GUI_parameters.json')
+            
+            self.status_bar.showMessage("start multidimensional acquisition")
+            
+            MDA = MultidimensionalAcquisition(self.hcam, self.filterWheel)
+            self.MDA_manager = mda_mannager(MDA, self)
+            self.MDA_manager.show()
+            self.MDA_manager.start_acquisition()
                 
-                self.status_bar.showMessage("start multidimensional acquisition")
-                
-                MDA = MultidimensionalAcquisition(self.hcam, self.filterWheel)
-                self.MDA_manager = mda_mannager(MDA, self)
-                self.MDA_manager.show()
-                self.MDA_manager.start_acquisition()
-                
-            except:
-                self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
+            # except:
+            #     self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
         else:
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
             
@@ -1334,26 +1334,26 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.experiment.mode = "LS3"
          
         if self.active_channels and self.active_channels[0] != 'None' :
-            try:
-                channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
-                send_to_ls3_acquisition(self.camera,
-                                        self.filterWheel,
-                                        channel_acquisition,
-                                        self.experiment,
-                                        self.microscope,
-                                        dirname = 'LS3_acquisition/Config',
-                                        filename = 'GUI_parameters.json')
+            # try:
+            channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
+            send_to_ls3_acquisition(self.camera,
+                                    self.filterWheel,
+                                    channel_acquisition,
+                                    self.experiment,
+                                    self.microscope,
+                                    dirname = 'LS3_acquisition/Config',
+                                    filename = 'GUI_parameters.json')
+            
+            self.status_bar.showMessage("start Light_sheet_stabilized_scanning acquisition")
+            
+            LS3 = Light_sheet_stabilized_scanning(self.hcam, self.filterWheel)
+            
+            self.LS3_manager = ls3_mannager(LS3, self)
+            self.LS3_manager.show()
+            self.LS3_manager.start_acquisition()
                 
-                self.status_bar.showMessage("start Light_sheet_stabilized_scanning acquisition")
-                
-                LS3 = Light_sheet_stabilized_scanning(self.hcam, self.filterWheel)
-                
-                self.LS3_manager = ls3_mannager(LS3, self)
-                self.LS3_manager.show()
-                self.LS3_manager.start_acquisition()
-                
-            except:
-                self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
+            # except:
+            #     self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
         else:
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
             

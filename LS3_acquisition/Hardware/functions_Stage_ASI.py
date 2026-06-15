@@ -178,7 +178,7 @@ class Stage_ASI:
         """
         if self._test_positions(positions):
             for k in range(3) : positions[k] *= 10 # The command is in 1/10th of microns
-            serial_port.send_command(f"H X={positions[0]:.6f} Y={positions[1]:.6f} Z={positions[2]:.6f}",
+            serial_port.send_command(f"M X={positions[0]:.6f} Y={positions[1]:.6f} Z={positions[2]:.6f}",
                                      self.port)
         else:
             print("[ASI stage]: wrong position argument")
