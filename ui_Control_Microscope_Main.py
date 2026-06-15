@@ -68,8 +68,8 @@ class Ui_MainWindow(object):
         self.action_Sample_finder.setObjectName(u"action_Sample_finder")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.horizontalLayout_41 = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_41.setObjectName(u"horizontalLayout_41")
+        self.horizontalLayout_42 = QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_42.setObjectName(u"horizontalLayout_42")
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setSizeConstraint(QLayout.SetMinimumSize)
@@ -637,18 +637,17 @@ class Ui_MainWindow(object):
         self.verticalLayout.addItem(self.verticalSpacer)
 
 
-        self.horizontalLayout_41.addLayout(self.verticalLayout)
+        self.horizontalLayout_42.addLayout(self.verticalLayout)
 
         self.line = QFrame(self.centralwidget)
         self.line.setObjectName(u"line")
         self.line.setFrameShape(QFrame.Shape.VLine)
         self.line.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_41.addWidget(self.line)
+        self.horizontalLayout_42.addWidget(self.line)
 
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.verticalLayout_5.setSizeConstraint(QLayout.SetMinimumSize)
         self.label_timelaps_settings = QLabel(self.centralwidget)
         self.label_timelaps_settings.setObjectName(u"label_timelaps_settings")
         self.label_timelaps_settings.setFont(font)
@@ -728,6 +727,50 @@ class Ui_MainWindow(object):
 
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_8)
+
+        self.line_6 = QFrame(self.centralwidget)
+        self.line_6.setObjectName(u"line_6")
+        self.line_6.setFrameShape(QFrame.Shape.HLine)
+        self.line_6.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.verticalLayout_5.addWidget(self.line_6)
+
+        self.label_multipositions = QLabel(self.centralwidget)
+        self.label_multipositions.setObjectName(u"label_multipositions")
+        self.label_multipositions.setFont(font)
+        self.label_multipositions.setLayoutDirection(Qt.LeftToRight)
+        self.label_multipositions.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_5.addWidget(self.label_multipositions)
+
+        self.horizontalLayout_41 = QHBoxLayout()
+        self.horizontalLayout_41.setObjectName(u"horizontalLayout_41")
+        self.lcdNumber_multipostions = QLCDNumber(self.centralwidget)
+        self.lcdNumber_multipostions.setObjectName(u"lcdNumber_multipostions")
+        self.lcdNumber_multipostions.setMinimumSize(QSize(128, 0))
+        palette5 = QPalette()
+        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
+        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush2)
+        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
+        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush2)
+        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush2)
+        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush2)
+        self.lcdNumber_multipostions.setPalette(palette5)
+        self.lcdNumber_multipostions.setAutoFillBackground(True)
+
+        self.horizontalLayout_41.addWidget(self.lcdNumber_multipostions)
+
+        self.pb_multipositions = QPushButton(self.centralwidget)
+        self.pb_multipositions.setObjectName(u"pb_multipositions")
+
+        self.horizontalLayout_41.addWidget(self.pb_multipositions)
+
+        self.horizontalSpacer_20 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_41.addItem(self.horizontalSpacer_20)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_41)
 
         self.line_3 = QFrame(self.centralwidget)
         self.line_3.setObjectName(u"line_3")
@@ -903,7 +946,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addWidget(self.groupBox_channel_order)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 138, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.verticalSpacer_2 = QSpacerItem(378, 130, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_2)
 
@@ -978,14 +1021,14 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.addLayout(self.horizontalLayout_40)
 
 
-        self.horizontalLayout_41.addLayout(self.verticalLayout_5)
+        self.horizontalLayout_42.addLayout(self.verticalLayout_5)
 
         self.line_2 = QFrame(self.centralwidget)
         self.line_2.setObjectName(u"line_2")
         self.line_2.setFrameShape(QFrame.Shape.VLine)
         self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_41.addWidget(self.line_2)
+        self.horizontalLayout_42.addWidget(self.line_2)
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
@@ -999,16 +1042,16 @@ class Ui_MainWindow(object):
         self.label_image_preview.setSizePolicy(sizePolicy)
         self.label_image_preview.setMinimumSize(QSize(1108, 592))
         self.label_image_preview.setMaximumSize(QSize(2216, 1184))
-        palette5 = QPalette()
+        palette6 = QPalette()
         brush6 = QBrush(QColor(150, 150, 150, 255))
         brush6.setStyle(Qt.BrushStyle.SolidPattern)
-        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush6)
-        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush6)
-        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush6)
-        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush6)
-        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush6)
-        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush6)
-        self.label_image_preview.setPalette(palette5)
+        palette6.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush6)
+        palette6.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush6)
+        palette6.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush6)
+        palette6.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush6)
+        palette6.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush6)
+        palette6.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush6)
+        self.label_image_preview.setPalette(palette6)
         self.label_image_preview.setAutoFillBackground(True)
 
         self.verticalLayout_4.addWidget(self.label_image_preview)
@@ -1157,14 +1200,14 @@ class Ui_MainWindow(object):
         self.label_histogram_greyvalue = QLabel(self.centralwidget)
         self.label_histogram_greyvalue.setObjectName(u"label_histogram_greyvalue")
         self.label_histogram_greyvalue.setMinimumSize(QSize(600, 200))
-        palette6 = QPalette()
-        palette6.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
-        palette6.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush6)
-        palette6.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
-        palette6.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush6)
-        palette6.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush6)
-        palette6.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush6)
-        self.label_histogram_greyvalue.setPalette(palette6)
+        palette7 = QPalette()
+        palette7.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
+        palette7.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush6)
+        palette7.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
+        palette7.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush6)
+        palette7.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush6)
+        palette7.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush6)
+        self.label_histogram_greyvalue.setPalette(palette7)
         self.label_histogram_greyvalue.setAutoFillBackground(True)
 
         self.horizontalLayout_30.addWidget(self.label_histogram_greyvalue)
@@ -1242,7 +1285,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.addLayout(self.horizontalLayout_25)
 
 
-        self.horizontalLayout_41.addLayout(self.verticalLayout_4)
+        self.horizontalLayout_42.addLayout(self.verticalLayout_4)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -1486,6 +1529,8 @@ class Ui_MainWindow(object):
         self.radioButton_total_duration.setText("")
         self.timeEdit_total_duration.setDisplayFormat(QCoreApplication.translate("MainWindow", u"HH:mm:ss.zzz", None))
         self.label_total_duration.setText(QCoreApplication.translate("MainWindow", u"Total duration", None))
+        self.label_multipositions.setText(QCoreApplication.translate("MainWindow", u"Multi positions", None))
+        self.pb_multipositions.setText(QCoreApplication.translate("MainWindow", u"set positions", None))
         self.label_scanner_settings.setText(QCoreApplication.translate("MainWindow", u"Scanner Settings", None))
 #if QT_CONFIG(tooltip)
         self.slider_scanner_position.setToolTip(QCoreApplication.translate("MainWindow", u"Adjust the scanner position.\n"

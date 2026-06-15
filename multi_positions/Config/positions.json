@@ -1,0 +1,25 @@
+{
+    "positions": [
+        {
+            "x": 0.4125,
+            "y": -3.4455,
+            "z": -0.2005,
+            "enabled": true,
+            "name": "Position0000"
+        },
+        {
+            "x": 0.4125,
+            "y": -3.4455,
+            "z": -0.2005,
+            "enabled": true,
+            "name": "Position0001"
+        },
+        {
+            "x": 0.4125,
+            "y": -3.4455,
+            "z": -0.2005,
+            "enabled": true,
+            "name": "Position0002"
+        }
+    ]
+}

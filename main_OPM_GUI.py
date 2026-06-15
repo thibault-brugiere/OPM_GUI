@@ -32,7 +32,9 @@ from PySide6.QtCore import QTimer, Qt  #, QCoreApplication, QEventLoop
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox, QSizePolicy
 
-from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition, send_to_ls3_acquisition
+from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
+from acquisition.send_to_acquisition import send_to_ls3_acquisition
+from acquisition.send_to_acquisition import send_to_multiposition_acquisition
 from acquisition.z_stack import z_stack
 from configs.config import channel_config, microscope, experiment #, camera
 from display.histogram import HistogramThread
@@ -45,12 +47,14 @@ from hardware.Laser_Controller import LaserController
 # from mock.DAQ import functions_daq
 # from mock.filter_wheel import FilterWheel
 from mock.Null import NullObject
+from multi_positions.positions import Positions
 
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
 from LS3_acquisition.main_LS3 import Light_sheet_stabilized_scanning
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
+from multi_positions.main_multi_positions import multi_position_edditor
 from widget.Alignement_O2_O3_Window import alignement_O2_O3_Window
 from widget.Channel_Editor_Window import ChannelEditorWindow
 from widget.MDA_manager import mda_mannager
@@ -90,6 +94,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.microscope = microscope() # Load default microscopes settings
             
         self.experiment = experiment() # Create experiment object
+        self.positions = Positions()
+        self._set_lcdNumber_multipositions()
         
         if self.loaded_variables:
             self.preset_size = self.saved_variables['preset_size'] #for self.comboBox_size_preset
@@ -288,6 +294,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_timepoints.editingFinished.connect(self.spinBox_timepoints_value_changed)
         self.spinBox_time_interval.editingFinished.connect(self.spinBox_time_interval_value_changed)
         self.timeEdit_total_duration.editingFinished.connect(self.timeEdit_total_duration_value_changed)
+        
+            ## Multi positions
+        self.pb_multipositions.clicked.connect(self.pb_multipositions_clicked_connect)
         
             ## Scanner
         self.spinBox_scanner_position.valueChanged.connect(self.spinBox_scanner_position_value_changed)
@@ -638,6 +647,18 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.experiment.total_duration = functions_ui.QTime_to_seconds(self.timeEdit_total_duration.time())
         self.experiment.time_intervals = self.experiment.total_duration / self.experiment.timepoints
         self.spinBox_time_interval.setValue(self.experiment.time_intervals)
+        
+        #
+        # Multipositions
+        #
+        
+    def pb_multipositions_clicked_connect(self):
+        self.multi_position_edditor = multi_position_edditor(self.microscope.stage_port, self.positions, self)
+        self.multi_position_edditor.show()
+        
+    def _set_lcdNumber_multipositions(self):
+        self.experiment.positions = len(self.positions)
+        self.lcdNumber_multipostions.display(self.experiment.positions)
         
         #
         # Scanner
@@ -1278,12 +1299,34 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.label_volume_duration_update()
         
     def pb_multi_position_acquisition_clicked_connect(self):
-        print("Multi position acquisition not implemented yet")
-        self.status_bar.showMessage("Multi position acquisition  not implemented yet")
-        return
-    
+        # print("Multi position acquisition not implemented yet")
+        # self.status_bar.showMessage("Multi position acquisition  not implemented yet")
+        
+        
+        
+        # return
+        print("start multi position acquisition²")
         self.experiment.mode = "multi_position"
+        
+        if self.is_preview:
+            # Eteint l'acquisition si nécessaire
+            self.pb_stop_preview_clicked()
+            # Eteint les lasers si nécessaire
+            self.pb_laser_emission.setChecked(False)
+            self.pb_laser_emission_clicked()
             
+        if self.active_channels and self.active_channels[0] != 'None' :
+            channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
+            
+            send_to_multiposition_acquisition(self.camera,
+                                              self.filterWheel,
+                                              channel_acquisition,
+                                              self.experiment,
+                                              self.microscope,
+                                              self.positions,
+                                              dirname = 'multi_positions/Config',
+                                              filename = 'GUI_parameters.json',)
+    
     def pb_multidimensional_acquisition_clicked_connect(self):
         if self.pb_fast_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
             self.experiment.mode = "fast"

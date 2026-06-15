@@ -58,6 +58,8 @@ class experiment(object):
         self.total_duration = 10.0 # in s
         self.mode = "standard"
         
+        self.positions = 0
+        
         self.scanner_position = 0
         self.scan_range = 20
         self.stage_scan_range = 300 # scan range for LS3 acquisition in µm

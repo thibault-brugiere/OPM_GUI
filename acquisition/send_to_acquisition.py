@@ -87,6 +87,7 @@ def send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list
                              'time_intervals': experiment.time_intervals,
                              'total_duration': experiment.total_duration,
                              'mode' : experiment.mode,
+                             'positions' : experiment.positions,
                              'scanner_position': experiment.scanner_position,
                              'scan_range': experiment.scan_range,
                              'stage_scan_range': experiment.stage_scan_range,
@@ -166,4 +167,36 @@ def send_to_ls3_acquisition(camera_list, filterwheel, channel_list, experiment, 
     None.
 
     """
+    send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list, experiment, microscope, dirname, filename)
+    
+def send_to_multiposition_acquisition(camera_list, filterwheel, channel_list, experiment, microscope, positions,
+                                          dirname = 'acquisition', filename = 'GUI_parameters.json'):
+    
+    """
+    Seems to be exactelly the same than sending to the multidimensionnal acquisition
+
+    Parameters
+    ----------
+    camera_list : TYPE
+        DESCRIPTION.
+    filterwheel : TYPE
+        DESCRIPTION.
+    channel_list : TYPE
+        DESCRIPTION.
+    experiment : TYPE
+        DESCRIPTION.
+    microscope : TYPE
+        DESCRIPTION.
+    dirname : TYPE, optional
+        DESCRIPTION. The default is 'acquisition'.
+    filename : TYPE, optional
+        DESCRIPTION. The default is 'GUI_parameters.json'.
+
+    Returns
+    -------
+    None.
+
+    """
+    file_path = os.path.join(dirname, "positions.json")
+    positions.save(file_path)
     send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list, experiment, microscope, dirname, filename)

@@ -44,6 +44,20 @@ class Ui_Form(object):
 
         self.horizontalLayout.addWidget(self.label_connection)
 
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer_3)
+
+        self.pb_save = QPushButton(Form)
+        self.pb_save.setObjectName(u"pb_save")
+
+        self.horizontalLayout.addWidget(self.pb_save)
+
+        self.pb_load = QPushButton(Form)
+        self.pb_load.setObjectName(u"pb_load")
+
+        self.horizontalLayout.addWidget(self.pb_load)
+
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
@@ -123,6 +137,8 @@ class Ui_Form(object):
         self.label_connection.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Indicates whether the piezo controller is successfully connected via the selected port.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.label_connection.setText(QCoreApplication.translate("Form", u"Not Connected", None))
+        self.pb_save.setText(QCoreApplication.translate("Form", u"save", None))
+        self.pb_load.setText(QCoreApplication.translate("Form", u"Load", None))
         self.pb_add_position.setText(QCoreApplication.translate("Form", u"Add Position", None))
         self.pb_remove_all_positions.setText(QCoreApplication.translate("Form", u"Remove All", None))
         self.pb_sort_snake.setText(QCoreApplication.translate("Form", u"Snake Sort", None))

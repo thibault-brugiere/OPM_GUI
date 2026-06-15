@@ -13,10 +13,11 @@ import string
 import sys
 import time as t
 
-from PySide6.QtCore import QTimer, QThread, Signal, Qt, QElapsedTimer
+# from PySide6.QtCore import QTimer, QThread, Signal, Qt, QElapsedTimer
 from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
-from PySide6.QtWidgets import QCheckBox, QLineEdit, QSpinBox, QDoubleSpinBox, QPushButton
-from PySide6.QtGui import QPixmap, QImage, QIcon
+from PySide6.QtWidgets import QCheckBox, QLineEdit, QDoubleSpinBox, QPushButton
+from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt
 
 # Ajoutez le dossier parent au sys.path si le fichier est exécuté directement
 if __name__ == "__main__":
@@ -31,17 +32,21 @@ from hardware.functions_serial_ports import functions_serial_ports as serial_por
     
 class multi_position_edditor(QWidget, Ui_Form):
     
-    def __init__(self, port = None, parent = None):
+    def __init__(self, port = None, positions = None, parent = None):
         super().__init__(parent)
         self.setupUi(self)
         self.port = port
         
-        self.positions = Positions()
+        if positions is not None :
+            self.positions = positions
+        else :
+            self.positions = Positions()
         
         self.on_init()
             
     def on_init(self):
         self.setWindowTitle('Multi position')
+        self.setWindowFlag(Qt.Window)  # Assure que la fenêtre est indépendante
         
         self.stage_connected = False
         if self.port is not None :
@@ -51,12 +56,14 @@ class multi_position_edditor(QWidget, Ui_Form):
                 self.comboBox_devices.setEnabled(False)
         
         self.alphabet = string.ascii_lowercase
-        self.i = 0 
+        self.i = 0 # Incrementation for the name of the positions
         
         self.devices = serial_port.list_serial_ports()
         self.set_comboBox_devices()
         self.tools_desactivation()
         
+        self.pb_save.clicked.connect(self.save_positions)
+        self.pb_load.clicked.connect(self.load_positions)
         self.comboBox_devices.currentIndexChanged.connect(self.comboBox_devices_indexChanged)
         self.pb_add_position.clicked.connect(self.pb_add_position_clicked)
         self.pb_remove_all_positions.clicked.connect(self.pb_remove_all_positions_clicked)
@@ -69,6 +76,8 @@ class multi_position_edditor(QWidget, Ui_Form):
         self.comboBox_devices.addItems(self.devices)
         
     def tools_desactivation(self):
+        self.pb_save.setEnabled(self.stage_connected)
+        self.pb_load.setEnabled(self.stage_connected)
         self.pb_add_position.setEnabled(self.stage_connected)
         self.pb_remove_all_positions.setEnabled(self.stage_connected)
         self.pb_sort_nearest.setEnabled(self.stage_connected)
@@ -109,8 +118,8 @@ class multi_position_edditor(QWidget, Ui_Form):
         if self.stage.is_moving():
             return
 
-        name = self.alphabet[self.i]
-        self.i = (self.i + 1) % len(self.alphabet)
+        name = f"Position{self.i:04d}"
+        self.i = self.i+1
         
         pos = self.stage.get_position()
         self.positions.add_position_xyz(pos[0] / 1000, pos[1] / 1000, pos[2] / 1000, True, name)
@@ -129,7 +138,7 @@ class multi_position_edditor(QWidget, Ui_Form):
         self._refresh_table()
     
     def pb_sort_nearest_clicked(self):
-        self.positions.sort_positions()
+        self.positions.sort_nearest_neighbor()
         self._refresh_table()
     
     def _refresh_table(self):
@@ -257,6 +266,25 @@ class multi_position_edditor(QWidget, Ui_Form):
             self.positions.remove(r)
             self._refresh_table()
             
+    def save_positions(self):
+        filename, _ = QFileDialog.getSaveFileName(self,
+                                               "ave positions",
+                                               "",
+                                               "Position files (*.json);;All files (*)")
+        
+        if filename:
+            self.positions.save(filename)
+    
+    def load_positions(self):
+        filename, _ = QFileDialog.getOpenFileName(self,
+                                               "Open positions",
+                                               "",
+                                               "Position files (*.json);;All files (*)")
+        if filename:
+            self.positions.load(filename)
+                
+            self._refresh_table()
+            
     def _create_icon(self, path:str):
         if __name__ == "__main__": # Si jamais la fenêtre est appelée depuis ce fichier
             icon_path = os.path.join(parent_dir, path)
@@ -285,6 +313,12 @@ class multi_position_edditor(QWidget, Ui_Form):
                                       (QMessageBox.Yes |
                                        QMessageBox.No))
         if result == QMessageBox.Yes:
+            
+            try :
+                self.parent().positions = self.positions
+                self.parent()._set_lcdNumber_multipositions()
+            except:
+                pass
             
             event.accept()
         else:

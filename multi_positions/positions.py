@@ -5,9 +5,10 @@ Created on Wed Jun  3 16:46:08 2026
 @author: tbrugiere
 """
 
+import json
 import string
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 @dataclass
 class Position:
@@ -105,3 +106,25 @@ class Positions:
             ordered.extend(row)
     
         self._positions = ordered
+        
+    def to_dict(self):
+        positions = [asdict(pos) for pos in self._positions]
+        pos_dict = {
+            "positions" : positions,
+            }
+        return pos_dict
+    
+    def from_dict(self, pos_dict):
+        self._positions = [Position(**pos_dict)
+                           for pos_dict in pos_dict["positions"]]
+        
+    def save(self, filename):
+        with open(filename, "w") as f:
+            json.dump(self.to_dict(), f, indent=4)
+    
+    def load(self, filename):
+        with open(filename, "r") as f:
+            pos_dict = json.load(f)
+            self.from_dict(pos_dict)
+        
+        
