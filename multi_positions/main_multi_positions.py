@@ -56,11 +56,11 @@ class multi_position_edditor(QWidget, Ui_Form):
                 self.comboBox_devices.setEnabled(False)
         
         self.alphabet = string.ascii_lowercase
-        self.i = 0 # Incrementation for the name of the positions
         
         self.devices = serial_port.list_serial_ports()
         self.set_comboBox_devices()
         self.tools_desactivation()
+        self._refresh_table()
         
         self.pb_save.clicked.connect(self.save_positions)
         self.pb_load.clicked.connect(self.load_positions)
@@ -118,8 +118,7 @@ class multi_position_edditor(QWidget, Ui_Form):
         if self.stage.is_moving():
             return
 
-        name = f"Position{self.i:04d}"
-        self.i = self.i+1
+        name = f"Position{self.positions.i:04d}"
         
         pos = self.stage.get_position()
         self.positions.add_position_xyz(pos[0] / 1000, pos[1] / 1000, pos[2] / 1000, True, name)

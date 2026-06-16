@@ -1257,25 +1257,39 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_25.addWidget(self.pb_multi_position_acquisition)
 
-        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_25.addItem(self.horizontalSpacer_10)
-
         self.pb_multidimensional_acquisition = QPushButton(self.centralwidget)
         self.pb_multidimensional_acquisition.setObjectName(u"pb_multidimensional_acquisition")
         self.pb_multidimensional_acquisition.setFont(font)
 
         self.horizontalLayout_25.addWidget(self.pb_multidimensional_acquisition)
 
-        self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_25.addItem(self.horizontalSpacer_11)
-
         self.pb_LS3_acquisition = QPushButton(self.centralwidget)
         self.pb_LS3_acquisition.setObjectName(u"pb_LS3_acquisition")
         self.pb_LS3_acquisition.setFont(font)
 
         self.horizontalLayout_25.addWidget(self.pb_LS3_acquisition)
+
+        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_25.addItem(self.horizontalSpacer_10)
+
+        self.comboBox_protocol = QComboBox(self.centralwidget)
+        self.comboBox_protocol.addItem("")
+        self.comboBox_protocol.setObjectName(u"comboBox_protocol")
+        self.comboBox_protocol.setMinimumSize(QSize(100, 0))
+        self.comboBox_protocol.setFont(font)
+
+        self.horizontalLayout_25.addWidget(self.comboBox_protocol)
+
+        self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_25.addItem(self.horizontalSpacer_11)
+
+        self.pb_start_acquisition = QPushButton(self.centralwidget)
+        self.pb_start_acquisition.setObjectName(u"pb_start_acquisition")
+        self.pb_start_acquisition.setFont(font)
+
+        self.horizontalLayout_25.addWidget(self.pb_start_acquisition)
 
         self.horizontalSpacer_18 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -1650,6 +1664,10 @@ class Ui_MainWindow(object):
         self.pb_LS3_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Start the acquisition using the Light sheet stabilized scanning</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_LS3_acquisition.setText(QCoreApplication.translate("MainWindow", u"LS3\n"
+"Acquisition", None))
+        self.comboBox_protocol.setItemText(0, QCoreApplication.translate("MainWindow", u"Protocol", None))
+
+        self.pb_start_acquisition.setText(QCoreApplication.translate("MainWindow", u"Start\n"
 "Acquisition", None))
         self.menuFichier.setTitle(QCoreApplication.translate("MainWindow", u"Fichier", None))
         self.menuConfig.setTitle(QCoreApplication.translate("MainWindow", u"Config", None))

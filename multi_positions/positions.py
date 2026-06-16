@@ -31,9 +31,11 @@ class Positions:
         
     def add_position(self, position: Position) -> None :
         self._positions.append(position)
+        self.i += 1
 
     def add_position_xyz(self, x, y, z, enabled = True, name = ""):
         self._positions.append(Position(x, y, z, enabled, name))
+        self.i += 1
         
     def move_down(self, index: int) -> None:
         if index >= 0 and index < len(self._positions) -1 :

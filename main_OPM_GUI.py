@@ -40,12 +40,12 @@ from configs.config import channel_config, microscope, experiment #, camera
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
-from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
-from hardware.filter_wheel import FilterWheel
+# from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
+# from hardware.filter_wheel import FilterWheel
 from hardware.Laser_Controller import LaserController
 # from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
-# from mock.DAQ import functions_daq
-# from mock.filter_wheel import FilterWheel
+from mock.DAQ import functions_daq
+from mock.filter_wheel import FilterWheel
 from mock.Null import NullObject
 from multi_positions.positions import Positions
 
@@ -268,9 +268,25 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self._check_single_plan()
         
         #
+        # Définition des protocoles d'acquisition
+        #
+        
+        self.protocol_experiment_mode = {
+            "Multidimensional acquisition" : "standard",
+            "Fast-Multidimensional acquisition" : "fast",
+            "Single plane acquisition" : "single-plane",
+            "Multi position acquisition" : "multiposition",
+            "LS3 acquisition" : "LS3"} 
+        
+        self.comboBox_protocol.clear()
+        self.comboBox_protocol.addItems(list(self.protocol_experiment_mode.keys()))
+        self.enable_protocol_tools()
+        
+        #
         # Modifications d'élements de l'interface #TODO a modifier dans Main.ui
         #
         self.comboBox_preview_zoom.setItemText(0, "Zoom Auto")
+        self.doubleSpinBox_step_size.setEnabled(False) # Only used for microscope caracterization
         
         ##############################################
         ## Connection between functions and buttons ##
@@ -350,11 +366,13 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_snap.clicked.connect(self.pb_snap_clicked_connect)
         
             ## Acquisition
+        self.comboBox_protocol.currentIndexChanged.connect(self.comboBox_protocol_index_changed)
         self.pb_fast_acquisition.clicked.connect(self.pb_fast_acquisition_clicked_connect)
         self.pb_single_plan_acquisition.clicked.connect(self.pb_single_plan_acquisition_clicked_connect)
         self.pb_multi_position_acquisition.clicked.connect(self.pb_multi_position_acquisition_clicked_connect)
         self.pb_multidimensional_acquisition.clicked.connect(self.pb_multidimensional_acquisition_clicked_connect)
         self.pb_LS3_acquisition.clicked.connect(self.pb_LS3_acquisition_clicked_connect)
+        self.pb_start_acquisition.clicked.connect(self.pb_start_acquisition_clicked_connect)
         
     ###############################################
     ## Connection between functions and toolbars ##
@@ -1234,6 +1252,50 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         # Acquisition
         #
         
+    def comboBox_protocol_index_changed(self):
+        self.enable_protocol_tools()
+        
+    def enable_protocol_tools(self):    
+        pass
+        
+        self.protocol_experiment_mode = {
+            "Multidimensional acquisition" : "standard",
+            "Fast-Multidimensional acquisition" : "fast",
+            "Single plane acquisition" : "single_plane",
+            "Multi position acquisition" : "multipositions",
+            "LS3 acquisition" : "LS3"}
+        
+        mode = self.protocol_experiment_mode[self.comboBox_protocol.currentText()]
+        
+        tools_MDA = [self.spinBox_timepoints,
+                     self.spinBox_time_interval,
+                     self.timeEdit_total_duration,
+                     self.radioButton_time_intervals,
+                     self.radioButton_total_duration,
+                     self.spinBox_scan_range,
+                     self.spinBox_aspect_ratio]
+        
+        tools_LS3 = [self.spinBox_stage_scan_range,
+                     self.spinBox_scanV_range,
+                     self.spinBox_scanV_overlap]
+
+        if mode == "LS3" :
+            enabled = False
+        else :
+            enabled = True
+            
+        for tool in tools_MDA :
+            tool.setEnabled(enabled)
+        
+        for tool in tools_LS3 :
+            tool.setDisabled(enabled)
+            
+        if mode == "single_plane" :
+            self.spinBox_number_channels.setValue(1)
+            self.spinBox_number_channels.setDisabled(True)
+        else :
+            self.spinBox_number_channels.setDisabled(False)
+        
     def pb_fast_acquisition_clicked_connect(self):
         """
         Select the acquisition mode :
@@ -1399,6 +1461,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             #     self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
         else:
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
+            
+    def pb_start_acquisition_clicked_connect(self):
+        pass
             
         
     ##################################
