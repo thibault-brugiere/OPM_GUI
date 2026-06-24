@@ -1229,50 +1229,6 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_25.addItem(self.horizontalSpacer_9)
 
-        self.pb_fast_acquisition = QPushButton(self.centralwidget)
-        self.pb_fast_acquisition.setObjectName(u"pb_fast_acquisition")
-        font2 = QFont()
-        font2.setPointSize(10)
-        font2.setBold(False)
-        self.pb_fast_acquisition.setFont(font2)
-        self.pb_fast_acquisition.setAutoFillBackground(False)
-        self.pb_fast_acquisition.setCheckable(True)
-
-        self.horizontalLayout_25.addWidget(self.pb_fast_acquisition)
-
-        self.pb_single_plan_acquisition = QPushButton(self.centralwidget)
-        self.pb_single_plan_acquisition.setObjectName(u"pb_single_plan_acquisition")
-        self.pb_single_plan_acquisition.setFont(font2)
-        self.pb_single_plan_acquisition.setCheckable(True)
-
-        self.horizontalLayout_25.addWidget(self.pb_single_plan_acquisition)
-
-        self.horizontalSpacer_19 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_25.addItem(self.horizontalSpacer_19)
-
-        self.pb_multi_position_acquisition = QPushButton(self.centralwidget)
-        self.pb_multi_position_acquisition.setObjectName(u"pb_multi_position_acquisition")
-        self.pb_multi_position_acquisition.setFont(font)
-
-        self.horizontalLayout_25.addWidget(self.pb_multi_position_acquisition)
-
-        self.pb_multidimensional_acquisition = QPushButton(self.centralwidget)
-        self.pb_multidimensional_acquisition.setObjectName(u"pb_multidimensional_acquisition")
-        self.pb_multidimensional_acquisition.setFont(font)
-
-        self.horizontalLayout_25.addWidget(self.pb_multidimensional_acquisition)
-
-        self.pb_LS3_acquisition = QPushButton(self.centralwidget)
-        self.pb_LS3_acquisition.setObjectName(u"pb_LS3_acquisition")
-        self.pb_LS3_acquisition.setFont(font)
-
-        self.horizontalLayout_25.addWidget(self.pb_LS3_acquisition)
-
-        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_25.addItem(self.horizontalSpacer_10)
-
         self.comboBox_protocol = QComboBox(self.centralwidget)
         self.comboBox_protocol.addItem("")
         self.comboBox_protocol.setObjectName(u"comboBox_protocol")
@@ -1646,25 +1602,6 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.pb_snap.setText(QCoreApplication.translate("MainWindow", u"Snap", None))
         self.label_histogram_greyvalue.setText("")
-#if QT_CONFIG(tooltip)
-        self.pb_fast_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Start image acquisition using the Fast Acquisition program.</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.pb_fast_acquisition.setText(QCoreApplication.translate("MainWindow", u"Fast\n"
-"Acquisition", None))
-        self.pb_single_plan_acquisition.setText(QCoreApplication.translate("MainWindow", u"Single Plane\n"
-"Acquisition", None))
-        self.pb_multi_position_acquisition.setText(QCoreApplication.translate("MainWindow", u"Multi Position\n"
-"Acquisition", None))
-#if QT_CONFIG(tooltip)
-        self.pb_multidimensional_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"Start a multidimensional acquisition, including multiple channels, positions, or timepoints.", None))
-#endif // QT_CONFIG(tooltip)
-        self.pb_multidimensional_acquisition.setText(QCoreApplication.translate("MainWindow", u"Multidimensional\n"
-"Acquisition", None))
-#if QT_CONFIG(tooltip)
-        self.pb_LS3_acquisition.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Start the acquisition using the Light sheet stabilized scanning</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.pb_LS3_acquisition.setText(QCoreApplication.translate("MainWindow", u"LS3\n"
-"Acquisition", None))
         self.comboBox_protocol.setItemText(0, QCoreApplication.translate("MainWindow", u"Protocol", None))
 
         self.pb_start_acquisition.setText(QCoreApplication.translate("MainWindow", u"Start\n"

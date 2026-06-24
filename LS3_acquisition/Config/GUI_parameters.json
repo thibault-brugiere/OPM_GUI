@@ -9,8 +9,8 @@
             "hsize": 512,
             "hpos": 1960,
             "vsize": 512,
-            "vpos": 928,
-            "exposure_time": 0.1,
+            "vpos": 0,
+            "exposure_time": 0.01,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
             "image_readout_time": 0.0019296
@@ -35,11 +35,11 @@
             },
             "filter": "GFP",
             "camera": 0,
-            "exposure_time": 100.0
+            "exposure_time": 10.0
         }
     },
     "experiment": {
-        "exp_name": "MDA",
+        "exp_name": "sp",
         "data_path": "D:/Projets_Python/OPM_GUI/Images",
         "timepoints": 200,
         "time_intervals": 1.0,
@@ -48,7 +48,7 @@
         "positions": 0,
         "scanner_position": 0,
         "scan_range": 0.0,
-        "stage_scan_range": 300,
+        "stage_scan_range": 200,
         "scanV_range": 0,
         "scanV_overlap": 0.25,
         "aspect_ratio": 3.3563985247091197,

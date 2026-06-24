@@ -264,8 +264,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBox_aspect_ratio.setValue(self.experiment.aspect_ratio)
         
         self.comboBox_channel_filter_index_changed()
-
-        self._check_single_plan()
         
         #
         # Définition des protocoles d'acquisition
@@ -287,12 +285,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         self.comboBox_preview_zoom.setItemText(0, "Zoom Auto")
         self.doubleSpinBox_step_size.setEnabled(False) # Only used for microscope caracterization
-        
-        self.pb_fast_acquisition.setDisabled(True)
-        self.pb_single_plan_acquisition.setDisabled(True)
-        self.pb_multi_position_acquisition.setDisabled(True)
-        self.pb_multidimensional_acquisition.setDisabled(True)
-        self.pb_LS3_acquisition.setDisabled(True)
         
         ##############################################
         ## Connection between functions and buttons ##
@@ -373,11 +365,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
             ## Acquisition
         self.comboBox_protocol.currentIndexChanged.connect(self.comboBox_protocol_index_changed)
-        self.pb_fast_acquisition.clicked.connect(self.pb_fast_acquisition_clicked_connect)
-        self.pb_single_plan_acquisition.clicked.connect(self.pb_single_plan_acquisition_clicked_connect)
-        self.pb_multi_position_acquisition.clicked.connect(self.pb_multi_position_acquisition_clicked_connect)
-        self.pb_multidimensional_acquisition.clicked.connect(self.pb_multidimensional_acquisition_clicked_connect)
-        self.pb_LS3_acquisition.clicked.connect(self.pb_LS3_acquisition_clicked_connect)
         self.pb_start_acquisition.clicked.connect(self.pb_start_acquisition_clicked_connect)
         
     ###############################################
@@ -716,7 +703,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def spinBox_scan_range_value_changed(self):
         self.experiment.scan_range = self.spinBox_scan_range.value()
-        self._check_single_plan()
         self.label_volume_duration_update()
 
         
@@ -970,8 +956,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                     comboBox.setCurrentIndex(index)
                     
         self.updateActiveChannels()
-        
-        self._check_single_plan()
 
     def updateActiveChannels(self):
         self.active_channels = [comboBox.currentText() for comboBox in self.comboBoxes_channel_order]
@@ -1300,70 +1284,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
         elif mode == "LS3" :
             for tool in tools_LS3 : tool.setEnabled(True) 
-
-    def pb_fast_acquisition_clicked_connect(self):
-        """
-        Select the acquisition mode :
-            "standard" for standard acquisition protocol
-            "fast" for fast acquisition protocol with galvo mirror mooving while
-            camera exposing
-
-        """
-        if self.pb_fast_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
-            self.experiment.mode = "fast"
-            self.pb_single_plan_acquisition.setChecked(False)
-            # Set minimum exposure time
-            min_exposure_time = math.ceil(100*(self.camera[self.camera_id].image_readout_time)*1000)/100
-            self.spinBox_channel_exposure_time.setMinimum(min_exposure_time)
-            for channel in self.channel.keys():
-                if self.channel[channel].exposure_time < min_exposure_time:
-                    self.channel[channel].exposure_time = min_exposure_time
-                    self.status_bar.showMessage(f"Exposure time to low for at least one channel, exposure time set to {min_exposure_time}ms")
-                
-        else:
-            self.experiment.mode = "standard"
-            self.spinBox_channel_exposure_time.setMinimum(0.01)
-            
-        self.label_volume_duration_update()
-    
-    def _check_single_plan(self):
-        # print("=> single plan checked")
-        # print(f"{self.spinBox_number_channels.value()} - {self.spinBox_scan_range.value()}")
-        if self.spinBox_number_channels.value() == 1 and self.spinBox_scan_range.value() == 0.0 :
-            self.pb_single_plan_acquisition.setEnabled(True)
-        else :
-            self.pb_single_plan_acquisition.setChecked(False)
-            self.pb_single_plan_acquisition.setEnabled(False)
-            if self.experiment.mode == "single_plane" :
-                self.experiment.mode = "standard"
-                
-            self.label_volume_duration_update()
-    
-    def pb_single_plan_acquisition_clicked_connect(self):
-        if self.pb_single_plan_acquisition.isChecked():
-            if self.spinBox_number_channels.value() != 1 :
-                self.pb_single_plan_acquisition.setChecked(False)
-                return
-            
-            if self.spinBox_scan_range.value() != 0 :
-                self.pb_single_plan_acquisition.setChecked(False)
-                return
-            
-            self.experiment.mode = "single_plane"
-            self.pb_fast_acquisition.setChecked(False)
-            # Set minimum exposure time
-            min_exposure_time = math.ceil(100*(self.camera[self.camera_id].image_readout_time)*1000)/100
-            self.spinBox_channel_exposure_time.setMinimum(min_exposure_time)
-            for channel in self.channel.keys():
-                if self.channel[channel].exposure_time < min_exposure_time:
-                    self.channel[channel].exposure_time = min_exposure_time
-                    self.status_bar.showMessage(f"Exposure time to low for at least one channel, exposure time set to {min_exposure_time}ms")
-            
-            else:
-                self.experiment.mode = "standard"
-                self.spinBox_channel_exposure_time.setMinimum(0.01)
-                
-            self.label_volume_duration_update()
         
     def pb_multi_position_acquisition_clicked_connect(self):
         print("Multi position acquisition not implemented yet")
