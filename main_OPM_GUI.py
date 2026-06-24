@@ -40,12 +40,12 @@ from configs.config import channel_config, microscope, experiment #, camera
 from display.histogram import HistogramThread
 from Functions_UI import functions_ui
 from hardware.functions_camera import CameraThread, functions_camera
-# from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
-# from hardware.filter_wheel import FilterWheel
+from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
+from hardware.filter_wheel import FilterWheel
 from hardware.Laser_Controller import LaserController
 # from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
-from mock.DAQ import functions_daq
-from mock.filter_wheel import FilterWheel
+# from mock.DAQ import functions_daq
+# from mock.filter_wheel import FilterWheel
 from mock.Null import NullObject
 from multi_positions.positions import Positions
 
@@ -274,7 +274,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.protocol_experiment_mode = {
             "Multidimensional acquisition" : "standard",
             "Fast-Multidimensional acquisition" : "fast",
-            "Single plane acquisition" : "single-plane",
+            "Single plane acquisition" : "single_plane",
             "Multi position acquisition" : "multiposition",
             "LS3 acquisition" : "LS3"} 
         
@@ -287,6 +287,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         self.comboBox_preview_zoom.setItemText(0, "Zoom Auto")
         self.doubleSpinBox_step_size.setEnabled(False) # Only used for microscope caracterization
+        
+        self.pb_fast_acquisition.setDisabled(True)
+        self.pb_single_plan_acquisition.setDisabled(True)
+        self.pb_multi_position_acquisition.setDisabled(True)
+        self.pb_multidimensional_acquisition.setDisabled(True)
+        self.pb_LS3_acquisition.setDisabled(True)
         
         ##############################################
         ## Connection between functions and buttons ##
@@ -650,6 +656,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         - `spinBox_time_intervals`: The time interval between consecutive time points.
         - `timeEdit_total_duration`: The total duration of the acquisition.
         """
+        
+    def _select_interval_duration(self):
+        if self.radioButton_time_intervals.isChecked():
+            self.radioButton_time_intervals.click()
+        if self.radioButton_total_duration.isChecked():
+            self.radioButton_total_duration.click()
     
     def spinBox_timepoints_value_changed(self):
         self.experiment.timepoints = self.spinBox_timepoints.value()
@@ -1256,46 +1268,39 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.enable_protocol_tools()
         
     def enable_protocol_tools(self):    
-        pass
-        
-        self.protocol_experiment_mode = {
-            "Multidimensional acquisition" : "standard",
-            "Fast-Multidimensional acquisition" : "fast",
-            "Single plane acquisition" : "single_plane",
-            "Multi position acquisition" : "multipositions",
-            "LS3 acquisition" : "LS3"}
         
         mode = self.protocol_experiment_mode[self.comboBox_protocol.currentText()]
         
         tools_MDA = [self.spinBox_timepoints,
-                     self.spinBox_time_interval,
-                     self.timeEdit_total_duration,
-                     self.radioButton_time_intervals,
-                     self.radioButton_total_duration,
-                     self.spinBox_scan_range,
-                     self.spinBox_aspect_ratio]
+            self.spinBox_time_interval,
+            self.timeEdit_total_duration,
+            self.radioButton_time_intervals,
+            self.radioButton_total_duration,
+            self.spinBox_scan_range,
+            self.spinBox_number_channels]
         
-        tools_LS3 = [self.spinBox_stage_scan_range,
-                     self.spinBox_scanV_range,
-                     self.spinBox_scanV_overlap]
-
-        if mode == "LS3" :
-            enabled = False
-        else :
-            enabled = True
-            
-        for tool in tools_MDA :
-            tool.setEnabled(enabled)
+        tools_single_plane = [self.spinBox_timepoints]
         
-        for tool in tools_LS3 :
-            tool.setDisabled(enabled)
+        tools_LS3 = [self.spinBox_number_channels,
+            self.spinBox_stage_scan_range,
+            self.spinBox_scanV_range,
+            self.spinBox_scanV_overlap]
+        
+        for tool in tools_MDA + tools_single_plane + tools_LS3:
+            tool.setDisabled(True)
             
-        if mode == "single_plane" :
+        if mode in ["standard","fast","multiposition"] :
+            for tool in tools_MDA : tool.setEnabled(True)
+            self._select_interval_duration()
+            
+        elif mode == "single_plane" :
+            for tool in tools_single_plane : tool.setEnabled(True) 
             self.spinBox_number_channels.setValue(1)
-            self.spinBox_number_channels.setDisabled(True)
-        else :
-            self.spinBox_number_channels.setDisabled(False)
-        
+            self.spinBox_scan_range.setValue(0)
+            
+        elif mode == "LS3" :
+            for tool in tools_LS3 : tool.setEnabled(True) 
+
     def pb_fast_acquisition_clicked_connect(self):
         """
         Select the acquisition mode :
@@ -1361,12 +1366,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.label_volume_duration_update()
         
     def pb_multi_position_acquisition_clicked_connect(self):
-        # print("Multi position acquisition not implemented yet")
-        # self.status_bar.showMessage("Multi position acquisition  not implemented yet")
+        print("Multi position acquisition not implemented yet")
+        self.status_bar.showMessage("Multi position acquisition  not implemented yet")
         
-        
-        
-        # return
+        return
         print("start multi position acquisition²")
         self.experiment.mode = "multi_position"
         
@@ -1389,13 +1392,14 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                               dirname = 'multi_positions/Config',
                                               filename = 'GUI_parameters.json',)
     
-    def pb_multidimensional_acquisition_clicked_connect(self):
-        if self.pb_fast_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
-            self.experiment.mode = "fast"
-        elif self.pb_single_plan_acquisition.isChecked() :
-            self.experiment.mode = "single_plane"
-        else:
-            self.experiment.mode = "standard"
+    def pb_multidimensional_acquisition_clicked_connect(self, main_button = False):
+        if not main_button :
+            if self.pb_fast_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
+                self.experiment.mode = "fast"
+            elif self.pb_single_plan_acquisition.isChecked() :
+                self.experiment.mode = "single_plane"
+            else:
+                self.experiment.mode = "standard"
             
         """Start acquisition with the Multi Dimentionnal Acquisition protocole from Thibault"""
         if self.is_preview:
@@ -1463,9 +1467,21 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
             
     def pb_start_acquisition_clicked_connect(self):
-        pass
-            
+        mode = self.comboBox_protocol.currentText()
+        self.experiment.mode = self.protocol_experiment_mode[mode]
+        print(f"experiment mode : {self.experiment.mode}")
         
+        mda_modes = ["standard","fast","single_plane"]
+        if self.experiment.mode in mda_modes :
+            self.pb_multidimensional_acquisition_clicked_connect(main_button=True)
+            
+        elif self.experiment.mode == "multiposition" :
+            pass
+        
+        elif self.experiment.mode == "LS3" :
+            self.pb_LS3_acquisition_clicked_connect()
+            
+
     ##################################
     ## Fonctions called by toolbars ##
     ##################################

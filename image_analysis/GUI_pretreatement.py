@@ -111,6 +111,8 @@ class PretreatementWindow(QWidget, Ui_Form):
         self._last_progress_file_update = 0.0
         self._min_progress_interval = 0.1  # 100 ms
         
+        self.sb_max_z.setValue(500)
+        
         #
         # Tur off unused buttons
         #

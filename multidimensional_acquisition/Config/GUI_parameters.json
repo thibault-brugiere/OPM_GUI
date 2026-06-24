@@ -17,34 +17,35 @@
         }
     },
     "channels": {
-        "channel_CY3.5": {
-            "channel_id": "CY3.5",
+        "channel_GFP": {
+            "channel_id": "GFP",
             "is_active": true,
             "channel_order": null,
             "laser_is_active": {
                 "405": false,
-                "488": false,
-                "561": true,
+                "488": true,
+                "561": false,
                 "640": false
             },
             "laser_power": {
                 "405": 0,
-                "488": 0,
-                "561": 100,
+                "488": 15,
+                "561": 0,
                 "640": 0
             },
-            "filter": "CY3.5",
+            "filter": "GFP",
             "camera": 0,
             "exposure_time": 100.0
         }
     },
     "experiment": {
-        "exp_name": "Cortex_Dendrite1_2000",
-        "data_path": "C:/Users/tbrugiere/Documents/Images_OPM/20260611_LeaLeval",
-        "timepoints": 2000,
-        "time_intervals": 0.1,
+        "exp_name": "MDA",
+        "data_path": "D:/Projets_Python/OPM_GUI/Images",
+        "timepoints": 200,
+        "time_intervals": 1.0,
         "total_duration": 200.0,
         "mode": "single_plane",
+        "positions": 0,
         "scanner_position": 0,
         "scan_range": 0.0,
         "stage_scan_range": 300,

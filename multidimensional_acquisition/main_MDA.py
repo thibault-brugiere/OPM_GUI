@@ -56,13 +56,15 @@ class MultidimensionalAcquisition:
         self.n_channels = len(self.config.channels)
         
         if self.config.experiment.mode not in ["fast","standard","single_plane"]:
-            raise NameError("LS3 Error: not the right experiment mode: {self.config.experiment.mode}")
+            raise NameError("MDA Error: not the right experiment mode: {self.config.experiment.mode}")
         
         self.filterseq = [] # Liste des filtres dans l'ordre utilisé
         for n in range(self.n_channels):
             self.filterseq.append(self.config.channels[n].filter)
             
         self.filters_mouve = mouvement_sequence(self.config.microscope.filters , self.filterseq)
+        
+        print(f"[Main MDA] experiment mode : {self.config.experiment.mode}")
         
         if self.config.experiment.mode == "single_plane" :
             min_exposure_time = math.ceil(100*self.config.cameras[0].image_readout_time*1000)/100
