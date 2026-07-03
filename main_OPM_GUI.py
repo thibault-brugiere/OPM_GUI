@@ -480,7 +480,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_pause_preview.setDisabled(desactivation)
         self.pb_stop_preview.setDisabled(desactivation)
         self.pb_snap.setDisabled(desactivation)
-        self.pb_multidimensional_acquisition.setDisabled(desactivation)
 
     def comboBox_camera_index_changed(self):
         """
@@ -553,7 +552,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.camera[self.camera_id].vsize = size
         self.camera[self.camera_id].calculate_image_readout_time()
-        self.pb_fast_acquisition_clicked_connect()
         
         #set vpos
         self.spinBox_vpos_value_changed()
@@ -1293,12 +1291,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         print("start multi position acquisition²")
         self.experiment.mode = "multi_position"
         
-        if self.is_preview:
-            # Eteint l'acquisition si nécessaire
-            self.pb_stop_preview_clicked()
-            # Eteint les lasers si nécessaire
-            self.pb_laser_emission.setChecked(False)
-            self.pb_laser_emission_clicked()
+        self._stop_preview()
             
         if self.active_channels and self.active_channels[0] != 'None' :
             channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
@@ -1321,13 +1314,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 self.experiment.mode = "standard"
             
-        """Start acquisition with the Multi Dimentionnal Acquisition protocole from Thibault"""
-        if self.is_preview:
-            # Eteint l'acquisition si nécessaire
-            self.pb_stop_preview_clicked()
-            # Eteint les lasers si nécessaire
-            self.pb_laser_emission.setChecked(False)
-            self.pb_laser_emission_clicked()
+        """Start acquisition with the Multi Dimentionnal Acquisition protocole from Thibault"""          
+        self._stop_preview()
+        
         if self.active_channels and self.active_channels[0] != 'None' :
             # try:
             channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
@@ -1353,12 +1342,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
     def pb_LS3_acquisition_clicked_connect(self):
         """Start acquisition with the Light sheet stabilized scanning protocole from Thibault"""
-        if self.is_preview:
-            # Eteint l'acquisition si nécessaire
-            self.pb_stop_preview_clicked()
-            # Eteint les lasers si nécessaire
-            self.pb_laser_emission.setChecked(False)
-            self.pb_laser_emission_clicked()
+        self._stop_preview()
             
         self.experiment.mode = "LS3"
          
@@ -1385,6 +1369,14 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             #     self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
         else:
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
+            
+    def _stop_preview(self):
+        if self.is_preview:
+            # Eteint l'acquisition si nécessaire
+            self.pb_stop_preview_clicked()
+            # Eteint les lasers si nécessaire
+            self.pb_laser_emission.setChecked(False)
+            self.pb_laser_emission_clicked()
             
     def pb_start_acquisition_clicked_connect(self):
         mode = self.comboBox_protocol.currentText()
