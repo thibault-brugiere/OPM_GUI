@@ -10,6 +10,7 @@ pyside6-uic D:/Projets_Python/OPM_GUI/ui_Control_Microscope_Main.ui -o D:/Projet
 Resolved FTDI DLL issue by copying ftd2xx64.dll from Thorlabs software to C:\Windows\System32 and renaming it to ftd2xx.dll
 NOTE : les mocks sont en rempacer dans : * main_OPM_GUI * hardware.Laser_Controller * functions_camera * main_MDA * main_LS3
 """
+
 # Branche laser
 import warnings
 warnings.filterwarnings(
