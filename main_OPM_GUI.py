@@ -1281,41 +1281,40 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.spinBox_scan_range.setValue(0)
             
         elif mode == "LS3" :
-            for tool in tools_LS3 : tool.setEnabled(True) 
+            for tool in tools_LS3 : tool.setEnabled(True)
         
     def pb_multi_position_acquisition_clicked_connect(self):
-        print("Multi position acquisition not implemented yet")
-        self.status_bar.showMessage("Multi position acquisition  not implemented yet")
-        
-        return
-        print("start multi position acquisition²")
-        self.experiment.mode = "multi_position"
+        """Start acquisition with the Multi Position Acquisition protocole"""   
         
         self._stop_preview()
+        
+        # self.experiment.mode = "multi_position"
             
         if self.active_channels and self.active_channels[0] != 'None' :
-            channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
             
+            self.experiment.positions = self.positions.get_n_active_positions()
+            
+            channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
             send_to_multiposition_acquisition(self.camera,
                                               self.filterWheel,
                                               channel_acquisition,
                                               self.experiment,
                                               self.microscope,
                                               self.positions,
-                                              dirname = 'multi_positions/Config',
+                                              dirname = 'multiposition_acquisition/Config',
                                               filename = 'GUI_parameters.json',)
-    
-    def pb_multidimensional_acquisition_clicked_connect(self, main_button = False):
-        if not main_button :
-            if self.pb_fast_acquisition.isChecked() : #Todo il faudra utiliser le nouveau bouton
-                self.experiment.mode = "fast"
-            elif self.pb_single_plan_acquisition.isChecked() :
-                self.experiment.mode = "single_plane"
-            else:
-                self.experiment.mode = "standard"
             
-        """Start acquisition with the Multi Dimentionnal Acquisition protocole from Thibault"""          
+            self.status_bar.showMessage("start multiposition acquisition")
+            
+        else:
+            self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
+    
+    def pb_multidimensional_acquisition_clicked_connect(self):
+            
+        """Start acquisition with the MultiDimensionnal Acquisition protocole"""          
         self._stop_preview()
+        
+        # self.experiment.mode = "standard"
         
         if self.active_channels and self.active_channels[0] != 'None' :
             # try:
@@ -1341,10 +1340,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
             
     def pb_LS3_acquisition_clicked_connect(self):
-        """Start acquisition with the Light sheet stabilized scanning protocole from Thibault"""
+        """Start acquisition with the Light sheet stabilized scanning protocole"""
         self._stop_preview()
             
-        self.experiment.mode = "LS3"
+        #self.experiment.mode = "LS3"
          
         if self.active_channels and self.active_channels[0] != 'None' :
             # try:
@@ -1384,12 +1383,14 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         print(f"experiment mode : {self.experiment.mode}")
         
         mda_modes = ["standard","fast","single_plane"]
+
         if self.experiment.mode in mda_modes :
-            self.pb_multidimensional_acquisition_clicked_connect(main_button=True)
-            
-        elif self.experiment.mode == "multiposition" :
-            pass
+            self.pb_multidimensional_acquisition_clicked_connect()
         
+
+        elif self.experiment.mode == "multiposition" :
+            self.pb_multi_position_acquisition_clicked_connect()
+
         elif self.experiment.mode == "LS3" :
             self.pb_LS3_acquisition_clicked_connect()
             

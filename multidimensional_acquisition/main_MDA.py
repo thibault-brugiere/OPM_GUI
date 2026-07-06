@@ -56,7 +56,7 @@ class MultidimensionalAcquisition:
         self.n_channels = len(self.config.channels)
         
         if self.config.experiment.mode not in ["fast","standard","single_plane"]:
-            raise NameError("MDA Error: not the right experiment mode: {self.config.experiment.mode}")
+            raise NameError(f"MDA Error: not the right experiment mode: {self.config.experiment.mode}")
         
         self.filterseq = [] # Liste des filtres dans l'ordre utilisé
         for n in range(self.n_channels):

@@ -198,9 +198,13 @@ class multi_position_edditor(QWidget, Ui_Form):
                 self.table_positions.setCellWidget(row, column, pb_fun)
                 
                 column += 1
+                
+        self._send_to_parent()
     
     def set_enabled(self, r, enabled):
         self.positions[r].enabled = enabled
+        
+        self._send_to_parent()
         
     def get_name(self, r):
         return self.positions[r].name
@@ -210,6 +214,8 @@ class multi_position_edditor(QWidget, Ui_Form):
         if line_edit is not None :
             name = line_edit.text()
             self.positions[r].name = name
+            
+        self._send_to_parent()
         
     def set_axe_value(self, r, column, axe):
         sb = self.table_positions.cellWidget(r, column)
@@ -222,6 +228,8 @@ class multi_position_edditor(QWidget, Ui_Form):
                 self.positions[r].z = sb.value()
             else :
                 raise ValueError(f"Axe should be x, y or z, actually {axe}")
+                
+            self._send_to_parent()
             
     def get_axe_value(self, r, axe:str) :
         if axe == "x" :
@@ -291,6 +299,11 @@ class multi_position_edditor(QWidget, Ui_Form):
             icon_path = path
             
         return QIcon(icon_path)
+    
+    def _send_to_parent(self):
+        if self.parent is not None :
+            self.parent().positions = self.positions
+            self.parent()._set_lcdNumber_multipositions()
     
     def ask_user(self, title = "Confirm deletion", message = "Would you like to delete position ?"):
         result = QMessageBox.question(self,

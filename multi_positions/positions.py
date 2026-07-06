@@ -37,6 +37,14 @@ class Positions:
         self._positions.append(Position(x, y, z, enabled, name))
         self.i += 1
         
+    def get_n_active_positions(self):
+        n_active_positions = 0
+        for position in self._positions :
+            if position.enabled :
+                n_active_positions += 1
+        
+        return n_active_positions
+        
     def move_down(self, index: int) -> None:
         if index >= 0 and index < len(self._positions) -1 :
             self._positions[index], self._positions[index + 1] = (
