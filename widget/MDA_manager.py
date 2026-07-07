@@ -164,8 +164,11 @@ class mda_mannager(QWidget, Ui_Form):
         self.pb_grayscale_min_max.clicked.connect(self.pb_grayscale_min_max_clicked)
         self.pb_grayscale_auto.clicked.connect(self.pb_grayscale_auto_clicked)
         self.pb_grayscale_reset.clicked.connect(self.pb_grayscale_reset_clicked)
-        self.sb_grayscale_min.valueChanged.connect(self.sb_grayscale_value_changed)
-        self.sb_grayscale_max.valueChanged.connect(self.sb_grayscale_value_changed)
+        
+        self.sb_grayscale_min.editingFinished.connect(self.sb_grayscale_value_changed)
+        self.sb_grayscale_max.editingFinished.connect(self.sb_grayscale_value_changed)
+        self.slider_grayscale_min.sliderMoved.connect(self.sb_grayscale_value_changed)
+        self.slider_grayscale_max.sliderMoved.connect(self.sb_grayscale_value_changed)
         
         self.sb_timeline.valueChanged.connect(self.sb_timeline_value_changed)
         
@@ -233,6 +236,8 @@ class mda_mannager(QWidget, Ui_Form):
                 self.slider_grayscale_min.setValue(np.min(self.project_max_front[self.channel_display]))
                 self.slider_grayscale_max.setValue(np.max(self.project_max_front[self.channel_display]))
                 
+            self.sb_grayscale_value_changed()
+                
     def pb_grayscale_auto_clicked(self):
         if self.project_mean_front[self.channel_display] is not None and self.project_max_front[self.channel_display] is not None :
             if self.projection == "mean" :
@@ -243,11 +248,14 @@ class mda_mannager(QWidget, Ui_Form):
                 
             self.slider_grayscale_min.setValue(min_gray)
             self.slider_grayscale_max.setValue(max_gray)
+            
+            self.sb_grayscale_value_changed()
 
     
     def pb_grayscale_reset_clicked(self):
         self.slider_grayscale_min.setValue(0)
         self.slider_grayscale_max.setValue(65535)
+        self.sb_grayscale_value_changed()
         
     def sb_grayscale_value_changed(self):
         """

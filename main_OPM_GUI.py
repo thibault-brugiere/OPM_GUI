@@ -19,8 +19,8 @@ warnings.filterwarnings(
 )
 
 import copy
+from datetime import datetime
 import json
-import math
 import numpy as np
 import os
 import pickle
@@ -353,8 +353,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
 
             ## Preview
         self.checkBox_show_saturation.stateChanged.connect(self.checkBox_show_saturation_value_changed)
-        self.spinBox_min_grayscale.valueChanged.connect(self.spinBox_grayscale_value_changed)
-        self.spinBox_max_grayscale.valueChanged.connect(self.spinBox_grayscale_value_changed)
+        self.spinBox_min_grayscale.editingFinished.connect(self.spinBox_grayscale_value_changed)
+        self.spinBox_max_grayscale.editingFinished.connect(self.spinBox_grayscale_value_changed)
+        self.slider_min_grayscale.sliderMoved.connect(self.spinBox_grayscale_value_changed)
+        self.slider_max_grayscale.sliderMoved.connect(self.spinBox_grayscale_value_changed)
         self.pb_MinMax_grayscale.clicked.connect(self.pb_MinMax_grayscale_clicked_connect)
         self.pb_auto_grayscale.clicked.connect(self.pb_auto_grayscale_clicked_connect)
         self.pb_reset_grayscale.clicked.connect(self.pb_reset_grayscale_clicked_connect)
@@ -1019,6 +1021,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             frame = self.preview_frame
             self.spinBox_min_grayscale.setValue(np.min(frame))
             self.spinBox_max_grayscale.setValue(np.max(frame))
+            self.spinBox_grayscale_value_changed()
         else:
             pass
     
@@ -1033,6 +1036,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
             self.spinBox_min_grayscale.setValue(min_grayscale)
             self.spinBox_max_grayscale.setValue(max_grayscale)
+            self.spinBox_grayscale_value_changed()
         else:
             pass
         
@@ -1040,6 +1044,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         "Resets the grayscale range to the full 16-bit scale (0 to 65535)."
         self.spinBox_max_grayscale.setValue(65535)
         self.spinBox_min_grayscale.setValue(0)
+        self.spinBox_grayscale_value_changed()
             
     def comboBox_preview_zoom_index_changed(self):
         self.preview_zoom = [-1 , 2 , 1 , 0.5 , 1/3 , 0.25][self.comboBox_preview_zoom.currentIndex()]
@@ -1075,17 +1080,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             return
     
         # Création du chemin de base
-        
-        base_file_path = os.path.join(self.experiment.data_path , f"{self.experiment.exp_name}_000.tiff")
-        
-        # Initialiser le suffixe
-        suffix = 0
-        file_path = base_file_path
-        
-        # Vérifier si le fichier existe déjà et trouver un nom disponible
-        while os.path.exists(file_path):
-            suffix += 1
-            file_path = os.path.join(self.experiment.data_path, f"{self.experiment.exp_name}_{suffix:03d}.tiff")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_path = os.path.join(self.experiment.data_path, f"{timestamp}_{self.experiment.exp_name}.tiff")
                 
         try:
             tifffile.imwrite(file_path, self.preview_frame)

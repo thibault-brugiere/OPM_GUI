@@ -10,6 +10,7 @@ This widget connects to a Thorlabs camera (TLCamera via pylablib) and allows:
 """
 
 import atexit
+from datetime import datetime
 import json
 import numpy as np
 import os
@@ -195,9 +196,6 @@ class sample_finder_Window(QWidget, Ui_Form):
             # Timers
             #
         
-        # self.timer_illuminator = QTimer() # Timer to show the illuminator weel position
-        # self.timer_illuminator.timeout.connect(self.update_illuminator)
-        # self.timer_illuminator.start(100)
         self.timer_mirror = QTimer()
         self.timer_mirror.timeout.connect(self.update_mirror_position)
         self.timer_mirror.start(200)
@@ -225,8 +223,10 @@ class sample_finder_Window(QWidget, Ui_Form):
             ## Preview visualisation
         self.comboBox_LUT.currentIndexChanged.connect(self.comboBox_LUT_changed)
         self.comboBox_preview_zoom.currentIndexChanged.connect(self.comboBox_preview_zoom_changed)
-        self.spinBox_max_grayscale.valueChanged.connect(self.spinBox_grayscale_value_changed)
-        self.spinBox_min_grayscale.valueChanged.connect(self.spinBox_grayscale_value_changed)
+        self.spinBox_max_grayscale.editingFinished.connect(self.spinBox_grayscale_value_changed)
+        self.spinBox_min_grayscale.editingFinished.connect(self.spinBox_grayscale_value_changed)
+        self.slider_min_grayscale.sliderMoved.connect(self.spinBox_grayscale_value_changed)
+        self.slider_max_grayscale.sliderMoved.connect(self.spinBox_grayscale_value_changed)
         self.pb_minmax_grayscale.clicked.connect(self.pb_minmax_grayscale_clicked)
         self.pb_reset_grayscale.clicked.connect(self.pb_resset_grayscale_clicked)
         self.pb_auto_grayscale.clicked.connect(self.pb_auto_grayscale_clicked)
@@ -372,6 +372,7 @@ class sample_finder_Window(QWidget, Ui_Form):
             frame = self.preview_frame
             self.spinBox_min_grayscale.setValue(np.min(frame))
             self.spinBox_max_grayscale.setValue(np.max(frame))
+            self.spinBox_grayscale_value_changed()
         else:
             pass
     
@@ -380,14 +381,15 @@ class sample_finder_Window(QWidget, Ui_Form):
         if self.preview_frame is not None :
             frame = self.preview_frame
             min_gray, max_gray = functions_ui.auto_contrast(frame)
-            
             self.spinBox_min_grayscale.setValue(min_gray)
             self.spinBox_max_grayscale.setValue(max_gray)
+            self.spinBox_grayscale_value_changed()
     
     def pb_resset_grayscale_clicked(self):
         """Reset grayscale values to full dynamic range (0–4095)."""
         self.spinBox_min_grayscale.setValue(0)
         self.spinBox_max_grayscale.setValue(4095)
+        self.spinBox_grayscale_value_changed()
     
         #
         # Preview controll
@@ -433,17 +435,8 @@ class sample_finder_Window(QWidget, Ui_Form):
             return
     
         # Build file path with increment
-        
-        base_file_path = os.path.join(self.data_path , f"{self.exp_name}_000.tiff")
-        
-        # Initialiser le suffixe
-        suffix = 0
-        file_path = base_file_path
-        
-        # Vérifier si le fichier existe déjà et trouver un nom disponible
-        while os.path.exists(file_path):
-            suffix += 1
-            file_path = os.path.join(self.data_path, f"{self.exp_name}_{suffix:03d}.tiff")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_path = os.path.join(self.data_path, f"{timestamp}_Transmission_{self.exp_name}.tiff")
                 
         try:
             tifffile.imwrite(file_path, self.preview_frame)

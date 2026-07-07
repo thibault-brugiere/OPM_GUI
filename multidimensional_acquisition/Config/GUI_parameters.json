@@ -10,7 +10,7 @@
             "hpos": 0,
             "vsize": 2368,
             "vpos": 0,
-            "exposure_time": 0.01,
+            "exposure_time": 0.05,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
             "image_readout_time": 0.008493058
@@ -23,7 +23,7 @@
             "channel_order": null,
             "laser_is_active": {
                 "405": false,
-                "488": true,
+                "488": false,
                 "561": false,
                 "640": false
             },
@@ -35,7 +35,7 @@
             },
             "filter": "GFP",
             "camera": 0,
-            "exposure_time": 10.0
+            "exposure_time": 50.0
         }
     },
     "experiment": {
@@ -44,7 +44,7 @@
         "timepoints": 1,
         "time_intervals": 1.0,
         "total_duration": 10.0,
-        "mode": "multiposition",
+        "mode": "standard",
         "positions": 0,
         "scanner_position": 0,
         "scan_range": 20.279883589761845,
