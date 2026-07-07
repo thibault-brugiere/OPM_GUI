@@ -52,6 +52,7 @@ from multi_positions.positions import Positions
 
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
 from LS3_acquisition.main_LS3 import Light_sheet_stabilized_scanning
+from multiposition_acquisition.main_MPA import MultiPositionAcquisition
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
@@ -1279,32 +1280,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
         elif mode == "LS3" :
             for tool in tools_LS3 : tool.setEnabled(True)
-        
-    def pb_multi_position_acquisition_clicked_connect(self):
-        """Start acquisition with the Multi Position Acquisition protocole"""   
-        
-        self._stop_preview()
-        
-        # self.experiment.mode = "multi_position"
-            
-        if self.active_channels and self.active_channels[0] != 'None' :
-            
-            self.experiment.positions = self.positions.get_n_active_positions()
-            
-            channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
-            send_to_multiposition_acquisition(self.camera,
-                                              self.filterWheel,
-                                              channel_acquisition,
-                                              self.experiment,
-                                              self.microscope,
-                                              self.positions,
-                                              dirname = 'multiposition_acquisition/Config',
-                                              filename = 'GUI_parameters.json',)
-            
-            self.status_bar.showMessage("start multiposition acquisition")
-            
-        else:
-            self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
     
     def pb_multidimensional_acquisition_clicked_connect(self):
             
@@ -1363,6 +1338,41 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 
             # except:
             #     self.status_bar.showMessage("Multidimensional acquisition didn't worked!", 5000)
+        else:
+            self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
+            
+    def pb_multi_position_acquisition_clicked_connect(self):
+        """Start acquisition with the Multi Position Acquisition protocole"""   
+        
+        self._stop_preview()
+        
+        # self.experiment.mode = "multi_position"
+            
+        if self.active_channels and self.active_channels[0] != 'None' :
+            
+            self.experiment.positions = self.positions.get_n_active_positions()
+            
+            channel_acquisition = functions_ui.get_active_channel(self.active_channels, self.channel)
+            send_to_multiposition_acquisition(self.camera,
+                                              self.filterWheel,
+                                              channel_acquisition,
+                                              self.experiment,
+                                              self.microscope,
+                                              self.positions,
+                                              dirname = 'multiposition_acquisition/Config',
+                                              filename = 'GUI_parameters.json',)
+            
+            self.status_bar.showMessage("start multiposition acquisition")
+            
+            MPA = MultiPositionAcquisition(self.hcam, self.filterWheel)
+            MPA.initialize_cameras()
+            MPA.initialize_laser()
+            MPA.initialize_acquisition_workers()
+            MPA.initialize_filterwheel()
+            MPA.configure_daq()
+            MPA.initialize_count_worker()
+            MPA.run()
+            
         else:
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
             

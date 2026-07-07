@@ -541,9 +541,10 @@ Preview volumes dropped: {self.preview_dropped}
         
         
     def display_image(self, img: np.ndarray):
-        qimg = self.create_preview(img)
-        scaled_qimg = qimg.scaled(self.label_mainImage.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        self.label_mainImage.setPixmap(QPixmap.fromImage(scaled_qimg))
+        if img is not None :
+            qimg = self.create_preview(img)
+            scaled_qimg = qimg.scaled(self.label_mainImage.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.label_mainImage.setPixmap(QPixmap.fromImage(scaled_qimg))
 
     def display_side_view(self, img: np.ndarray):
         qimg = self.create_preview(img)

@@ -152,6 +152,7 @@ class sample_finder_Window(QWidget, Ui_Form):
             
         self.exposure_time = 10 # in milliseconds
         self.cube = 1
+        self.preview_frame = None
         
             #
             # Preview defaults
