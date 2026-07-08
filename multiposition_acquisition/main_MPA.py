@@ -57,6 +57,9 @@ class MultiPositionAcquisition:
         self.config = config(dirname=config_path)
         self.n_channels = len(self.config.channels)
         self.n_positions = self.config.experiment.positions
+        self.remaining_time = 0.0
+        self.timepoint = 0
+        self.position = 0
         
         self.positions = Positions()
         self.positions.load(os.path.join(config_path, "positions.json"))
@@ -244,7 +247,6 @@ class MultiPositionAcquisition:
                       'acquisition_workers' : 'processing',
                       'daq': 'controll'
                       }
-        pos = 0
         
         time_pos = 0 # Total timepoints and positions acquired
         
@@ -255,13 +257,14 @@ class MultiPositionAcquisition:
         for timepoint in range(timepoints) :
             self.timepoint_values.append(time.time())
             self.timepoint_bar.update(1)
+            self.timepoint += 1
             self.position_bar.n = 0
             self.position_bar.refresh()
+            self.position = 0
             for position in self.positions :
                 if position.enabled :
-                    # pos += 1
                     time_pos += 1
-                    pos = (pos % self.n_positions) + 1
+                    self.position = (self.position % self.n_positions) + 1
                     
                     self.stage.go_to_position([position.x * 1000, position.y * 1000, position.z * 1000 ])
                     
@@ -288,18 +291,18 @@ class MultiPositionAcquisition:
                     except:
                         print("[INFO] Acquisition interrupted by user.")
                         
-                    self.position_bar.n = pos
+                    self.position_bar.n = self.position
                     self.position_bar.refresh()
                     
                     time.sleep(0.011)
                     
-            remaining_time = time_start + (timepoint + 1) * self.config.experiment.time_intervals - time.time()
-            if remaining_time > 0 :
-                self.remaining_time_message.set_description_str(f"{remaining_time:.2f}s remaining between frames...")
+            self.remaining_time = time_start + (timepoint + 1) * self.config.experiment.time_intervals - time.time()
+            if self.remaining_time >= 0 :
+                self.remaining_time_message.set_description_str(f"{self.remaining_time:.2f}s remaining between frames...")
                 self.remaining_time_message.refresh()
-                time.sleep(remaining_time)
+                time.sleep(self.remaining_time)
             else :
-                self.remaining_time_message.set_description_str(f"{-remaining_time:.2f}s missing between frames...")
+                self.remaining_time_message.set_description_str(f"{-self.remaining_time:.2f}s missing between frames...")
                 self.remaining_time_message.refresh()
 
         self.stop_all()

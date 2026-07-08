@@ -4,7 +4,7 @@ Created on Wed Jul 16 16:30:29 2025
 
 @author: tbrugiere
 
-pyside6-uic widget/ui_mda.ui -o widget/ui_mda.py
+pyside6-uic D:/Projets_Python/OPM_GUI/widget/ui_mda.ui -o D:/Projets_Python/OPM_GUI/widget/ui_mda.py
 """
 from collections import deque
 import cv2
@@ -83,11 +83,20 @@ class mda_mannager(QWidget, Ui_Form):
         # Values for displaying, calculation
         #
         
+        if self.mda.config.experiment.mode == "multiposition" :
+            self.total_positions = self.mda.config.experiment.positions
+            self.channel_names = []
+            for k in range(self.mda.config.experiment.positions):
+                for ch in self.mda.config.channels :
+                    self.channel_names.append(f"{k}_{ch.channel_id}")
+        else :
+            self.total_positions = 1
+            self.channel_names = [ch.channel_id for ch in self.mda.config.channels]
+            self.channel_display = self.channel_names[0]
+            
         self.total_timepoints = self.mda.config.experiment.timepoints
-        self.total_images = self.total_timepoints * self.mda.config.experiment.n_steps * len(self.mda.config.channels)
+        self.total_images = self.total_timepoints * self.mda.config.experiment.n_steps * len(self.mda.config.channels) * self.total_positions
         self.total_channels = len(self.mda.config.channels)
-        self.channel_names = [ch.channel_id for ch in self.mda.config.channels]
-        self.channel_display = self.channel_names[0]
         
         self._cb_image_channel_set()
         
@@ -335,19 +344,35 @@ class mda_mannager(QWidget, Ui_Form):
             self.ellapsed_time = 0
         # except:
         #     return
+        
+
             
         self.images_acquired = self.mda.acquisition_workers[0].total_images
         self.frames_acquired = self.mda.acquisition_workers[0].total_frames
         self.frames_dropped = self.mda.acquisition_workers[0].total_dropped
         self.channels_saved = self.mda.acquisition_workers[0].total_volumes
+        
+        if self.mda.config.experiment.mode == "multiposition" :
+            if self.mda.remaining_time >= 0 :
+                rt = f"{self.mda.remaining_time:.2f}s remaining between frames..."
+            else :
+                rt = f"{-self.mda.remaining_time:.2f}s missing between frames..."
+                
+            sup_message =f"""Timepoints :  {self.mda.timepoint}/{self.total_timepoints}
+Positions : {self.mda.position}/{self.total_positions}
+{rt}
+"""
+        else :
+            sup_message = ""
+        
         self.label_informations.setText(f"""
 Camera : {self.mda.state["camera"]}, DAQ : {self.mda.state["daq"]}
 Frames Acquired: {self.frames_acquired}/{self.total_images}
 Frames Dropped: {self.frames_dropped}/{self.total_images}
-Channels Saved: {self.channels_saved}/{self.total_timepoints * self.total_channels}
+Channels Saved: {self.channels_saved}/{self.total_timepoints * self.total_channels * self.total_positions}
+{sup_message}
 Volumes Recived: {self.volumes_recived}
 Time Ellapsed: {self.format_time(self.ellapsed_time)} s
-
 Preview volumes dropped: {self.preview_dropped}
 {self.preview_message}
 {self.button_message}
@@ -356,7 +381,7 @@ Preview volumes dropped: {self.preview_dropped}
                                         
     def _set_progress_bar(self):
         self.progressBar_acquisition.setMaximum(self.total_images)
-        self.progressBar_saving.setMaximum(self.total_timepoints * self.total_channels)
+        self.progressBar_saving.setMaximum(self.total_timepoints * self.total_channels * self.total_positions)
     
     def update_progress_bar(self):
         self.progressBar_acquisition.setValue(int(self.images_acquired))
@@ -666,6 +691,8 @@ class ChannelProcessor(QObject):
         
 if __name__ == '__main__':
     "To test the window"
+    # acquisition = "MDA"
+    acquisition = "MPA"
     
     # set multidimensional_acquisition importable
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "multidimensional_acquisition"))
@@ -673,9 +700,13 @@ if __name__ == '__main__':
         sys.path.insert(0, project_root)
         
     from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
-
-        
-    MDA = MultidimensionalAcquisition()
+    from multiposition_acquisition.main_MPA import MultiPositionAcquisition
+    
+    if acquisition == "MDA" :
+        MDA = MultidimensionalAcquisition()
+    elif acquisition == "MPA" :
+        MDA = MultiPositionAcquisition()
+    
     app = QApplication(sys.argv)
     
     editor = mda_mannager(MDA)

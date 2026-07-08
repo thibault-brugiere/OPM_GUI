@@ -6,14 +6,14 @@
             "vchipsize": 2368,
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
-            "hsize": 1500,
-            "hpos": 1464,
-            "vsize": 1024,
-            "vpos": 672,
-            "exposure_time": 0.03,
+            "hsize": 1024,
+            "hpos": 1704,
+            "vsize": 512,
+            "vpos": 928,
+            "exposure_time": 0.015,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
-            "image_readout_time": 0.003800727272727273
+            "image_readout_time": 0.0019296
         }
     },
     "channels": {
@@ -36,16 +36,36 @@
             "filter": "GFP",
             "camera": 0,
             "exposure_time": 30.0
+        },
+        "channel_CY3.5": {
+            "channel_id": "CY3.5",
+            "is_active": true,
+            "channel_order": null,
+            "laser_is_active": {
+                "405": false,
+                "488": false,
+                "561": true,
+                "640": false
+            },
+            "laser_power": {
+                "405": 0,
+                "488": 0,
+                "561": 5,
+                "640": 0
+            },
+            "filter": "CY3.5",
+            "camera": 0,
+            "exposure_time": 15.0
         }
     },
     "experiment": {
-        "exp_name": "MultiPosition",
-        "data_path": "",
+        "exp_name": "Image",
+        "data_path": "D:/Projets_Python/OPM_GUI/Images",
         "timepoints": 6,
-        "time_intervals": 20.0,
-        "total_duration": 120.0,
+        "time_intervals": 10.0,
+        "total_duration": 60.0,
         "mode": "multiposition",
-        "positions": 5,
+        "positions": 4,
         "scanner_position": 0,
         "scan_range": 20.279883589761845,
         "stage_scan_range": 300,

@@ -198,9 +198,19 @@ class AcquisitionWorker(QObject):
                 if slice_idx == expected_slices:
                     # EMIT the volume as soon as it's filled
                     if self.preview_callback:
+                        
+                        pos = volume_id % self.n_positions
+                        timepoint = int(volume_id / self.n_positions)
+                        
                         preview_data = {
                             "volume_id": volume_id,
                             "channel": current_channel,
+                            "shape": current_buffer.shape
+                        }
+                        
+                        preview_data = {
+                            "volume_id": timepoint,
+                            "channel": f"{pos}_{current_channel}",
                             "shape": current_buffer.shape
                         }
                         self.new_volume_ready.emit(current_buffer.copy(), preview_data)
@@ -243,10 +253,10 @@ class AcquisitionWorker(QObject):
             channel = frame.channel
             
             pos = volume_id % self.n_positions
-            time = int(volume_id / self.n_positions)
+            timepoint = int(volume_id / self.n_positions)
             
 
-            filename_base = os.path.join(self.save_dir, f"{channel}_pos_{pos:02d}_t_{time:04d}")
+            filename_base = os.path.join(self.save_dir, f"{channel}_pos_{pos:02d}_t_{timepoint:04d}")
             if self.save_type == "TIFF":
                 imwrite(f"{filename_base}.tif", buffer)
             elif self.save_type == "RAW":

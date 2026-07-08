@@ -1365,13 +1365,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.status_bar.showMessage("start multiposition acquisition")
             
             MPA = MultiPositionAcquisition(self.hcam, self.filterWheel)
-            MPA.initialize_cameras()
-            MPA.initialize_laser()
-            MPA.initialize_acquisition_workers()
-            MPA.initialize_filterwheel()
-            MPA.configure_daq()
-            MPA.initialize_count_worker()
-            MPA.run()
+            
+            self.MPA_manager = mda_mannager(MPA, self)
+            self.MPA_manager.show()
+            self.MPA_manager.start_acquisition()
             
         else:
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
