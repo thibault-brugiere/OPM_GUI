@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'ui_pretreatement.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.2
+## Created by: Qt User Interface Compiler version 6.9.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -23,7 +23,7 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(673, 515)
+        Form.resize(673, 604)
         self.verticalLayout = QVBoxLayout(Form)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
@@ -44,96 +44,140 @@ class Ui_Form(object):
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
+        self.pb_psf_folder = QPushButton(Form)
+        self.pb_psf_folder.setObjectName(u"pb_psf_folder")
+
+        self.horizontalLayout.addWidget(self.pb_psf_folder)
+
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.label_folder = QLabel(Form)
         self.label_folder.setObjectName(u"label_folder")
 
-        self.verticalLayout.addWidget(self.label_folder)
+        self.horizontalLayout_5.addWidget(self.label_folder)
 
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_5.addItem(self.horizontalSpacer_2)
+
+        self.label_psf = QLabel(Form)
+        self.label_psf.setObjectName(u"label_psf")
+
+        self.horizontalLayout_5.addWidget(self.label_psf)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_5)
+
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.pb_start_MDAdeskew = QPushButton(Form)
         self.pb_start_MDAdeskew.setObjectName(u"pb_start_MDAdeskew")
         self.pb_start_MDAdeskew.setMinimumSize(QSize(75, 48))
 
-        self.horizontalLayout_2.addWidget(self.pb_start_MDAdeskew)
+        self.horizontalLayout_6.addWidget(self.pb_start_MDAdeskew)
 
         self.label_spacer = QLabel(Form)
         self.label_spacer.setObjectName(u"label_spacer")
         self.label_spacer.setMinimumSize(QSize(32, 48))
         self.label_spacer.setMaximumSize(QSize(32, 16777215))
 
-        self.horizontalLayout_2.addWidget(self.label_spacer)
+        self.horizontalLayout_6.addWidget(self.label_spacer)
 
+        self.cb_only_deskew = QCheckBox(Form)
+        self.cb_only_deskew.setObjectName(u"cb_only_deskew")
+        self.cb_only_deskew.setMinimumSize(QSize(100, 0))
+
+        self.horizontalLayout_6.addWidget(self.cb_only_deskew)
+
+        self.cb_decon = QCheckBox(Form)
+        self.cb_decon.setObjectName(u"cb_decon")
+
+        self.horizontalLayout_6.addWidget(self.cb_decon)
+
+        self.sb_decon_iter = QSpinBox(Form)
+        self.sb_decon_iter.setObjectName(u"sb_decon_iter")
+        self.sb_decon_iter.setMinimum(1)
+        self.sb_decon_iter.setValue(10)
+
+        self.horizontalLayout_6.addWidget(self.sb_decon_iter)
+
+        self.label_2 = QLabel(Form)
+        self.label_2.setObjectName(u"label_2")
+
+        self.horizontalLayout_6.addWidget(self.label_2)
+
+        self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_6.addItem(self.horizontalSpacer_11)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_6)
+
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.pb_start_LS3deskew = QPushButton(Form)
         self.pb_start_LS3deskew.setObjectName(u"pb_start_LS3deskew")
         self.pb_start_LS3deskew.setMinimumSize(QSize(75, 48))
 
-        self.horizontalLayout_2.addWidget(self.pb_start_LS3deskew)
+        self.horizontalLayout_3.addWidget(self.pb_start_LS3deskew)
 
         self.label_spacer_2 = QLabel(Form)
         self.label_spacer_2.setObjectName(u"label_spacer_2")
         self.label_spacer_2.setMinimumSize(QSize(32, 48))
-        self.label_spacer_2.setMaximumSize(QSize(32, 16777215))
 
-        self.horizontalLayout_2.addWidget(self.label_spacer_2)
+        self.horizontalLayout_3.addWidget(self.label_spacer_2)
 
         self.pb_ZARRconvert = QPushButton(Form)
         self.pb_ZARRconvert.setObjectName(u"pb_ZARRconvert")
         self.pb_ZARRconvert.setMinimumSize(QSize(75, 48))
 
-        self.horizontalLayout_2.addWidget(self.pb_ZARRconvert)
+        self.horizontalLayout_3.addWidget(self.pb_ZARRconvert)
 
         self.pb_start_LS3deskew_ZARR = QPushButton(Form)
         self.pb_start_LS3deskew_ZARR.setObjectName(u"pb_start_LS3deskew_ZARR")
         self.pb_start_LS3deskew_ZARR.setMinimumSize(QSize(75, 48))
 
-        self.horizontalLayout_2.addWidget(self.pb_start_LS3deskew_ZARR)
+        self.horizontalLayout_3.addWidget(self.pb_start_LS3deskew_ZARR)
 
         self.pb_TIFFconvert = QPushButton(Form)
         self.pb_TIFFconvert.setObjectName(u"pb_TIFFconvert")
         self.pb_TIFFconvert.setMinimumSize(QSize(75, 48))
 
-        self.horizontalLayout_2.addWidget(self.pb_TIFFconvert)
+        self.horizontalLayout_3.addWidget(self.pb_TIFFconvert)
 
         self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.horizontalLayout_2.addItem(self.horizontalSpacer_4)
+        self.horizontalLayout_3.addItem(self.horizontalSpacer_4)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.verticalLayout.addLayout(self.horizontalLayout_3)
 
-        self.horizontalLayout_3 = QHBoxLayout()
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.cb_only_deskew = QCheckBox(Form)
-        self.cb_only_deskew.setObjectName(u"cb_only_deskew")
-        self.cb_only_deskew.setMinimumSize(QSize(100, 0))
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalSpacer_7 = QSpacerItem(35, 17, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.horizontalLayout_3.addWidget(self.cb_only_deskew)
-
-        self.horizontalSpacer_7 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_3.addItem(self.horizontalSpacer_7)
+        self.horizontalLayout_2.addItem(self.horizontalSpacer_7)
 
         self.cb_try_no_ZARR = QCheckBox(Form)
         self.cb_try_no_ZARR.setObjectName(u"cb_try_no_ZARR")
         self.cb_try_no_ZARR.setMinimumSize(QSize(100, 0))
         self.cb_try_no_ZARR.setChecked(False)
 
-        self.horizontalLayout_3.addWidget(self.cb_try_no_ZARR)
+        self.horizontalLayout_2.addWidget(self.cb_try_no_ZARR)
 
         self.cb_delete_zarr = QCheckBox(Form)
         self.cb_delete_zarr.setObjectName(u"cb_delete_zarr")
         self.cb_delete_zarr.setMinimumSize(QSize(100, 0))
         self.cb_delete_zarr.setChecked(False)
 
-        self.horizontalLayout_3.addWidget(self.cb_delete_zarr)
+        self.horizontalLayout_2.addWidget(self.cb_delete_zarr)
 
-        self.horizontalSpacer_8 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer_8 = QSpacerItem(35, 17, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.horizontalLayout_3.addItem(self.horizontalSpacer_8)
+        self.horizontalLayout_2.addItem(self.horizontalSpacer_8)
 
         self.sb_max_z = QSpinBox(Form)
         self.sb_max_z.setObjectName(u"sb_max_z")
@@ -141,15 +185,19 @@ class Ui_Form(object):
         self.sb_max_z.setMaximum(999)
         self.sb_max_z.setValue(200)
 
-        self.horizontalLayout_3.addWidget(self.sb_max_z)
+        self.horizontalLayout_2.addWidget(self.sb_max_z)
 
         self.label_lax_z = QLabel(Form)
         self.label_lax_z.setObjectName(u"label_lax_z")
 
-        self.horizontalLayout_3.addWidget(self.label_lax_z)
+        self.horizontalLayout_2.addWidget(self.label_lax_z)
+
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.horizontalSpacer_3)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_3)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
 
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
@@ -210,13 +258,21 @@ class Ui_Form(object):
         self.pb_detect_files.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Automatically detect files to process in the selected folder</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_detect_files.setText(QCoreApplication.translate("Form", u"Detect files", None))
+        self.pb_psf_folder.setText(QCoreApplication.translate("Form", u"PSF folder", None))
         self.label_folder.setText(QCoreApplication.translate("Form", u"folder", None))
+        self.label_psf.setText(QCoreApplication.translate("Form", u"psf", None))
 #if QT_CONFIG(tooltip)
         self.pb_start_MDAdeskew.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Process images if an MDA experiment is detected</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_start_MDAdeskew.setText(QCoreApplication.translate("Form", u"MDA\n"
 "deskewing", None))
         self.label_spacer.setText("")
+#if QT_CONFIG(tooltip)
+        self.cb_only_deskew.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Apply deskewing only (skip rotation step)</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.cb_only_deskew.setText(QCoreApplication.translate("Form", u"Only deskew", None))
+        self.cb_decon.setText(QCoreApplication.translate("Form", u"Deconvolution", None))
+        self.label_2.setText(QCoreApplication.translate("Form", u"Iter", None))
 #if QT_CONFIG(tooltip)
         self.pb_start_LS3deskew.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Entirely process images if an LS3 experiment is detected</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
@@ -237,10 +293,6 @@ class Ui_Form(object):
 #endif // QT_CONFIG(tooltip)
         self.pb_TIFFconvert.setText(QCoreApplication.translate("Form", u"TIFF\n"
 "conversion", None))
-#if QT_CONFIG(tooltip)
-        self.cb_only_deskew.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Apply deskewing only (skip rotation step)</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.cb_only_deskew.setText(QCoreApplication.translate("Form", u"Only deskew", None))
 #if QT_CONFIG(tooltip)
         self.cb_try_no_ZARR.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Skip Zarr conversion for small datasets (faster processing)</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)

@@ -8,11 +8,10 @@ Created on Mon Feb 17 11:40:06 2025
 """
 Convert file.ui to file.py
 
-pyside6-uic widget/ui_channel_editor.ui -o widget/ui_channel_editor.py
-
 pyside6-uic D:/Projets_Python/OPM_GUI/image_analysis/ui_pretreatement.ui -o D:/Projets_Python/OPM_GUI/image_analysis/ui_pretreatement.py
 
 """
+from collections import Counter
 from functools import partial
 import os
 import sys
@@ -30,8 +29,9 @@ if __name__ == "__main__":
     sys.path.append(parent_dir)
 
 from image_analysis.ui_pretreatement import Ui_Form
-from image_analysis.parsename import parse_mda_filenames, parse_ls3_filenames, parse_ls3_foldernames, parse_ls3_deskew_foldernames
+from image_analysis.parsename import parse_mda_filenames, parse_ls3_filenames, parse_ls3_foldernames, parse_ls3_deskew_foldernames, parse_psf_foldernames
 from image_analysis.Auto_deskew_rotate_cupy import auto_deskew_rotate_mda
+from image_analysis.Auto_deskew_rotate_cupy import auto_deskew_rotate_deconv_mda
 from image_analysis.Auto_deskew_rotate_cupy import auto_deskew_rotate_ls3 as auto_deskew_rotate_ls3_entire_volume
 from image_analysis.Auto_deskew_rotate_cupy import ImageTooLargeError
 from image_analysis.Zarr_conversion import auto_convert_tiffs_to_zarr
@@ -98,6 +98,9 @@ class PretreatementWindow(QWidget, Ui_Form):
         self.parse_ls3_folder = None
         self.parse_ls3_deskew = None
         
+        self.parse_psf = None
+        self.psf_path = None
+        
         self.processing_image_name = ""
         
         self.status = 'idle'
@@ -125,6 +128,9 @@ class PretreatementWindow(QWidget, Ui_Form):
         
         self.pb_select_folder.clicked.connect(self.pb_select_folder_clicked)
         self.pb_detect_files.clicked.connect(self.pb_detect_files_clicked)
+        self.pb_psf_folder.clicked.connect(self.pb_psf_folder_clicked)
+        self.cb_only_deskew.clicked.connect(self.cb_only_deskew_clicked)
+        self.cb_decon.clicked.connect(self.cb_decon_clicked)
         self.pb_start_MDAdeskew.clicked.connect(self.pb_start_MDAdeskew_clicked)
         self.pb_start_LS3deskew.clicked.connect(self.pb_start_LS3deskew_clicked)
         self.pb_ZARRconvert.clicked.connect(self.pb_ZARRconvert_clicked)
@@ -208,6 +214,7 @@ class PretreatementWindow(QWidget, Ui_Form):
                 self.label_parameters.setText(f"MDA detected\n{nfiles} files\n{nchannels} channels\n{nimages} images")
                 self.pb_start_MDAdeskew.setEnabled(True)
                 self.cb_only_deskew.setEnabled(True)
+                self.cb_decon.setEnabled(True)
                 file_detected = True
                 
             if len(self.parse_ls3_deskew['files']) != 0: # If images already deskewed detected
@@ -240,6 +247,7 @@ class PretreatementWindow(QWidget, Ui_Form):
                 self.cb_try_no_ZARR.setEnabled(True)
                 file_detected = True
                 
+            self._activate_psf_tools()
             self.label_parameters.adjustSize()
             
             if not file_detected :
@@ -248,6 +256,45 @@ class PretreatementWindow(QWidget, Ui_Form):
         else :
             self.label_parameters.setText("Select a folder")
             self.label_parameters.adjustSize()
+            
+    def pb_psf_folder_clicked(self):
+        """
+        Select the folder where psf is stored
+        stored in self.psf_path
+        """
+        self.psf_path = QFileDialog.getExistingDirectory(self, "Select psf Directory")
+        self.parse_psf = parse_psf_foldernames(self.psf_path)
+        self._activate_psf_tools()
+        self.label_parameters.adjustSize()
+                    
+    def _activate_psf_tools(self):
+        enable = False
+        message = ""
+        if self.parse_psf is not None :
+            if len(self.parse_psf['channels']) != 0 :
+                if self.parse_mda is not None :
+                    # if Counter(self.parse_mda['channels']) == Counter(self.parse_psf['channels']):
+                    if all(x in self.parse_mda['channels'] for x in self.parse_psf['channels']):
+                        enable = True
+                        message = "\nPSF selected"
+                    else :
+                        message = f"\nPSF and MDA channels not maching : {len(self.parse_mda['channels'])}/{len(self.parse_psf['channels'])}"
+            else :
+                message = "\nNo PSF files"
+        
+        self.label_parameters.setText(self.label_parameters.text() + message)
+        self.cb_decon.setEnabled(enable)
+        self.sb_decon_iter.setEnabled(enable)
+        
+    def cb_only_deskew_clicked(self):
+        if self.cb_only_deskew.isChecked() :
+            self.cb_decon.setDisabled(True)
+            self.sb_decon_iter.setDisabled(True)
+        else :
+            self._activate_psf_tools()
+        
+    def cb_decon_clicked(self):
+        self.cb_only_deskew.setDisabled(self.cb_decon.isChecked())
         
     def pb_start_MDAdeskew_clicked(self):
         """
@@ -255,7 +302,12 @@ class PretreatementWindow(QWidget, Ui_Form):
         detect the status of the self.cb_only_deskew checkbox before processing
         """
         self.status = "MDA deskewing"
-        function = partial(auto_deskew_rotate_mda, only_deskew = self.cb_only_deskew.isChecked())
+        
+        if self.cb_decon.isChecked() :
+            function = partial(auto_deskew_rotate_deconv_mda, psf_folder = self.psf_path , n_iter = self.sb_decon_iter.value())
+        else :
+            function = partial(auto_deskew_rotate_mda, only_deskew = self.cb_only_deskew.isChecked())
+        
         self.start_worker.emit(function,
                                self.folder_path)
    

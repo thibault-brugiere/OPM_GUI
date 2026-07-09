@@ -15,6 +15,7 @@ import numpy as np
 import cupy as cp
 import os
 from pathlib import Path
+from pycudadecon import decon
 import tifffile
 
 from deskew_rotate_cupyx import deskew_and_rotate_opm as deskew_rotate
@@ -105,6 +106,97 @@ def auto_deskew_rotate_mda(folder, only_deskew = False,
 
             
             tifffile.imwrite(output_file_path, out_volume_np, bigtiff=True, compression='zlib')
+            
+def auto_deskew_rotate_deconv_mda(folder, psf_folder, n_iter,
+                                  progress_folder_callback = None,
+                                  progress_file_callback = None,
+                                  stop_requested_callback=None):
+    """
+    Automaticalli deskew and rotate (optionnaly) images from MDA protocol contained in a folder.
+    The images should be in a folder in the format : "{channel}_volume_{:04d}.tif"
+    It save the images in the same folder in the format: "deskew-rotate_Position_{channel}_volume_{:04d}.tif"
+
+    Parameters
+    ----------
+    folder : TYPE
+        folder path containing the images to deskew and rotate
+    only_deskew : TYPE, optional
+        To skip the rotation process. The default is False.
+    progress_folder_callback : None, optional
+        External process use to follow the advancement of the program
+    progress_file_callback : None, optional
+        External process use to follow the advancement of the program
+    stop_requested_callback : None, optional
+        External process use to stop the advancement of the program
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    parse_mda = parsename.parse_mda_filenames(folder)
+    parse_psf = parsename.parse_psf_foldernames(psf_folder)
+    metadata = parsename.get_metadata(folder)
+    
+    if len(parse_mda['files']) == 0 :
+        return
+    
+    if progress_folder_callback is not None :
+        total_images = len(parse_mda["files"])
+        processed_images = 0
+        
+    
+    if not all(x in parse_mda['channels'] for x in parse_psf['channels']):
+        print(f"\nPSF and MDA channels not maching : {len(parse_mda['channels'])}/{len(parse_psf['channels'])}")
+        return
+    
+    psfs = {}
+    for psf_file in parse_psf['files'] :
+        psf = tifffile.imread(psf_file['path']).astype("float32")
+        psf = np.clip(psf, 0, None)
+        psf /= psf.sum()
+        
+        psfs[psf_file['channel']] = psf
+        
+    for file in parse_mda["files"] :
+        if stop_requested_callback is not None and stop_requested_callback():
+            return
+        
+        if file['process'] :
+            file_path = Path(file['path'])
+            name = file_path.name
+            
+            if progress_folder_callback is not None :
+                processed_images += 1
+                progress_folder_callback(processed_images, total_images, name)
+                if progress_file_callback is not None :
+                    progress_file_callback(0,0)
+            else:
+                print(f'Image: {name}')
+            
+            volume_zyx = tifffile.imread(file_path)
+            
+            volume_zyx_cp = cp.asarray(volume_zyx)
+            deskew_rotate_volume = deskew_rotate(volume_zyx_cp, dy_um = metadata["px_size"],
+                                       aspect_ratio = metadata["aspect_ratio"],
+                                       theta_deg = metadata["angle"],
+                                       binning = metadata["binning"])
+            
+            deskew_rotate_volume_np = cp.asnumpy(deskew_rotate_volume)
+            
+            deconv_volume = decon(
+                    deskew_rotate_volume_np,
+                    psfs[file['channel']],
+                    n_iters=n_iter,
+                    )
+            
+            if not os.path.isdir(f'{folder}/deskew-rotate-deconv') :
+                os.makedirs(f'{folder}/deskew-rotate-deconv')
+            output_file_path = f'{folder}/deskew-rotate-deconv/deskew-rotate-deconv_{name}'
+
+            
+            tifffile.imwrite(output_file_path, deconv_volume, bigtiff=True, compression='zlib')
                 
 def auto_deskew_rotate_ls3(folder, max_shear_size = 2e9, max_size_bytes = 15e9,
                            progress_folder_callback = None,

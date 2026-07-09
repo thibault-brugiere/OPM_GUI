@@ -317,6 +317,68 @@ def parse_ls3_deskew_foldernames(folder: str | Path) -> dict[str, Any]:
         "channels": sorted(channels_set),
     }
 
+_PATTERN_PSF_NAME = re.compile(r"(?P<channel>[A-Za-z0-9.-]+)_PSF$")
+
+def parse_psf_foldernames(folder: str | Path) -> dict[str, Any]:
+    """
+    Parse folder names in a directory following the pattern:
+    {channel}_PSF
+
+    Parameters
+    ----------
+    folder : str | Path
+        Folder containing the PSF directories.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the folder does not exist.
+    NotADirectoryError
+        If ``folder`` is not a directory.
+
+    Returns
+    -------
+    dict[str, Any]
+        Dictionary containing:
+            - ``files``: list of dict with keys:
+              ``path`` (Path), ``channel`` (str),
+              sorted by (channel)
+            - ``channels``: sorted list of unique channel names
+    """
+    folder = Path(folder)
+
+    if not folder.exists():
+        raise FileNotFoundError(f"Dossier introuvable : {folder}")
+    if not folder.is_dir():
+        raise NotADirectoryError(f"Ce n'est pas un dossier : {folder}")
+
+    parsed_files: list[dict[str, Any]] = []
+    channels_set: set[str] = set()
+
+    for path in folder.iterdir():
+        if path.is_dir() :
+            continue
+
+        stem = path.stem
+        match = _PATTERN_PSF_NAME.match(stem)
+        if match is None:
+            continue
+        channel = match.group("channel")
+
+        parsed_files.append({
+            "path": path,
+            "channel": channel,
+            "process": True,
+        })
+
+        channels_set.add(channel)
+
+    parsed_files.sort(key=lambda item: (item["channel"]))
+
+    return {
+        "files": parsed_files,
+        "channels": sorted(channels_set),
+    }
 
 def get_metadata(folder, filename = "GUI_parameters.txt"):
     """
@@ -407,7 +469,12 @@ if __name__ == "__main__":
     # result_ls3_zarr = parse_ls3_foldernames(folder_ls3_zarr)
     # print('files :', result_ls3_zarr["files"])
     
-    print("LS3 deskew ZARR folder")
-    folder_ls3_zarr = r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4_copie"
-    result_ls3_zarr = parse_ls3_deskew_foldernames(folder_ls3_zarr)
-    print('files :', result_ls3_zarr["files"])
+    # print("LS3 deskew ZARR folder")
+    # folder_ls3_zarr = r"C:\Users\tbrugiere\Documents\Images_OPM\20260327_Tests_Treatment\20260313_110909_Monica_Cos7_NHS-Esther_x4_copie"
+    # result_ls3_zarr = parse_ls3_deskew_foldernames(folder_ls3_zarr)
+    # print('files :', result_ls3_zarr["files"])
+    
+    print("PSF folder")
+    folder_psf = r"D:\Images_OPM\Yonathan\20260703_25S_Live\20260703_114454_25S_Live\PSF"
+    result_psf = parse_psf_foldernames(folder_psf)
+    print('files :', result_psf["files"])
