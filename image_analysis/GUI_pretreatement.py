@@ -84,6 +84,7 @@ class PretreatementWindow(QWidget, Ui_Form):
         self.setWindowTitle('Pretreatement')
         self.setWindowFlag(Qt.Window)  # Assure que la fenêtre est indépendante
         self.label_parameters.setText("Ready")
+        self.label_psf.setText("No PSF detected")
         
         if self.parent() is not None :
             pass
@@ -121,6 +122,8 @@ class PretreatementWindow(QWidget, Ui_Form):
         #
         
         self._pb_setEnabled()
+        self.cb_decon.setEnabled(False)
+        self.sb_decon_iter.setEnabled(False)
         
         ##############################################
         ## Connection between functions and buttons ##
@@ -266,6 +269,10 @@ class PretreatementWindow(QWidget, Ui_Form):
         self.parse_psf = parse_psf_foldernames(self.psf_path)
         self._activate_psf_tools()
         self.label_parameters.adjustSize()
+        message = "PSF detected:"
+        for channel in self.parse_psf['channels']:
+            message = message + " " + channel
+        self.label_psf.setText(message)
                     
     def _activate_psf_tools(self):
         enable = False
@@ -281,7 +288,10 @@ class PretreatementWindow(QWidget, Ui_Form):
                         message = f"\nPSF and MDA channels not maching : {len(self.parse_mda['channels'])}/{len(self.parse_psf['channels'])}"
             else :
                 message = "\nNo PSF files"
+        else :
+            message = "\nNo PSF file set"
         
+        print(f"message : {message}")
         self.label_parameters.setText(self.label_parameters.text() + message)
         self.cb_decon.setEnabled(enable)
         self.sb_decon_iter.setEnabled(enable)
