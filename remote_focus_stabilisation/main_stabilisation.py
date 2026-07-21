@@ -44,6 +44,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                  piezzo_port = None,
                  NIDAQ_out = "Dev1/port0/Line13",
                  folder_path = Path(r"D:\Images_OPM\Metrologie-Developpement\20260527_RFS"),
+                 message = True,
                  parent = None):
         
         """
@@ -68,6 +69,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         self.piezzo_port = piezzo_port
         self.NIDAQ_out = NIDAQ_out
         self.folder = folder_path
+        self.message = message
         
         self.parent = parent
         
@@ -111,6 +113,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         self.laser_on = False
         
         self.calibration = Calibration()
+        self.calibrated = False
         
         self.data_image["calibration_data"] = self.calibration.get_calibration_data()
         
@@ -155,7 +158,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         return x,y
         
     def ecrit(self):
-        print('ça fonctionne')
+        print('[RFS] ça fonctionne')
         
         
     def start_calibration(self, sampling = 10):
@@ -168,25 +171,10 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             Number of point used in each direction for calibration. The default is 10.
         """
         if self.piezzo_port is None :
-            print("Pizzo port not set")
+            print("[RFS] Pizzo port not set")
             return
         
         self.mode = "calibration"
-        
-        # self.calibration.px_per_um_x = 3.01
-        # self.calibration.px_per_um_y = 3.43
-        # self.calibration.calculate_px_per_um_euclidian()
-        # self.calibration.r2x = 0.9977
-        # self.calibration.r2y = 0.9981
-        # self.calibration.fw_step = 0.172
-        # self.calibration.bw_step = -0.190
-        # self.calibration.calibrated = True
-        
-        # print(f'axe x : {self.calibration.px_per_um_x:.2f} px/µm - r² : {( self.calibration.r2x ** 2):.4f}')
-        # print(f'axe x : {self.calibration.px_per_um_y:.2f} px/µm - r² : {(self.calibration.r2y ** 2):.4f}')
-        # print(f"fw step : {self.calibration.fw_step:.3f} - bw step = {self.calibration.bw_step:.3f}")
-        
-        # return
         
         self.camera_thread.set_mode("on_demand")
         x_list = []
@@ -220,17 +208,18 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                 x_list.append(x)
                 y_list.append(y)
                 piezzo_positions.append(self.piezzo_position)
-    
-                print(f"{x:.2f} - {y:.2f} - {self.piezzo_position:.3f}")
+                
+                
+                if self.message : print(f"{x:.2f} - {y:.2f} - {self.piezzo_position:.3f}")
             
             else :
-                print("None - None - None")
+                if self.message : print("None - None - None")
             
             self.save_image(f"RFS_{self.piezzo_position:.4f}")
     
         if len(x_list) >= 2 :
             if len(x_list) < 5 :
-                print("Bad calibration, not enough points")
+                print("[RFS] Bad calibration, not enough points")
                     
             regres_x = linregress(piezzo_positions, x_list)
             regres_y = linregress(piezzo_positions, y_list)
@@ -248,16 +237,16 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             self.calibration.calibrated = True
             
             if (regres_x.rvalue ** 2) > 0.98 and (regres_y.rvalue ** 2) > 0.98 :
-                print('Calibration successful ')
+                print('[RFS] calibration successful ')
             else :
-                print(f'Calibration failed: poor linear regression : r²x =  {(regres_x.rvalue ** 2):.4f},  r²y =  {(regres_y.rvalue ** 2):.4f}')
+                print(f'[RFS] Calibration failed: poor linear regression : r²x =  {(regres_x.rvalue ** 2):.4f},  r²y =  {(regres_y.rvalue ** 2):.4f}')
                 
             print(f'axe x : {regres_x.slope:.2f} px/µm - r² : {(regres_x.rvalue ** 2):.4f}')
             print(f'axe x : {regres_y.slope:.2f} px/µm - r² : {(regres_y.rvalue ** 2):.4f}')
             print(f"fw step : {fw_step:.3f} - bw step = {bw_step:.3f}")
             
         else :
-            print("Images too bad for caliration")
+            print("[RFS] Images too bad for caliration")
             
         self.data_image["calibration_data"] = self.calibration.get_calibration_data()
         self.mode = "preview"
@@ -285,20 +274,20 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         """
 
         if self.piezzo_port is None :
-            print("Pizzo port not set")
+            print("[RFS] Pizzo port not set")
             return
         
         if self.calibration.calibrated == False :
-            print("stabilisation should be calibrated befor stabilisation")
+            print("[RFS] stabilisation should be calibrated befor stabilisation")
             return
         
         if self.mode != "preview":
-            print(f'Can not start timelaps, {self.mode} running')
+            print(f'[RFS] Can not start timelaps, {self.mode} running')
             return
         
         if self.stabilisation_period_s < 10 :
             self.stabilisation_period_s = 10
-            print("period_s too small, set to 10s")
+            print("[RFS] period_s too small, set to 10s")
             
         if kp > 1 or kp < 0 :
             raise ValueError(f"kp shoulb be between 0 and 1, actual value {kp}")
@@ -362,7 +351,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                     
                     current_time = time.strftime("%H:%M:%S")
                     
-                    print(f'{current_time} - {x:.2f} - {y:.2f} - {displacement:.3f} - {piezzo_displacement}')
+                    if self.message : print(f'{current_time} - {x:.2f} - {y:.2f} - {displacement:.3f} - {piezzo_displacement}')
                     
                     self.data_stabilisation["displacement"] = displacement
                     self.data_stabilisation["piezzo_displacement"] = piezzo_displacement
@@ -395,7 +384,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         
     def stop_stabilisation(self):
         if self.mode == "stabilisation" :
-            print('stop stabilisation')
+            if self.message : print('[RFS] stop stabilisation')
             self.mode = "preview"
         
     def timelaps(self):
@@ -403,11 +392,11 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
 
         """
         if self.piezzo_port is None :
-            print("Pizzo port not set")
+            print("[RFS] Pizzo port not set")
             return
         
         if self.mode != "preview":
-            print(f'Can not start timelaps, {self.mode} running')
+            print(f'[RFS] Can not start timelaps, {self.mode} running')
             return
         
         self.mode == "timelaps"
@@ -453,11 +442,12 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                     self.calibration.y_spot_pos = y
                     get_position = False
                     
-                displacement, piezzo_displacement = self.calibration.calculate_displacement(x, y)
+                if self.calibration.calibrated :
+                    displacement, piezzo_displacement = self.calibration.calculate_displacement(x, y)
                 
-                current_time = time.strftime("%H:%M:%S")
-                
-                print(f'{current_time} - {x:.2f} - {y:.2f} - {displacement:.3f} - {piezzo_displacement}')
+                    current_time = time.strftime("%H:%M:%S")
+                    
+                    if self.message : print(f'[RFS] {current_time} - {x:.2f} - {y:.2f} - {displacement:.3f} - {piezzo_displacement}')
                 
                 self.data_image["displacement"] = displacement
                 self.data_image["piezzo_displacement"] = piezzo_displacement
@@ -473,8 +463,9 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                 
     def stop_timelaps(self):
         if self.mode == "timelaps" :
-            print('stop timelaps')
+            if self.message : print('[RFS] stop timelaps')
             self.mode = "preview"
+            self.camera_thread.set_mode("preview")
         
     def _get_center(self):
         if self.preview_frame is not None :
@@ -495,13 +486,13 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                 return x, y
             elif n_points == 0 :
                 if self.laser_on :
-                    print("no point detected")
+                    if self.message : print("[RFS] no point detected")
                 return None, None
             else :
-                print('more than 1 point detected')
+                if self.message : print('[RFS] more than 1 point detected')
                 return None, None
         else :
-            print("no frame")
+            if self.message : print("[RFS] no frame")
             return None, None
         
     def save_image(self, name: str) :
@@ -515,7 +506,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             tifffile.imwrite(file_path, self.preview_frame)
             
         except Exception as e:
-            print(f"Failed to save frame:\n{str(e)}.tif")
+            if self.message : print(f"[RFS] Failed to save frame:\n{str(e)}.tif")
         
     def get_piezzo_position(self):
         "Get the current position of the device and display it"
@@ -541,13 +532,16 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             except Exception:
                 pass
             
+    def change_folder(self, folder) :
+        self.folder = folder
+            
     def closeEvent(self, event):
     
         if self.tlcam is not None:
             try:
                 self.tlcam.close()
             except Exception as e:
-                print(f"Error while closing camera: {e}")
+                print(f"[RFS] Error while closing camera: {e}")
     
         event.accept()
             
@@ -679,3 +673,6 @@ class TLCameraThread(QThread):
         self.running = False
         self.wait()
         self.quit()
+        
+    def change_folder(self, folder) :
+        self.folder = folder

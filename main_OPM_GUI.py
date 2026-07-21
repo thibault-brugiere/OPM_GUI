@@ -23,6 +23,7 @@ from datetime import datetime
 import json
 import numpy as np
 import os
+from pathlib import Path
 import pickle
 from pylablib.devices import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
 import sys
@@ -49,6 +50,7 @@ from hardware.Laser_Controller import LaserController
 # from mock.filter_wheel import FilterWheel
 from mock.Null import NullObject
 from multi_positions.positions import Positions
+from remote_focus_stabilisation.GUI_RFS import RFS_window
 
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
 from LS3_acquisition.main_LS3 import Light_sheet_stabilized_scanning
@@ -65,6 +67,8 @@ from widget.Microscope_Settings_Window import microscope_settings_window
 from widget.Preset_ROI_Window import PresetROIWindow
 from widget.Sample_Finder import sample_finder_Window
 from widget.set_DAQ_Window import setDAQWindow
+
+PROJECT_DIR = Path(__file__).resolve().parent
 
 class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     """
@@ -248,6 +252,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.comboBox_channel_name_set_indexes() # Put all the channels to the self.comboBox_channel_name
         
+        self.RFS_window = None # Window for remote focus stabilisation
+        
         #
         # Petites choses de l'interface
         #
@@ -258,8 +264,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
             # Set icons
         
-        self.Red_Light_Icon_On = QPixmap('Icons/Red_Light_Icon_On.png')
-        self.Red_Light_Icon_Off = QPixmap('Icons/Red_Light_Icon_Off.png')
+        self.Red_Light_Icon_On = QPixmap(PROJECT_DIR /'Icons/Red_Light_Icon_On.png')
+        self.Red_Light_Icon_Off = QPixmap(PROJECT_DIR /'Icons/Red_Light_Icon_Off.png')
         
         self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
         
@@ -287,6 +293,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         self.comboBox_preview_zoom.setItemText(0, "Zoom Auto")
         self.doubleSpinBox_step_size.setEnabled(False) # Only used for microscope caracterization
+        self.action_Z_Stack.setEnabled(False) # Only used for microscope caracterization
         
         ##############################################
         ## Connection between functions and buttons ##
@@ -383,11 +390,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.action_Microscope.triggered.connect(self.openMicroscopeEditor)
         
             ## Tools
+        self.action_Sample_finder.triggered.connect(self.opensample_finder)
         self.action_Align_O2_O3.triggered.connect(self.openAlign_O2_O3)
+        self.action_RFS.triggered.connect(self.openRFS)
         self.action_Piezo.triggered.connect(self.launch_pizo_program)
         self.action_UI_Laser.triggered.connect(self.launch_laser_program)
         self.action_Z_Stack.triggered.connect(self.acquire_Z_Stack)
-        self.action_Sample_finder.triggered.connect(self.opensample_finder)
         
             ## Parameters
         self.action_channel_editor.triggered.connect(self.openChannelEditor)
@@ -438,6 +446,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         if self.experiment.data_path:  # Si un dossier a été sélectionné
             self.label_data_path.setText(self.experiment.data_path)
+            
+        if self.RFS_window is not None :
+            self.RFS_window.change_folder(self.experiment.data_path)
         
     def lineEdit_exp_name_modified(self):
         """
@@ -1447,6 +1458,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.alignement_O2_O3 = alignement_O2_O3_Window()
         self.alignement_O2_O3.show()
         
+    def openRFS(self):
+        "display window to start remote focus stabilisation"
+        if self.RFS_window is None :
+            self.RFS_window = RFS_window(folder_path = Path(self.experiment.data_path), message = False)
+        self.RFS_window.show()
+        
     def launch_program(self , shortcut_path):
         try:
             # Launch expernal program from shortcut
@@ -1546,7 +1563,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     
     def load_variables(self):
         self.loaded_variables = False
-        config_dir = 'configs'
+        config_dir = PROJECT_DIR /'configs'
         file_path = os.path.join(config_dir, 'saved_variables.json')
         if os.path.exists(file_path):
             with open(file_path, 'r') as file:
@@ -1554,7 +1571,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.loaded_variables = True
     
     def save_variables(self):
-        config_dir = 'configs'
+        config_dir = PROJECT_DIR /'configs'
         os.makedirs(config_dir, exist_ok=True)  # Crée le dossier s'il n'existe pas
         file_path = os.path.join(config_dir, 'saved_variables.json')
         
@@ -1571,7 +1588,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     #
     
     def load_microscope_settings(self):
-        config_dir = 'configs'
+        config_dir = PROJECT_DIR /'configs'
         
         file_path = os.path.join(config_dir, 'microscope_settings.json')
         self.loaded_microscope_settings = False
@@ -1584,7 +1601,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.loaded_microscope_settings = True
     
     def save_microscope_settings(self):
-        config_dir = 'configs'
+        config_dir = PROJECT_DIR /'configs'
         os.makedirs(config_dir, exist_ok=True)  # Crée le dossier s'il n'existe pas
             
         file_path = os.path.join(config_dir, 'microscope_settings.json')
@@ -1599,7 +1616,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
     #
     
     def load_channels(self):
-        config_dir = 'configs'
+        config_dir = PROJECT_DIR /'configs'
         file_path = os.path.join(config_dir, 'channels_data.pkl')
         
         self.loaded_channels = False # est-ce que le channel sera chargé ?
@@ -1615,7 +1632,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         return self.loaded_channels
     
     def save_channels(self):
-        config_dir = 'configs'
+        config_dir = PROJECT_DIR / 'configs'
         os.makedirs(config_dir, exist_ok=True)  # Crée le dossier s'il n'existe pas
         file_path = os.path.join(config_dir, 'channels_data.pkl')
         

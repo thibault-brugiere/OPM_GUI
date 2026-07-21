@@ -50,14 +50,23 @@ class RFS_window(QWidget, Ui_Form):
     start_stabilisation = Signal()
     stop_stabilisation = Signal()
     
-    def __init__(self, camera_sn = '36805', NIDAQ_out = "Dev1/port0/Line13", piezzo_step = [4,47], parent = None):
+    def __init__(self, camera_sn = '36805',
+                 piezzo_port = None,
+                 NIDAQ_out = "Dev1/port0/Line13",
+                 piezzo_step = [4,47],
+                 folder_path = None,
+                 message = True,
+                 parent = None):
+        
         super().__init__(parent)
         self.setupUi(self)
         
         
         self.camera_sn = camera_sn
+        self.piezzo_port = piezzo_port
         self.NIDAQ_out = NIDAQ_out
         self.piezzo_step = piezzo_step # Values for the same and minimum piezzo step (~200nm)
+        self.folder_path = folder_path
         
         #
         # Check the DAQ connection
@@ -74,8 +83,16 @@ class RFS_window(QWidget, Ui_Form):
         # Stabilization worker
         #
         
-        self.stabilisation = remote_focus_stabilisation(camera_sn = camera_sn,
-                                                        NIDAQ_out = NIDAQ_out)
+        if self.folder_path is None :
+            self.stabilisation = remote_focus_stabilisation(camera_sn = camera_sn,
+                                                        NIDAQ_out = NIDAQ_out,
+                                                        message = message)
+        else :
+            self.stabilisation = remote_focus_stabilisation(camera_sn = camera_sn,
+                                                        NIDAQ_out = NIDAQ_out,
+                                                        folder_path=self.folder_path,
+                                                        message = message)
+            
         self.stabilisationThread = QThread()
         self.stabilisation.moveToThread(self.stabilisationThread)
         self.stabilisationThread.started.connect(self.stabilisation.on_init)
@@ -256,7 +273,7 @@ class RFS_window(QWidget, Ui_Form):
                 
             else:
                 self.piezzo_connected = False
-                print("not connected")
+                print("[RFS] piezzo not connected")
         else :
             self.piezzo_connected = False
         
@@ -475,7 +492,10 @@ class RFS_window(QWidget, Ui_Form):
                                              h,)
             
             self.label_graph.setPixmap(QPixmap.fromImage(plot))
-        
+            
+    def change_folder(self, folder) :
+        self.folder_path = folder
+        self.stabilisation.change_folder(folder)
             
     def closeEvent(self, event):
         """Stop worker threads before closing the window."""
