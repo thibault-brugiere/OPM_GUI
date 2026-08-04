@@ -62,33 +62,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-# def main() -> None:
-#     # subprocess.run([python, "main_OPM_GUI.py"], check=True)
-#     """Lance le script avec l'interpréteur de l'environnement partagé."""
-#     if not ENV_PYTHON.is_file():
-#         raise FileNotFoundError(
-#             f"Interpréteur introuvable : {ENV_PYTHON}"
-#         )
-    
-#     if not SCRIPT.is_file():
-#         raise FileNotFoundError(
-#             f"Script introuvable : {SCRIPT}"
-#         )
-        
-#     result = subprocess.run(
-#     [str(ENV_PYTHON), str(SCRIPT)],
-#     check=False,
-#     )
-
-#     sys.exit(result.returncode)
-
-# if __name__ == "__main__":
-#     try:
-#         main()
-#     except Exception:
-#         import traceback
-#         traceback.print_exc()
-#         input("\nAppuyez sur Entrée pour quitter...")
-#         raise

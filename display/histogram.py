@@ -27,6 +27,7 @@ class HistogramThread(QThread):
 
     def __init__(self, frame, min_grayscale=10000, max_grayscale=50000, w_px=1200, h_px=600, dpi=200, line_width=0.5, font_size=8, ax_xmax=65535):
         super().__init__()
+        self.setObjectName("HistogramThread")
         self.frame = frame
         self.min_grayscale = min_grayscale
         self.max_grayscale = max_grayscale

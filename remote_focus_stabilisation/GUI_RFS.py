@@ -94,6 +94,7 @@ class RFS_window(QWidget, Ui_Form):
                                                         message = message)
             
         self.stabilisationThread = QThread()
+        self.stabilisationThread.setObjectName("stabilisationThread")
         self.stabilisation.moveToThread(self.stabilisationThread)
         self.stabilisationThread.started.connect(self.stabilisation.on_init)
         

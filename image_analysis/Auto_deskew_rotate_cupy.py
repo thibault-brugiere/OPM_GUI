@@ -147,7 +147,7 @@ def auto_deskew_rotate_deconv_mda(folder, psf_folder, n_iter,
         processed_images = 0
         
     
-    if not all(x in parse_mda['channels'] for x in parse_psf['channels']):
+    if not all(x in parse_psf['channels'] for x in parse_mda['channels']):
         print(f"\nPSF and MDA channels not maching : {len(parse_mda['channels'])}/{len(parse_psf['channels'])}")
         return
     
@@ -191,9 +191,9 @@ def auto_deskew_rotate_deconv_mda(folder, psf_folder, n_iter,
                     n_iters=n_iter,
                     )
             
-            if not os.path.isdir(f'{folder}/deskew-rotate-deconv') :
-                os.makedirs(f'{folder}/deskew-rotate-deconv')
-            output_file_path = f'{folder}/deskew-rotate-deconv/deskew-rotate-deconv_{name}'
+            if not os.path.isdir(f'{folder}/deskew-rotate-deconv-{n_iter}') :
+                os.makedirs(f'{folder}/deskew-rotate-deconv-{n_iter}')
+            output_file_path = f'{folder}/deskew-rotate-deconv-{n_iter}/deskew-rotate-deconv-{n_iter}_{name}'
 
             
             tifffile.imwrite(output_file_path, deconv_volume, bigtiff=True, compression='zlib')

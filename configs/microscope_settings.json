@@ -35,11 +35,11 @@
         "640": 0.05
     },
     "laser_response_time": 0.02,
-    "OxxiusCombiner_port": "COM7",
+    "OxxiusCombiner_port": "COM5",
     "OxxiusCombiner_command": {
         "405": null,
         "488": null,
-        "561": null,
+        "561": "PPL2",
         "640": null
     },
     "daq_channels": {

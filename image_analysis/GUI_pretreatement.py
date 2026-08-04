@@ -276,14 +276,14 @@ class PretreatementWindow(QWidget, Ui_Form):
                     
     def _activate_psf_tools(self):
         enable = False
-        message = ""
+        message = None
         if self.parse_psf is not None :
             if len(self.parse_psf['channels']) != 0 :
                 if self.parse_mda is not None :
                     # if Counter(self.parse_mda['channels']) == Counter(self.parse_psf['channels']):
-                    if all(x in self.parse_mda['channels'] for x in self.parse_psf['channels']):
+                    if all(x in self.parse_psf['channels'] for x in self.parse_mda['channels']):
                         enable = True
-                        message = "\nPSF selected"
+                        #message = "\nPSF selected"
                     else :
                         message = f"\nPSF and MDA channels not maching : {len(self.parse_mda['channels'])}/{len(self.parse_psf['channels'])}"
             else :
@@ -291,7 +291,8 @@ class PretreatementWindow(QWidget, Ui_Form):
         else :
             message = "\nNo PSF file set"
         
-        print(f"message : {message}")
+        if message is not None :
+            print(f"message : {message}")
         self.label_parameters.setText(self.label_parameters.text() + message)
         self.cb_decon.setEnabled(enable)
         self.sb_decon_iter.setEnabled(enable)

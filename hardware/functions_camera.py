@@ -83,6 +83,7 @@ class CameraThread(QThread):
 
     def __init__(self, hcam):
         super().__init__()
+        self.setObjectName("Hcam_thread")
         self.hcam = hcam
         self.running = True  # Permet de contrôler l'arrêt propre du thread
 

@@ -18,7 +18,6 @@ Created on Tue Sep  2 09:03:43 2025
     #################################
 # TODO : Dans le main quand on ajoute un channel, il faut modifier le nombre de channes
     pour accéder au nouveau channel ajouté
-# TODO : pourquoi les lasers ne s'allument pas si je lance directement le main_MDA ?
 
     #-----------
     #MDA_manager
@@ -41,7 +40,6 @@ Created on Tue Sep  2 09:03:43 2025
     # Sample Finder #
     #################
     
-# TODO : Save positions for multi-position acquisition
 # TODO : apply selected LUT
 
     #######################
