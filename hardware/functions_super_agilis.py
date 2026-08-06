@@ -90,4 +90,5 @@ class functions_super_agilis():
     TP? : Get current position
     JA : move jogging (1 : 50/s steps, 2 : 1000 steps/s 3: 5000 steps/s and 4:10000steps/s), needs ST to stop the motion
     ST : stop the current motion
+    MS? : return 1 is stage is mooving, else 0
     """
