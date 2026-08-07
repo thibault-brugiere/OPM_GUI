@@ -9,6 +9,7 @@ import math
 import time as t
 import serial
 import serial.tools.list_ports
+from threading import RLock
 
 class PiezoState(Enum):
     NONE = auto()
@@ -81,8 +82,23 @@ class piezo_SAS() : #SAS for Super Agilis Series
     """
     Control the piezo Super Agilis Series from MKS Newport
     """
-    def __init__(self, port = 'COM6'):
+    def __init__(self, port = 'COM6', model = 'IDCONEX-SAG-LS16P'):
         self.port = port
+        self.model = model
+        self.connected = False
+        self.position = 0.0
+        self._comm_lock = RLock()
+        
+    def list_serial_ports():
+        """
+        List all available serial ports.
+        """
+        ports = serial.tools.list_ports.comports()
+        devices = []
+        for port in ports:
+            devices.append(port.device)
+            
+        return devices
         
     def change_port(self, port: str):
         """
@@ -95,9 +111,18 @@ class piezo_SAS() : #SAS for Super Agilis Series
         """
         self.port = port
         
+    def test_port(self):
+        ID = self.query("ID?")
+        if ID == self.model:
+            self.connected = True
+            return True
+        else :
+            self.connected = False
+            return False
+        
     def get_position(self):
         """
-
+        To avoid conflict woth other 
         Raises
         ------
         PiezoEcecutionError
@@ -108,12 +133,17 @@ class piezo_SAS() : #SAS for Super Agilis Series
             Actual position of the piezo
 
         """
-        pos = self.query("TP?")
         try :
-            return float(pos[2:])
+            pos = self.query("TP?")
+            try :
+                position = float(pos[2:])
+                self.position = position
+                return position
+            except :
+                raise PiezoEcecutionError(
+                    f"Piezo could not report the position : {pos}")
         except :
-            raise PiezoEcecutionError(
-                f"Piezo could not report the position : {pos}")
+            return self.position
         
     
     def test_position(self, position: float, tolerance: float  = 0.0001):
@@ -201,8 +231,7 @@ class piezo_SAS() : #SAS for Super Agilis Series
         if self.get_status() == PiezoState.READY_CL :
             if move_back :
                 position = self.get_position()
-                self.send_command("RFP")
-                self.wait_for_motion(15.0)
+                self.send_command("RFP", timeout_s = 15.0)
                 if not self.test_position(position):
                     raise PiezoEcecutionError(f"Unexpected position after referencing : {position} / {self.get_position()}")
             else :
@@ -253,7 +282,7 @@ class piezo_SAS() : #SAS for Super Agilis Series
         if self.get_status() == PiezoState.READY_CL:
             position = self.get_position()
             step_str = str(step)[:7]
-            command = f"XR{step_str}"
+            command = f"PR{step_str}"
             self.send_command(command)
             
             if not self.test_position(position + step) :
@@ -307,6 +336,80 @@ class piezo_SAS() : #SAS for Super Agilis Series
             self.send_command(command)
         else:
             raise PiezoStateError(f"Controller should be in READY_OL state: {self.get_status()}")
+            
+    def set_frequency(self, frequency:int) -> None:
+        """
+        Modify the stepping frequency
+
+        Parameters
+        ----------
+        frequency : int
+            Frequency to set to the contoller.
+            
+        Raises
+        ------
+        PiezoStateError
+        """
+        if self.get_status() == PiezoState.READY_OL:
+            frequency = int(frequency)
+            command = f"XF{frequency}"
+            self.send_command(command)
+        else:
+            raise PiezoStateError(f"Controller should be in READY_OL state: {self.get_status()}")
+            
+    def get_frequency(self) -> int :
+        frequency = self.query("XF?")
+        try :
+            return int(frequency[2:])
+        except :
+            raise PiezoProtolError(f"Freqency is not in the right format : {frequency}")
+        
+            
+    def set_step_size(self, neg_step:int, pos_step:int) -> None:
+        """
+        Change the current open loop step size
+
+        Parameters
+        ----------
+        neg_step : int
+            Negative Step size (should be a positive number).
+        pos_step : TYPE
+            Positive Step size.
+
+        Raises
+        ------
+        PiezoStateError
+            
+        """
+        if self.get_status() == PiezoState.READY_OL:
+            command = f"XU-{neg_step},{pos_step}"
+            self.send_command(command)
+        else:
+            raise PiezoStateError(f"Controller should be in READY_OL state: {self.get_status()}")
+            
+    def get_step_size(self) -> tuple:
+        """
+        Get the current open loop step size
+
+        Raises
+        ------
+        PiezoProtolError
+
+        Returns
+        -------
+        tuple(int, int)
+            negative and positive step size (both positives numbers).
+
+        """
+        message = self.query("XU?")
+        try :
+            steps_size = message[3:].split(",")
+            neg_step = int(steps_size[0])
+            pos_step = int(steps_size[1])
+            return neg_step, pos_step
+        except:
+            raise PiezoProtolError(f"step size is not in the right format : {message}")
+        
 
     def get_status(self) -> PiezoState:
         """
@@ -360,6 +463,8 @@ class piezo_SAS() : #SAS for Super Agilis Series
         PiezoCommunicationError
             
         """
+        if not self.test_port() :
+            raise PiezoCommunicationError(f"The current port is the right device : {self.querry('ID?')}")
         try:
             with serial.Serial(self.port, 9600, timeout=1) as ser:
                 ser.write("ST".encode('ascii') + b'\r\n')
@@ -389,25 +494,27 @@ class piezo_SAS() : #SAS for Super Agilis Series
             Message returned by the piezo
 
         """
-        try:
-            with serial.Serial(self.port, 9600, timeout=1) as ser:
-                ser.write(command.encode('ascii') + b'\r\n')
-                t.sleep(0.01)
-                response = ser.readline()
-                t.sleep(0.01)
-        except OSError as exc:
-            raise PiezoCommunicationError(
-                f'Communication failure for the command: {command}') from exc
-            
-        if not response :
-            raise PiezoTimeoutError(
-                f'No response for command {command}')
-    
-        try :
-            return response.decode('ascii').strip()
-        except UnicodeDecodeError as exc :
-            raise PiezoProtolError(
-                f"Response not decodable for {command!r}: {response!r}") from exc
+        with self._comm_lock:
+            try:
+                with serial.Serial(self.port, 9600, timeout=1) as ser:
+                    ser.write(command.encode('ascii') + b'\r\n')
+                    t.sleep(0.01)
+                    response = ser.readline()
+                    self.last_command = t.time()
+                    t.sleep(0.01)
+            except OSError as exc:
+                raise PiezoCommunicationError(
+                    f'Communication failure for the command: {command}') from exc
+                
+            if not response :
+                raise PiezoTimeoutError(
+                    f'No response for command {command}')
+        
+            try :
+                return response.decode('ascii').strip()
+            except UnicodeDecodeError as exc :
+                raise PiezoProtolError(
+                    f"Response not decodable for {command!r}: {response!r}") from exc
             
     def send_command(self,
                 command: str,
@@ -431,20 +538,24 @@ class piezo_SAS() : #SAS for Super Agilis Series
         PiezoControllerError
 
         """
-        try:
-            with serial.Serial(self.port, 9600, timeout=timeout_s) as ser:
-                ser.write(command.encode('ascii') + b'\r\n')
-                t.sleep(0.01)
-        except OSError as exc:
-            raise PiezoCommunicationError(
-                f'Communication failure for the command: {command}') from exc  
-                
-        if wait_for_motion :
-            self.wait_for_motion(timeout_s)
-             
-        error = self.query('TB')
-        if error != 'TB@ No error' :
-            raise PiezoControllerError(f'Controller reported and error: {error}')
+        with self._comm_lock:
+            if not self.test_port() :
+                raise PiezoCommunicationError(f"The current port is the right device : {self.querry('ID?')}")
+            try:
+                with serial.Serial(self.port, 9600, timeout=timeout_s) as ser:
+                    ser.write(command.encode('ascii') + b'\r\n')
+                    self.last_command = t.time()
+                    t.sleep(0.01)
+            except OSError as exc:
+                raise PiezoCommunicationError(
+                    f'Communication failure for the command: {command}') from exc  
+                    
+            if wait_for_motion :
+                self.wait_for_motion(timeout_s)
+                 
+            error = self.query('TB')
+            if error != 'TB@ No error' :
+                raise PiezoControllerError(f'Controller reported and error: {error}')
             
     def wait_for_motion(self, timeout_s:float = 10.0):
         """
@@ -463,7 +574,9 @@ class piezo_SAS() : #SAS for Super Agilis Series
         time_start = t.time()
         while True:
             if not self.is_moving():
-                break
+                t.sleep(0.01) # To check twice for referencing # TODO a verifier
+                if not self.is_moving():
+                    break
             
             if t.time() > (time_start + timeout_s):
                 raise PiezoMotionError(f"Mouvement could not be performed in time {timeout_s}")

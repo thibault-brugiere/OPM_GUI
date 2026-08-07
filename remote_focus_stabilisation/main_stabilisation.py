@@ -33,7 +33,7 @@ if __name__ == "__main__":
     parent_dir = os.path.dirname(current_dir)
     sys.path.append(parent_dir)
     
-from hardware.functions_super_agilis import functions_super_agilis as piezzo
+from hardware.functions_piezo import piezo_SAS as piezo
 
 class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement de new_data Signal
     new_data = Signal(np.ndarray, dict) # signal Qt émis avec image + datas
@@ -41,7 +41,8 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
     
     def __init__(self,
                  camera_sn = '36805',
-                 piezzo_port = None,
+                 piezo_port = None,
+                 piezo = None,
                  NIDAQ_out = "Dev1/port0/Line13",
                  folder_path = Path(r"D:\Images_OPM\Metrologie-Developpement\20260527_RFS"),
                  message = True,
@@ -55,8 +56,8 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         camera_sn : str, optional
             Serial number of the thorlabs camera used for stabilisation.
             The default is '36805'.
-        piezzo_port : str, optional
-            port COM number of the piezzo controller (ex. "COM6")
+        piezo_port : str, optional
+            port COM number of the piezo controller (ex. "COM6")
         NIDAQ_out : str, optional
             Digital out of the NiDAQ that controls the 488nm laser for stabilisation.
             The default is "Dev1/port0/Line13".
@@ -66,7 +67,8 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         
         super().__init__()
         self.camera_sn = camera_sn
-        self.piezzo_port = piezzo_port
+        self.piezo_port = piezo_port
+        self.piezo = piezo
         self.NIDAQ_out = NIDAQ_out
         self.folder = folder_path
         self.message = message
@@ -77,14 +79,16 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
     
     def on_init(self):
         self.data_image = {"camera_connected" : False,
-                     "camera_sn" : self.camera_sn,
-                     "calibration_data" : None,
-                     "displacement" : 0.0,
-                     "piezzo_displacement" : 0.0,
-                     }
+                           "camera_sn" : self.camera_sn,
+                           "calibration_data" : None,
+                           "displacement" : 0.0,
+                           "piezo_displacement" : 0.0,
+                           "piezo_position" : 0.0
+                           }
         
         self.data_stabilisation = {"displacement" : 0.0,
-                                   "piezzo_displacement" : 0.0,
+                                   "piezo_displacement" : 0.0,
+                                   "piezo_position" : 0.0
                                    }
         
         self.connect_camera()
@@ -104,10 +108,14 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         self.tlcam.start_acquisition(nframes=2)
         self.camera_thread.start()
         
+        # Create Piezo
+        if self.piezo is None :
+            self.piezo = piezo(self.piezo_port)
+        
         # Create values for stabilization :
         self.original_position = None
         self.displacement = None
-        self.piezzo_position = 0.0
+        self.piezo_position = 0.0
         self.frame = None
         
         self.laser_on = False
@@ -117,17 +125,20 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         
         self.data_image["calibration_data"] = self.calibration.get_calibration_data()
         
-    def set_piezzo_port(self, piezzo_port):
+    def set_piezo_port(self, piezo_port):
         """
         
 
         Parameters
         ----------
-        piezzo_port : str
-            port COM number of the piezzo controller (ex. "COM6")
+        piezo_port : str
+            port COM number of the piezo controller (ex. "COM6")
 
         """
-        self.piezzo_port = piezzo_port
+        self.piezo_port = piezo_port
+        self.piezo.change_port(piezo_port)
+        if not self.piezo.test_port() :
+            print("[RFS] Piezo port is probably not the right one")
     
     def connect_camera(self):
         self.tlcameras_list = Thorlabs.list_cameras_tlcam()
@@ -136,11 +147,11 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             if self.camera_sn in self.tlcameras_list :
                 self.tlcam = Thorlabs.ThorlabsTLCamera(self.camera_sn)
                 self.tlcam.open()
-                self.tlcam.set_exposure(10/1000)
+                self.tlcam.set_exposure(50/1000)
             else :
                 self.tlcam = Thorlabs.ThorlabsTLCamera(serial=self.tlcameras_list[1])
                 self.tlcam.open()
-                self.tlcam.set_exposure(10/1000)
+                self.tlcam.set_exposure(50/1000)
                 self.data_image["camera_sn"] = self.tlcameras_list[1]
                 
             self.data_image["camera_connected"] = True
@@ -151,8 +162,16 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             self.new_data.emit(self.preview_frame, self.data_image)
             
     def store_frame(self, frame):
-        """Receive a frame from the camera thread and store it (unless paused)."""
+        """
+        Receive a frame from the camera thread and store it (unless paused) and return the
+        center of the laser point on the image
+        """
         self.preview_frame = frame
+        if self.piezo.connected :
+            try :
+                self.data_image["piezo_position"] = self.piezo.get_position()
+            except :
+                pass
         self.new_data.emit(self.preview_frame, self.data_image)
         x,y = self._get_center()
         return x,y
@@ -161,7 +180,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         print('[RFS] ça fonctionne')
         
         
-    def start_calibration(self, sampling = 10):
+    def start_calibration(self, sampling:int = 20, step:float = 0.25):
         """
         
 
@@ -169,8 +188,10 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         ----------
         sampling : int, optional
             Number of point used in each direction for calibration. The default is 10.
+        step : float, optional
+            Distance for each step of the calibration in µm
         """
-        if self.piezzo_port is None :
+        if self.piezo_port is None :
             print("[RFS] Pizzo port not set")
             return
         
@@ -179,17 +200,14 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         self.camera_thread.set_mode("on_demand")
         x_list = []
         y_list = []
-        piezzo_positions = []
-        for k in range(2 * sampling + 1) :
-            if k < sampling :
-                piezzo.send_command('XR1', self.piezzo_port)
-            elif k == sampling :
-                piezzo.send_command('XR-10', self.piezzo_port)
-            elif k > sampling : 
-                piezzo.send_command('XR-1', self.piezzo_port)
+        piezo_positions = []
+        actual_position = self.piezo.get_position()
+        self.piezo.move_to(actual_position - step * sampling / 2 / 1000)
+        for k in range(sampling) :
+            self.piezo.move_by(step/1000)
                 
             time.sleep(0.5)
-            self.get_piezzo_position()
+            self.piezo.get_position()
             x_image = []
             y_image = []
             for i in range(10) :
@@ -207,33 +225,31 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             
                 x_list.append(x)
                 y_list.append(y)
-                piezzo_positions.append(self.piezzo_position)
+                position = self.piezo.get_position()
+                piezo_positions.append(position)
                 
                 
-                if self.message : print(f"{x:.2f} - {y:.2f} - {self.piezzo_position:.3f}")
+                if self.message : print(f"{x:.2f} - {y:.2f} - {position:f}")
             
             else :
                 if self.message : print("None - None - None")
             
-            self.save_image(f"RFS_{self.piezzo_position:.4f}")
+            self.save_image(f"RFS_{position:6f}")
+            
+        self.piezo.move_to(actual_position)
     
         if len(x_list) >= 2 :
             if len(x_list) < 5 :
                 print("[RFS] Bad calibration, not enough points")
                     
-            regres_x = linregress(piezzo_positions, x_list)
-            regres_y = linregress(piezzo_positions, y_list)
+            regres_x = linregress(piezo_positions, x_list)
+            regres_y = linregress(piezo_positions, y_list)
             
-            fw_step = (piezzo_positions[sampling - 1] - piezzo_positions[0]) / sampling
-            bw_step = (piezzo_positions[2*sampling] - piezzo_positions[sampling + 1]) / sampling
-            
-            self.calibration.px_per_um_x = regres_x.slope
-            self.calibration.px_per_um_y = regres_y.slope
+            self.calibration.px_per_um_x = regres_x.slope / 1000
+            self.calibration.px_per_um_y = regres_y.slope / 1000
             self.calibration.calculate_px_per_um_euclidian()
             self.calibration.r2x = regres_x.rvalue ** 2
             self.calibration.r2y = regres_y.rvalue ** 2
-            self.calibration.fw_step = fw_step
-            self.calibration.bw_step = bw_step
             self.calibration.calibrated = True
             
             if (regres_x.rvalue ** 2) > 0.98 and (regres_y.rvalue ** 2) > 0.98 :
@@ -241,9 +257,8 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             else :
                 print(f'[RFS] Calibration failed: poor linear regression : r²x =  {(regres_x.rvalue ** 2):.4f},  r²y =  {(regres_y.rvalue ** 2):.4f}')
                 
-            print(f'axe x : {regres_x.slope:.2f} px/µm - r² : {(regres_x.rvalue ** 2):.4f}')
-            print(f'axe x : {regres_y.slope:.2f} px/µm - r² : {(regres_y.rvalue ** 2):.4f}')
-            print(f"fw step : {fw_step:.3f} - bw step = {bw_step:.3f}")
+            print(f'axe x : {self.calibration.px_per_um_x:.2f} px/µm - r² : {(regres_x.rvalue ** 2):.4f}')
+            print(f'axe y : {self.calibration.px_per_um_y:.2f} px/µm - r² : {(regres_y.rvalue ** 2):.4f}')
             
         else :
             print("[RFS] Images too bad for caliration")
@@ -251,8 +266,9 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         self.data_image["calibration_data"] = self.calibration.get_calibration_data()
         self.mode = "preview"
         self.camera_thread.set_mode("preview")
+
         
-    def stabilisation(self, kp = 0.5, max_steps = 5, max_correction_in_row = 5, drift_threshold = 0.5):
+    def stabilisation(self, kp = 0.5, max_step_um = 2.0, max_correction_in_row = 5, drift_threshold = 0.5):
         """
         
 
@@ -260,8 +276,8 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         ----------
         kp : float, optional
             agressivity of the stabilisation, should be between 0 and 1. The default is 0.5.
-        max_steps : int, optional
-            Maximum steps of the piezzo in one correction. The default is 5.
+        max_step_um : float, optional
+            Maximum step of the piezo in one correction. The default is 2.0 µm.
         max_correction_in_row : int, optional
             maximum correction steps in a row. The default is 5.
         drift_threshold : float, optional.
@@ -273,7 +289,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             If kp is not between 0 and 1.
         """
 
-        if self.piezzo_port is None :
+        if self.piezo_port is None :
             print("[RFS] Pizzo port not set")
             return
         
@@ -302,7 +318,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         file_path = os.path.join(self.folder, "stabilization_log.txt")
         
         with open(file_path, "a", encoding="utf-8") as file:
-            file.write('current_time,x,y,displacement,piezzo_displacement\n')
+            file.write('current_time,x,y,displacement,piezo_displacement\n')
             file.flush()
             
         correction_count = 0
@@ -338,48 +354,38 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                         self.calibration.y_spot_pos = y
                         get_position = False
                         
-                    displacement, piezzo_displacement = self.calibration.calculate_displacement(x, y)
+                    um_displacement = self.calibration.calculate_displacement(x, y)
                     
-                    if abs(displacement) > drift_threshold :
-                        
-                        if abs(piezzo_displacement) > 2 :
-                            piezzo_displacement = int(round(piezzo_displacement * kp))
-                            piezzo_displacement = int(max(-max_steps , min(max_steps, piezzo_displacement)))
+                    if abs(um_displacement) > drift_threshold :
+                        piezo_displacement = um_displacement
+                        self.piezo.move_by(um_displacement/1000)
+                        correction_count += 1
                     
                     else :
-                        piezzo_displacement = 0
+                        piezo_displacement = 0
                     
                     current_time = time.strftime("%H:%M:%S")
                     
-                    if self.message : print(f'{current_time} - {x:.2f} - {y:.2f} - {displacement:.3f} - {piezzo_displacement}')
+                    if self.message : print(f'{current_time} - {x:.2f} - {y:.2f} - {um_displacement:.3f} - {piezo_displacement}')
                     
-                    self.data_stabilisation["displacement"] = displacement
-                    self.data_stabilisation["piezzo_displacement"] = piezzo_displacement
+                    self.data_stabilisation["um_displacement"] = um_displacement
+                    self.data_stabilisation["piezo_displacement"] = piezo_displacement
+                    self.data_stabilisation["piezo_position"] = self.piezo.get_position()
                     self.new_stabilisation.emit(self.data_stabilisation)
                     
                     with open(file_path, "a", encoding="utf-8") as file:
-                        file.write(f'{current_time},{x:.2f},{y:.2f},{displacement:.3f},{piezzo_displacement}\n')
+                        file.write(f'{current_time},{x:.2f},{y:.2f},{um_displacement:.3f},{piezo_displacement:.3f}\n')
                         file.flush()
                         
-                    if abs(displacement) > drift_threshold :
-                        piezzo.send_command(f'XR{piezzo_displacement}', self.piezzo_port)
-                        
-                        correction_count += 1
-                        
-                        
-                    else : # If you just made a correction, you check that it is ok, if no you restart the correction
-                    
-                        correction_count = 0
-                    
+                    if piezo_displacement == 0 :
                         while self.mode == "stabilisation" and timer.elapsed() < (self.stabilisation_period_s * 1000) :
                             time.sleep(0.01) # Attendre 0 ms
-
-            else :
-                correction_count = 0
+                        
+                else :
+                    correction_count = 0
+                    while self.mode == "stabilisation" and timer.elapsed() < (self.stabilisation_period_s * 1000) :
+                        time.sleep(0.01) # Attendre 0 ms
                 
-                while self.mode == "stabilisation" and timer.elapsed() < (self.stabilisation_period_s * 1000) :
-                    time.sleep(0.01) # Attendre 0 ms
-                    
         self.camera_thread.set_mode("preview")
         
     def stop_stabilisation(self):
@@ -391,7 +397,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         """
 
         """
-        if self.piezzo_port is None :
+        if self.piezo_port is None :
             print("[RFS] Pizzo port not set")
             return
         
@@ -409,7 +415,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         file_path = os.path.join(self.folder, "timelaps_log.txt")
         
         with open(file_path, "a", encoding="utf-8") as file:
-            file.write('current_time,x,y,displacement,piezzo_displacement\n')
+            file.write('current_time,x,y,um_displacement,piezo_displacement\n')
             file.flush()
             
         self.mode = "timelaps"
@@ -443,17 +449,18 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                     get_position = False
                     
                 if self.calibration.calibrated :
-                    displacement, piezzo_displacement = self.calibration.calculate_displacement(x, y)
+                    um_displacement = self.calibration.calculate_displacement(x, y)
                 
                     current_time = time.strftime("%H:%M:%S")
                     
-                    if self.message : print(f'[RFS] {current_time} - {x:.2f} - {y:.2f} - {displacement:.3f} - {piezzo_displacement}')
+                    if self.message : print(f'[RFS] {current_time} - {x:.2f} - {y:.2f} - {um_displacement:.3f} - {um_displacement}')
                 
-                self.data_image["displacement"] = displacement
-                self.data_image["piezzo_displacement"] = piezzo_displacement
+                self.data_image["um_displacement"] = um_displacement
+                self.data_image["piezo_displacement"] = um_displacement
+                self.data_image["piezo_position"] = self.piezo.get_position()
                 
                 with open(file_path, "a", encoding="utf-8") as file:
-                    file.write(f'{current_time},{x:.2f},{y:.2f},{displacement:.3f},{piezzo_displacement}\n')
+                    file.write(f'{current_time},{x:.2f},{y:.2f},{um_displacement:.3f},{um_displacement}\n')
                     file.flush()
             
             # self.save_image(f"{frame*5} min_{x:.3f}_{y:.3f}.tif")
@@ -481,8 +488,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             if n_points == 1 :
                 x = float(localizations.loc[0,"X"])
                 y = float(localizations.loc[0,"Y"])
-                # if self.mode == "preview" :
-                #     print(f'{x:.2f} - {y:.2f}')
+                # if self.message : print(f"[RFS] point detected : {x:3f},{y:3f}")
                 return x, y
             elif n_points == 0 :
                 if self.laser_on :
@@ -507,13 +513,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             
         except Exception as e:
             if self.message : print(f"[RFS] Failed to save frame:\n{str(e)}.tif")
-        
-    def get_piezzo_position(self):
-        "Get the current position of the device and display it"
-        position = piezzo.send_command_response('TP', self.piezzo_port)
-        position = float(position[2:])
-        position = 1000 * position
-        self.piezzo_position = position
+
         
     def stop(self):
         """Stop all internal workers cleanly."""
@@ -553,8 +553,6 @@ class Calibration():
         self.px_per_um_euclidian = None
         self.r2x = None
         self.r2y = None
-        self.fw_step = None
-        self.bw_step = None
         self.x_spot_pos = None,
         self.y_spot_pos = None
             
@@ -571,8 +569,6 @@ class Calibration():
             "px_per_um_euclidian" : self.px_per_um_euclidian,
             "r2x" : self.r2x,
             "r2y" : self.r2y,
-            "fw_step" : self.fw_step,
-            "bw_step" : self.bw_step,
             "x_spot_pos" : self.x_spot_pos,
             "y_spot_pos" : self.y_spot_pos,
             }
@@ -597,13 +593,8 @@ class Calibration():
         pixel_displacement = math.sqrt(dx ** 2 + dy ** 2) * sign
         
         um_displacement = pixel_displacement / self.px_per_um_euclidian
-        
-        if um_displacement < 0 :
-            piezzo_displacement = -int(um_displacement / self.bw_step)
-        else :
-            piezzo_displacement = int(um_displacement / self.fw_step)
                     
-        return um_displacement, piezzo_displacement
+        return um_displacement
                 
                 
         
@@ -614,7 +605,7 @@ class TLCameraThread(QThread):
     """
     new_frame = Signal(np.ndarray)  # Signal émis à chaque nouvelle image
 
-    def __init__(self, tlcam, period_ms = 1000):
+    def __init__(self, tlcam, period_ms = 500):
         super().__init__()
         self.tlcam = tlcam
         self.period = period_ms

@@ -35,10 +35,14 @@ if __name__ == "__main__":
 from remote_focus_stabilisation.ui_RFS import Ui_Form
 from remote_focus_stabilisation.Tools.plots import create_stabilisation_plot
 from remote_focus_stabilisation.main_stabilisation import remote_focus_stabilisation
-from hardware.functions_super_agilis import functions_super_agilis as piezzo
+from hardware.functions_piezo import piezo_SAS as piezo
+from hardware.functions_piezo import PiezoState
 from hardware.functions_DAQ import functions_daq
 
 from Functions_UI import functions_ui
+
+class PiezoError(RuntimeError):
+    "Error while using the Piezo"
 
 class RFS_window(QWidget, Ui_Form):
     """
@@ -51,9 +55,8 @@ class RFS_window(QWidget, Ui_Form):
     stop_stabilisation = Signal()
     
     def __init__(self, camera_sn = '36805',
-                 piezzo_port = None,
+                 piezo_port = None,
                  NIDAQ_out = "Dev1/port0/Line13",
-                 piezzo_step = [4,47],
                  folder_path = None,
                  message = True,
                  parent = None):
@@ -63,10 +66,11 @@ class RFS_window(QWidget, Ui_Form):
         
         
         self.camera_sn = camera_sn
-        self.piezzo_port = piezzo_port
+        self.piezo_port = piezo_port
         self.NIDAQ_out = NIDAQ_out
-        self.piezzo_step = piezzo_step # Values for the same and minimum piezzo step (~200nm)
         self.folder_path = folder_path
+        
+        self.piezo = piezo()
         
         #
         # Check the DAQ connection
@@ -86,12 +90,14 @@ class RFS_window(QWidget, Ui_Form):
         if self.folder_path is None :
             self.stabilisation = remote_focus_stabilisation(camera_sn = camera_sn,
                                                         NIDAQ_out = NIDAQ_out,
-                                                        message = message)
+                                                        message = message,
+                                                        piezo = self.piezo)
         else :
             self.stabilisation = remote_focus_stabilisation(camera_sn = camera_sn,
                                                         NIDAQ_out = NIDAQ_out,
                                                         folder_path=self.folder_path,
-                                                        message = message)
+                                                        message = message,
+                                                        piezo = self.piezo)
             
         self.stabilisationThread = QThread()
         self.stabilisationThread.setObjectName("stabilisationThread")
@@ -120,20 +126,16 @@ class RFS_window(QWidget, Ui_Form):
         # Parameters
         #
         
-        self.step_size = 100
+        self.step_size_um = 0.100 # Step size in µm
         
         self.preview_frame = None # frame actually displayed
 
-        self.is_preview = True
-        self.is_preview_paused = False
         self.look_up_table = 'grayscale'
         self.min_grayscale = 0
         self.max_grayscale = 1023
         self.preview_zoom = 0.5
         
-        self.piezzo_port = None
-        self.piezzo_connected = False # Connexion of the piezzo
-        self.piezzo_position = 0.0 # Position of the piezzo in µm
+        self.piezo_connected = False # Connexion of the piezo
         
         self.laser_on = False
         self.calibrated = False
@@ -142,13 +144,13 @@ class RFS_window(QWidget, Ui_Form):
         self.timer_graph = QElapsedTimer()
         self.timer_graph.start()
         self.displacements = []
-        self.piezzo_displacements = []
+        self.piezo_displacements = []
         
         #
         # Detect material
         #
         
-        self.devices = piezzo.list_serial_ports() # Récupére la liste des devices disponibles
+        self.devices = piezo.list_serial_ports() # Récupére la liste des devices disponibles
         self.set_comboBox_devices()
         self.comboBox_devices_indexChanged()
 
@@ -178,6 +180,8 @@ class RFS_window(QWidget, Ui_Form):
         self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
         self.label_stabilize_icon.setPixmap(self.Green_Light_Icon_Off)
         self.label_timelaps_icon.setPixmap(self.Green_Light_Icon_Off)
+        self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_Off)
+        
         
         self.tools_desactivation()
         
@@ -189,10 +193,12 @@ class RFS_window(QWidget, Ui_Form):
         self.pb_stabilize.clicked.connect(self.pb_stabilize_clicked)
         self.pb_timelaps.clicked.connect(self.pb_timelaps_clicked)
         self.comboBox_devices.currentIndexChanged.connect(self.comboBox_devices_indexChanged)
-        self.pb_calibrate.clicked.connect(self.pb_calibrate_clicked)
+        self.pb_piezo_reference.clicked.connect(self.pb_piezo_reference_clicked)
+        self.slider_step_size.valueChanged.connect(self.slider_step_size_value_changed)
         self.sb_step_size.valueChanged.connect(self.sb_step_size_value_changed)
         self.pb_move_fw1.clicked.connect(self.pb_move_fw1_clicked)
         self.pb_move_bw1.clicked.connect(self.pb_move_bw1_clicked)
+        self.pb_calibrate.clicked.connect(self.pb_calibrate_clicked)
         # Combo box grayscale
         self.cb_preview_zoom.currentIndexChanged.connect(self.cb_preview_zoom_index_changed)
         self.sb_min_grayscale.valueChanged.connect(self.sb_grayscale_value_changed)
@@ -227,7 +233,7 @@ class RFS_window(QWidget, Ui_Form):
     
     def pb_stabilize_clicked(self):
         if self.pb_stabilize.isChecked():
-            if self.laser_on and self.piezzo_connected and self.calibrated :
+            if self.laser_on and self.piezo_connected and self.calibrated :
                 self.label_stabilize_icon.setPixmap(self.Green_Light_Icon_On)
                 self.label_stabilize.setText('ON ')
                 self.stabilisation.stabilisation_period_s = self.sb_stabilise_time.value()
@@ -261,51 +267,72 @@ class RFS_window(QWidget, Ui_Form):
             self.pb_stabilize.setEnabled(True)
             
     def comboBox_devices_indexChanged(self):
-        """"set the self.piezzo_port and self.connection status as well as the interface
+        """"set the self.piezo_port and self.connection status as well as the interface
         depending on the comboBox_devices index"""
-        self.piezzo_port = self.comboBox_devices.currentText() 
-        if self.piezzo_port != 'None':
-            port_ok = self.test_port()
-            if port_ok:
-                self.piezzo_connected = True
-                t.sleep(0.01)
+        self.piezo_port = self.comboBox_devices.currentText() 
+        if self.piezo_port != 'None':
+            self.piezo.change_port(self.piezo_port)
+            if self.piezo.test_port() :
+                self.piezo_connected = True
                 self.get_position()
-                self.stabilisation.set_piezzo_port(self.piezzo_port)
+                state = self.piezo.get_status()
+                if state == PiezoState.READY_OL:
+                    self.piezo.close_loop()
+                elif state == PiezoState.READY_CL:
+                    pass
+                else :
+                    raise PiezoError("Piezo is not in READY_CL or READY_OL state : {state}")
+                    
+                if self.piezo.is_referenced():
+                    self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
+                    self.label_piezo_referenced.setText("Referened")
+                
+                self.stabilisation.set_piezo_port(self.piezo_port)
                 
             else:
-                self.piezzo_connected = False
-                print("[RFS] piezzo not connected")
+                self.piezo_connected = False
+                print("[RFS] piezo not connected")
         else :
-            self.piezzo_connected = False
+            self.piezo_connected = False
         
         self.tools_desactivation()
         self.set_label_connection()
-        self.set_step_size()
     
+    def pb_piezo_reference_clicked(self):
+        self.piezo.reference()
+        self.get_position()
+        if self.piezo.is_referenced():
+            self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
+            self.label_piezo_referenced.setText("Referened")
+        
+    def slider_step_size_value_changed(self):
+        self.step_size_um = float(self.slider_step_size.value())/100
+        self.sb_step_size.blockSignals(True)
+        self.sb_step_size.setValue(self.step_size_um)
+        self.sb_step_size.blockSignals(False)
+    
+    def sb_step_size_value_changed(self) :
+        self.step_size_um = self.sb_step_size.value()
+        self.slider_step_size.blockSignals(True)
+        self.slider_step_size.setValue(self.step_size_um * 100)
+        self.slider_step_size.blockSignals(False)
+        
+    def pb_move_fw1_clicked(self):
+        "Move forward of 1 step"
+        self.piezo.move_by(self.step_size_um/1000) # step size is in mm for pizo
+        self.get_position()
+    
+    def pb_move_bw1_clicked(self):
+        "Move backward of 1 step"
+        self.piezo.move_by(-self.step_size_um/1000) # step size is in mm for pizo
+        self.get_position()
+        
     def pb_calibrate_clicked(self):
         if self.laser_on :
             self.start_calibration.emit()
             self.calibrated = True
         else :
-            self.label_message.setText("Laser should be on")    
-            
-    def sb_step_size_value_changed(self):
-        """"set the step size in negative and positive direction
-        21% seems to be the minimum for forward
-        """
-        self.step_size = self.sb_step_size.value()
-        
-    def pb_move_fw1_clicked(self):
-        "Move forward of 1 step"
-        piezzo.send_command('XR1', self.piezzo_port)
-        t.sleep(0.01)
-        self.get_position()
-    
-    def pb_move_bw1_clicked(self):
-        "Move backward of 1 step"
-        piezzo.send_command('XR-1', self.piezzo_port)
-        t.sleep(0.01)
-        self.get_position()
+            self.label_message.setText("Laser should be on")  
     
     def cb_preview_zoom_index_changed(self):
         zoom_list = [0.5,0.5,1,2,3,4]
@@ -364,11 +391,8 @@ class RFS_window(QWidget, Ui_Form):
     
     def get_position(self):
         "Get the current position of the device and display it"
-        position = piezzo.send_command_response('TP', self.piezzo_port)
-        position = float(position[2:])
-        position = 1000 * position
-        self.piezzo_position = position
-        self.lcdNumber_Position.display(self.piezzo_position)
+        position = self.piezo.get_position()
+        self.lcdNumber_Position.display(position)
         
     def set_comboBox_devices(self):
         "set the indexes of the comboBox_devices depending on avaliable devices"
@@ -377,22 +401,16 @@ class RFS_window(QWidget, Ui_Form):
         
     def test_port(self):
         "Test if the current port is the right device"
-        ID = piezzo.send_command_response('ID?', self.piezzo_port)
-        t.sleep(0.01)
-        if ID == 'IDCONEX-SAG-LS16P':
-            port_ok = True
-        else:
-            port_ok = False
-        
-        return port_ok
+        return self.piezo.test_port()
         
     def tools_desactivation(self):
-        if self.piezzo_connected :
+        if self.piezo_connected :
             inactive = False
         else:
             inactive = True
         
         self.slider_step_size.setDisabled(inactive)
+        self.pb_piezo_reference.setDisabled(inactive)
         self.pb_move_bw1.setDisabled(inactive)
         self.pb_move_fw1.setDisabled(inactive)
         self.pb_stabilize.setDisabled(inactive)
@@ -401,7 +419,7 @@ class RFS_window(QWidget, Ui_Form):
         
     def set_label_connection(self):
         "set self.label_connection depending in the device connection"
-        if self.piezzo_connected :
+        if self.piezo_connected :
             self.label_connection.setText('Connected')
             text_color = 'green'
         else:
@@ -409,36 +427,6 @@ class RFS_window(QWidget, Ui_Form):
             text_color = 'red'
             
         self.label_connection.setStyleSheet(f'color: {text_color}')
-        
-    def set_step_size(self):
-        """
-        Steps size sets to get the same and minimum moovement in 
-
-        Parameters
-        ----------
-        backward : TYPE, optional
-            DESCRIPTION. The default is 4.
-        forward : TYPE, optional
-            DESCRIPTION. The default is 43.
-
-        Returns
-        -------
-        None.
-
-        """
-        if not self.piezzo_connected :
-            return
-        
-        backward = self.piezzo_step[0] # Values for the same and minimum step (~200nm)
-        forward = self.piezzo_step[1]
-        
-        piezzo.send_command('OL')
-        t.sleep(0.01)
-        piezzo.send_command('XF1000', self.piezzo_port) # set step frequancy to 1000 Hz, to set step size < 100%
-        t.sleep(0.01)
-        command = 'XU-' + str(backward) + ',' + str(forward)
-        piezzo.send_command(command, self.piezzo_port)
-        t.sleep(0.01)
     
     #
     # Stabilization and display
@@ -446,14 +434,14 @@ class RFS_window(QWidget, Ui_Form):
     
     def store_frame(self, frame, data):
         """Receive a frame from the camera thread and store it (unless paused)."""
-        if not self.is_preview_paused :
-            self.preview_frame = frame
-            self.preview_data = data
-            self.update_preview()
+        self.preview_frame = frame
+        self.preview_data = data
+        self.lcdNumber_Position.display(self.preview_data["piezo_position"])
+        self.update_preview()
     
     def update_preview(self):
         """Display the most recent frame in the GUI."""
-        if self.is_preview and self.preview_frame is not None :
+        if self.preview_frame is not None :
             qt_image = functions_ui.create_preview(self.preview_frame,
                                                    self.look_up_table,
                                                    self.min_grayscale,
@@ -481,14 +469,14 @@ class RFS_window(QWidget, Ui_Form):
             self.label_message.adjustSize()
                 
     def update_graph(self, data):
-            self.displacements.append(data["displacement"])
-            self.piezzo_displacements.append(data["piezzo_displacement"])
+            self.displacements.append(data["um_displacement"])
+            self.piezo_displacements.append(data["piezo_displacement"])
                 
             size = self.label_graph.size()
             w , h = size.width() , size.height()
             
             plot = create_stabilisation_plot(self.displacements,
-                                             self.piezzo_displacements,
+                                             self.piezo_displacements,
                                              w,
                                              h,)
             
@@ -504,6 +492,7 @@ class RFS_window(QWidget, Ui_Form):
         try:
             
             if hasattr(self, "stabilisationThread"):
+                self.stop_stabilisation.emit()
                 self.stabilisationThread.quit()
                 self.stabilisationThread.wait()
     

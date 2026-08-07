@@ -11,10 +11,9 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from PySide6.QtGui import QImage
 
-
 def create_stabilisation_plot(
-    float_values,
-    step_values,
+    displacement,
+    corrections,
     w_px=800,
     h_px=300,
     dpi=100,
@@ -23,14 +22,14 @@ def create_stabilisation_plot(
     font_size=10,
 ):
     """
-    Create a QImage showing the last stabilisation values.
+    Create a QImage showing the latest stabilisation data.
 
     Parameters
     ----------
-    float_values : list[float]
-        Continuous values, for example measured drift.
-    step_values : list[int]
-        Integer correction steps, typically between -5 and 5.
+    displacement : list[float]
+        Measured displacement values.
+    corrections : list[float]
+        Applied correction values.
     w_px : int, optional
         Output image width in pixels.
     h_px : int, optional
@@ -38,68 +37,145 @@ def create_stabilisation_plot(
     dpi : int, optional
         Matplotlib figure DPI.
     max_points : int, optional
-        Number of last points to display.
+        Maximum number of latest points to display.
     line_width : float, optional
-        Width of the plotted line.
+        Width of the displacement line.
     font_size : int, optional
         Axis font size.
 
     Returns
     -------
     QImage
-        Rendered plot as a Qt image.
+        Rendered stabilisation plot as a Qt image.
+
+    Raises
+    ------
+    ValueError
+        If ``displacement`` and ``corrections`` do not have the same length.
     """
+    if len(displacement) != len(corrections):
+        raise ValueError(
+            "'displacement' and 'corrections' must have the same length."
+        )
 
-    float_arr = np.asarray(float_values[-max_points:], dtype=float)
-    step_arr = np.asarray(step_values[-max_points:], dtype=int)
+    displacement_arr = np.asarray(
+        displacement[-max_points:],
+        dtype=float,
+    )
+    corrections_arr = np.asarray(
+        corrections[-max_points:],
+        dtype=float,
+    )
 
-    n = min(len(float_arr), len(step_arr))
-    float_arr = float_arr[-n:]
-    step_arr = step_arr[-n:]
-
-    fig = plt.Figure(figsize=(w_px / dpi, h_px / dpi), dpi=dpi)
-    canvas = FigureCanvas(fig)
-
-    ax1 = fig.add_subplot(111)
+    n = len(displacement_arr)
     x = np.arange(n)
 
-    ax1.plot(x, float_arr, color="blue", linewidth=line_width, marker="o")
-    ax1.set_ylabel("Value", fontsize=font_size, color="blue")
-    ax1.tick_params(axis="y", labelcolor="blue", labelsize=font_size)
-    ax1.tick_params(axis="x", labelsize=font_size)
-    
-    if n > 0:
-        ymin = min(np.min(float_arr), 0)
-        ymax = max(np.max(float_arr), 0)
-    
-        margin = 0.05 * max(abs(ymin), abs(ymax), 1)
+    fig = plt.Figure(
+        figsize=(w_px / dpi, h_px / dpi),
+        dpi=dpi,
+    )
+    canvas = FigureCanvas(fig)
+
+    # Displacement axis
+    ax1 = fig.add_subplot(111)
+
+    ax1.plot(
+        x,
+        displacement_arr,
+        color="blue",
+        linewidth=line_width,
+        marker="o",
+    )
+
+    ax1.set_ylabel(
+        "Displacement",
+        fontsize=font_size,
+        color="blue",
+    )
+    ax1.tick_params(
+        axis="y",
+        labelcolor="blue",
+        labelsize=font_size,
+    )
+    ax1.tick_params(
+        axis="x",
+        labelsize=font_size,
+    )
+
+    if n:
+        ymin = min(displacement_arr.min(), 0.0)
+        ymax = max(displacement_arr.max(), 0.0)
+
+        margin = 0.05 * max(abs(ymin), abs(ymax), 1.0)
         ax1.set_ylim(ymin - margin, ymax + margin)
 
+    # Correction axis
     ax2 = ax1.twinx()
-    ax2.bar(x, step_arr, color="red", alpha=0.35)
-    ax2.set_ylabel("Steps", fontsize=font_size, color="red")
-    ax2.tick_params(axis="y", labelcolor="red", labelsize=font_size)
-    ax2.set_ylim(-5.5, 5.5)
-    ax2.set_yticks(np.arange(-5, 6, 5))
-    ax2.grid(True, axis="y", alpha=0.25)
 
-    ax1.set_xlabel("Last values", fontsize=font_size)
-    ax1.set_xlim(-0.5, max(n - 0.5, 0.5))
-    ax1.grid(True, alpha=0.25)
+    ax2.bar(
+        x,
+        corrections_arr,
+        color="red",
+        alpha=0.35,
+    )
+
+    ax2.set_ylabel(
+        "Correction",
+        fontsize=font_size,
+        color="red",
+    )
+    ax2.tick_params(
+        axis="y",
+        labelcolor="red",
+        labelsize=font_size,
+    )
+
+    if n:
+        correction_limit = max(
+            np.max(np.abs(corrections_arr)),
+            1.0,
+        )
+        margin = 0.1 * correction_limit
+
+        ax2.set_ylim(
+            -correction_limit - margin,
+            correction_limit + margin,
+        )
+
+    ax2.grid(
+        True,
+        axis="y",
+        alpha=0.25,
+    )
+
+    ax1.set_xlabel(
+        "Last values",
+        fontsize=font_size,
+    )
+    ax1.set_xlim(
+        -0.5,
+        max(n - 0.5, 0.5),
+    )
+    ax1.grid(
+        True,
+        axis="x",
+        alpha=0.25,
+    )
 
     fig.tight_layout()
 
     canvas.draw()
     w, h = canvas.get_width_height()
 
-    image_data = np.asarray(canvas.buffer_rgba(), dtype=np.uint8).reshape(h, w, 4)
+    image_data = np.asarray(
+        canvas.buffer_rgba(),
+        dtype=np.uint8,
+    ).reshape(h, w, 4)
 
-    qimage = QImage(
+    return QImage(
         image_data.data,
         w,
         h,
         w * 4,
         QImage.Format_RGBA8888,
     ).copy()
-
-    return qimage

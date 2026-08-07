@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'ui_RFS.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.2
+## Created by: Qt User Interface Compiler version 6.9.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -15,17 +15,18 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QLCDNumber,
-    QLabel, QPushButton, QSizePolicy, QSlider,
-    QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QFrame,
+    QHBoxLayout, QLCDNumber, QLabel, QPushButton,
+    QSizePolicy, QSlider, QSpacerItem, QSpinBox,
+    QVBoxLayout, QWidget)
 
 class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
         Form.resize(1085, 1024)
-        self.horizontalLayout_15 = QHBoxLayout(Form)
-        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
+        self.horizontalLayout_17 = QHBoxLayout(Form)
+        self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.horizontalLayout_14 = QHBoxLayout()
@@ -155,6 +156,35 @@ class Ui_Form(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_13)
 
+        self.line = QFrame(Form)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShape(QFrame.Shape.HLine)
+        self.line.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.verticalLayout_5.addWidget(self.line)
+
+        self.horizontalLayout_16 = QHBoxLayout()
+        self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
+        self.horizontalSpacer_12 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_16.addItem(self.horizontalSpacer_12)
+
+        self.label_Piezo = QLabel(Form)
+        self.label_Piezo.setObjectName(u"label_Piezo")
+        font = QFont()
+        font.setPointSize(10)
+        font.setBold(True)
+        self.label_Piezo.setFont(font)
+
+        self.horizontalLayout_16.addWidget(self.label_Piezo)
+
+        self.horizontalSpacer_13 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_16.addItem(self.horizontalSpacer_13)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_16)
+
         self.horizontalLayout_8 = QHBoxLayout()
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.label_serial_port = QLabel(Form)
@@ -180,25 +210,33 @@ class Ui_Form(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_8)
 
-        self.horizontalLayout_12 = QHBoxLayout()
-        self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
-        self.label_calibrate = QLabel(Form)
-        self.label_calibrate.setObjectName(u"label_calibrate")
+        self.horizontalLayout_15 = QHBoxLayout()
+        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
+        self.pb_piezo_reference = QPushButton(Form)
+        self.pb_piezo_reference.setObjectName(u"pb_piezo_reference")
+        self.pb_piezo_reference.setCheckable(False)
 
-        self.horizontalLayout_12.addWidget(self.label_calibrate)
+        self.horizontalLayout_15.addWidget(self.pb_piezo_reference)
 
-        self.pb_calibrate = QPushButton(Form)
-        self.pb_calibrate.setObjectName(u"pb_calibrate")
-        self.pb_calibrate.setCheckable(True)
+        self.label_piezo_referenced_icon = QLabel(Form)
+        self.label_piezo_referenced_icon.setObjectName(u"label_piezo_referenced_icon")
+        self.label_piezo_referenced_icon.setMinimumSize(QSize(32, 32))
+        self.label_piezo_referenced_icon.setMaximumSize(QSize(32, 32))
 
-        self.horizontalLayout_12.addWidget(self.pb_calibrate)
+        self.horizontalLayout_15.addWidget(self.label_piezo_referenced_icon)
 
-        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.label_piezo_referenced = QLabel(Form)
+        self.label_piezo_referenced.setObjectName(u"label_piezo_referenced")
+        self.label_piezo_referenced.setMinimumSize(QSize(30, 0))
 
-        self.horizontalLayout_12.addItem(self.horizontalSpacer_9)
+        self.horizontalLayout_15.addWidget(self.label_piezo_referenced)
+
+        self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_15.addItem(self.horizontalSpacer_11)
 
 
-        self.verticalLayout_5.addLayout(self.horizontalLayout_12)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_15)
 
         self.horizontalLayout_9 = QHBoxLayout()
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
@@ -211,17 +249,18 @@ class Ui_Form(object):
         self.slider_step_size.setObjectName(u"slider_step_size")
         self.slider_step_size.setMinimumSize(QSize(120, 0))
         self.slider_step_size.setMinimum(1)
-        self.slider_step_size.setMaximum(100)
+        self.slider_step_size.setMaximum(1000)
         self.slider_step_size.setValue(100)
         self.slider_step_size.setOrientation(Qt.Horizontal)
 
         self.horizontalLayout_9.addWidget(self.slider_step_size)
 
-        self.sb_step_size = QSpinBox(Form)
+        self.sb_step_size = QDoubleSpinBox(Form)
         self.sb_step_size.setObjectName(u"sb_step_size")
-        self.sb_step_size.setMinimum(1)
-        self.sb_step_size.setMaximum(100)
-        self.sb_step_size.setValue(100)
+        self.sb_step_size.setMinimum(0.010000000000000)
+        self.sb_step_size.setMaximum(10.000000000000000)
+        self.sb_step_size.setSingleStep(0.100000000000000)
+        self.sb_step_size.setValue(0.500000000000000)
 
         self.horizontalLayout_9.addWidget(self.sb_step_size)
 
@@ -301,6 +340,7 @@ class Ui_Form(object):
         palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, brush3)
         palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, brush3)
         self.lcdNumber_Position.setPalette(palette)
+        self.lcdNumber_Position.setDigitCount(9)
 
         self.horizontalLayout_11.addWidget(self.lcdNumber_Position)
 
@@ -317,12 +357,32 @@ class Ui_Form(object):
 
         self.verticalLayout_5.addWidget(self.label_message)
 
+        self.horizontalLayout_12 = QHBoxLayout()
+        self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
+        self.label_calibrate = QLabel(Form)
+        self.label_calibrate.setObjectName(u"label_calibrate")
+
+        self.horizontalLayout_12.addWidget(self.label_calibrate)
+
+        self.pb_calibrate = QPushButton(Form)
+        self.pb_calibrate.setObjectName(u"pb_calibrate")
+        self.pb_calibrate.setCheckable(True)
+
+        self.horizontalLayout_12.addWidget(self.pb_calibrate)
+
+        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_12.addItem(self.horizontalSpacer_9)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_12)
+
         self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_3)
 
 
-        self.horizontalLayout_15.addLayout(self.verticalLayout_5)
+        self.horizontalLayout_17.addLayout(self.verticalLayout_5)
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
@@ -499,7 +559,7 @@ class Ui_Form(object):
         self.verticalLayout_4.addWidget(self.label_graph)
 
 
-        self.horizontalLayout_15.addLayout(self.verticalLayout_4)
+        self.horizontalLayout_17.addLayout(self.verticalLayout_4)
 
 
         self.retranslateUi(Form)
@@ -507,8 +567,6 @@ class Ui_Form(object):
         self.slider_min_grayscale.valueChanged.connect(self.sb_min_grayscale.setValue)
         self.sb_max_grayscale.valueChanged.connect(self.slider_max_grayscale.setValue)
         self.slider_max_grayscale.valueChanged.connect(self.sb_max_grayscale.setValue)
-        self.slider_step_size.valueChanged.connect(self.sb_step_size.setValue)
-        self.sb_step_size.valueChanged.connect(self.slider_step_size.setValue)
 
         QMetaObject.connectSlotsByName(Form)
     # setupUi
@@ -528,7 +586,8 @@ class Ui_Form(object):
         self.label_timelaps_icon.setText("")
         self.label_timelaps.setText(QCoreApplication.translate("Form", u"OFF", None))
         self.label_timelaps_time.setText(QCoreApplication.translate("Form", u"T(s)", None))
-        self.label_serial_port.setText(QCoreApplication.translate("Form", u"Serial Port", None))
+        self.label_Piezo.setText(QCoreApplication.translate("Form", u"Snouty Piezo Stage", None))
+        self.label_serial_port.setText(QCoreApplication.translate("Form", u"Piezo Port", None))
 #if QT_CONFIG(tooltip)
         self.comboBox_devices.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Select the serial port to which the piezo controller is connected.</p><p>Ensure the correct port is chosen for proper communication</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
@@ -536,14 +595,12 @@ class Ui_Form(object):
         self.label_connection.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Indicates whether the piezo controller is successfully connected via the selected port.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.label_connection.setText(QCoreApplication.translate("Form", u"Not Connected", None))
-        self.label_calibrate.setText(QCoreApplication.translate("Form", u"Calibrate", None))
-        self.pb_calibrate.setText(QCoreApplication.translate("Form", u"calibrate", None))
-        self.label_step_size.setText(QCoreApplication.translate("Form", u"Step size (%)", None))
+        self.pb_piezo_reference.setText(QCoreApplication.translate("Form", u"Reference", None))
+        self.label_piezo_referenced_icon.setText("")
+        self.label_piezo_referenced.setText(QCoreApplication.translate("Form", u"Done", None))
+        self.label_step_size.setText(QCoreApplication.translate("Form", u"Step size (\u00b5m)", None))
 #if QT_CONFIG(tooltip)
         self.slider_step_size.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Set the step size for piezo movement as a percentage of the total range.</p><p>Adjust between 21% and 100% to control the increment of each movement command</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.sb_step_size.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Set the step size for piezo movement as a percentage of the total range.</p><p>Adjust between 21% and 100% to control the increment of each movement command</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.pb_move_bw1.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Move the piezo 1 step backward.</p><p>Around 50nm to 250nm depending on step size</p></body></html>", None))
@@ -555,6 +612,8 @@ class Ui_Form(object):
         self.pb_move_fw1.setText(QCoreApplication.translate("Form", u">", None))
         self.label_position.setText(QCoreApplication.translate("Form", u"Position (\u00b5m)", None))
         self.label_message.setText(QCoreApplication.translate("Form", u"TextLabel", None))
+        self.label_calibrate.setText(QCoreApplication.translate("Form", u"Calibrate", None))
+        self.pb_calibrate.setText(QCoreApplication.translate("Form", u"calibrate", None))
         self.label_image_preview.setText("")
         self.cb_LUT.setItemText(0, QCoreApplication.translate("Form", u"Grayscale", None))
 
