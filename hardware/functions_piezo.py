@@ -89,7 +89,7 @@ class piezo_SAS() : #SAS for Super Agilis Series
         self.position = 0.0
         self._comm_lock = RLock()
         
-    def list_serial_ports():
+    def list_serial_ports(self):
         """
         List all available serial ports.
         """
@@ -144,6 +144,23 @@ class piezo_SAS() : #SAS for Super Agilis Series
                     f"Piezo could not report the position : {pos}")
         except :
             return self.position
+        
+    def try_get_position(self):
+        """
+        Return the current piezo position if communication is available.
+    
+        Returns
+        -------
+        float | None
+            Current position, or None if the piezo communication is busy.
+        """
+        if not self._comm_lock.acquire(blocking=False):
+            return None
+    
+        try:
+            return self.get_position()
+        finally:
+            self._comm_lock.release()
         
     
     def test_position(self, position: float, tolerance: float  = 0.0001):
@@ -498,10 +515,9 @@ class piezo_SAS() : #SAS for Super Agilis Series
             try:
                 with serial.Serial(self.port, 9600, timeout=1) as ser:
                     ser.write(command.encode('ascii') + b'\r\n')
-                    t.sleep(0.01)
+                    t.sleep(0.005)
                     response = ser.readline()
-                    self.last_command = t.time()
-                    t.sleep(0.01)
+                    t.sleep(0.005)
             except OSError as exc:
                 raise PiezoCommunicationError(
                     f'Communication failure for the command: {command}') from exc
@@ -544,7 +560,6 @@ class piezo_SAS() : #SAS for Super Agilis Series
             try:
                 with serial.Serial(self.port, 9600, timeout=timeout_s) as ser:
                     ser.write(command.encode('ascii') + b'\r\n')
-                    self.last_command = t.time()
                     t.sleep(0.01)
             except OSError as exc:
                 raise PiezoCommunicationError(

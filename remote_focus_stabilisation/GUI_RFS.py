@@ -150,7 +150,7 @@ class RFS_window(QWidget, Ui_Form):
         # Detect material
         #
         
-        self.devices = piezo.list_serial_ports() # Récupére la liste des devices disponibles
+        self.devices = self.piezo.list_serial_ports() # Récupére la liste des devices disponibles
         self.set_comboBox_devices()
         self.comboBox_devices_indexChanged()
 
@@ -285,7 +285,7 @@ class RFS_window(QWidget, Ui_Form):
                     
                 if self.piezo.is_referenced():
                     self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
-                    self.label_piezo_referenced.setText("Referened")
+                    self.label_piezo_referenced.setText("Referenced")
                 
                 self.stabilisation.set_piezo_port(self.piezo_port)
                 
@@ -303,7 +303,7 @@ class RFS_window(QWidget, Ui_Form):
         self.get_position()
         if self.piezo.is_referenced():
             self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
-            self.label_piezo_referenced.setText("Referened")
+            self.label_piezo_referenced.setText("Referenced")
         
     def slider_step_size_value_changed(self):
         self.step_size_um = float(self.slider_step_size.value())/100

@@ -207,7 +207,6 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             self.piezo.move_by(step/1000)
                 
             time.sleep(0.5)
-            self.piezo.get_position()
             x_image = []
             y_image = []
             for i in range(10) :
@@ -370,7 +369,6 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                     
                     self.data_stabilisation["um_displacement"] = um_displacement
                     self.data_stabilisation["piezo_displacement"] = piezo_displacement
-                    self.data_stabilisation["piezo_position"] = self.piezo.get_position()
                     self.new_stabilisation.emit(self.data_stabilisation)
                     
                     with open(file_path, "a", encoding="utf-8") as file:
@@ -457,7 +455,6 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                 
                 self.data_image["um_displacement"] = um_displacement
                 self.data_image["piezo_displacement"] = um_displacement
-                self.data_image["piezo_position"] = self.piezo.get_position()
                 
                 with open(file_path, "a", encoding="utf-8") as file:
                     file.write(f'{current_time},{x:.2f},{y:.2f},{um_displacement:.3f},{um_displacement}\n')

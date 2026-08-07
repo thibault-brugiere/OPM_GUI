@@ -9,6 +9,7 @@ Created on Tue Feb 18 16:30:13 2025
 Convert file.ui to file.py
 
 pyside6-uic widget/ui_alignement_O2_O3.ui -o widget/ui_alignement_O2_O3.py
+pyside6-uic D:/Projets_Python/OPM_GUI/widget/ui_alignement_O2_O3.ui -o D:/Projets_Python/OPM_GUI/widget/ui_alignement_O2_O3.py
 
 TODO : Ajouter le réglage du step size
 
@@ -18,9 +19,9 @@ import os
 import sys
 import time as t
 
-from PySide6.QtCore import Qt,  QSize
+from PySide6.QtCore import Qt, QSize, QTimer
 from PySide6.QtWidgets import QApplication, QMessageBox, QWidget
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QPixmap
 
 # Ajoutez le dossier parent au sys.path si le fichier est exécuté directement
 if __name__ == "__main__":
@@ -28,8 +29,12 @@ if __name__ == "__main__":
     parent_dir = os.path.dirname(current_dir)
     sys.path.append(parent_dir)
 
-from hardware.functions_super_agilis import functions_super_agilis as piezzo
+from hardware.functions_piezo import piezo_SAS as piezo
+from hardware.functions_piezo import PiezoState
 from widget.ui_alignement_O2_O3 import Ui_Form
+
+class PiezoError(RuntimeError):
+    "Error while using the Piezo"
 
 class alignement_O2_O3_Window(QWidget, Ui_Form):
     """
@@ -51,40 +56,36 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         
         self.pb_move = {'fw1' : self.pb_move_fw1, # Liste des push buttons
                    'fw10' : self.pb_move_fw10,
-                   'fwj1' : self.pb_move_fwj1,
-                   'fwj2' : self.pb_move_fwj2,
                    'bw1' : self.pb_move_bw1,
                    'bw10' : self.pb_move_bw10,
-                   'bwj1' : self.pb_move_bwj1,
-                   'bwj2' : self.pb_move_bwj2,
                    }
         
-        self.devices = piezzo.list_serial_ports() # Récupére la liste des devices disponibles
+        self.piezo = piezo()
+        self.piezo_position_timer = QTimer(self)
+        self.piezo_position_timer.setInterval(500)  # ms
+        self.piezo_position_timer.timeout.connect(self.get_position)
+        
+        self.devices = self.piezo.list_serial_ports() # Récupére la liste des devices disponibles
         self.set_comboBox_devices()
         self.comboBox_devices_indexChanged()
+        self.step_size = 0.1
+        
         
         #
         # Connexion entre les boutons et les fonctions
         #
         
         self.comboBox_devices.currentIndexChanged.connect(self.comboBox_devices_indexChanged)
-        self.spinBox_step_size.editingFinished.connect(self.spinBox_step_size_value_changed)
-        self.slider_step_size.sliderReleased.connect(self.spinBox_step_size_value_changed)
+        self.spinBox_step_size.valueChanged.connect(self.spinBox_step_size_value_changed)
+        self.slider_step_size.valueChanged.connect(self.slider_step_size_value_changed)
         
         # push buttons
         
+        self.pb_piezo_reference.clicked.connect(self.pb_piezo_reference_clicked)
         self.pb_move_fw1.clicked.connect(self.pb_move_fw1_clicked)
         self.pb_move_fw10.clicked.connect(self.pb_move_fw10_clicked)
-        self.pb_move_fwj1.pressed.connect(self.pb_move_fwj1_pressed)
-        self.pb_move_fwj1.released.connect(self.pb_move_jog_released)
-        self.pb_move_fwj2.pressed.connect(self.pb_move_fwj2_pressed)
-        self.pb_move_fwj2.released.connect(self.pb_move_jog_released)
         self.pb_move_bw1.clicked.connect(self.pb_move_bw1_clicked)
         self.pb_move_bw10.clicked.connect(self.pb_move_bw10_clicked)
-        self.pb_move_bwj1.pressed.connect(self.pb_move_bwj1_pressed)
-        self.pb_move_bwj1.released.connect(self.pb_move_jog_released)
-        self.pb_move_bwj2.pressed.connect(self.pb_move_bwj2_pressed)
-        self.pb_move_bwj2.released.connect(self.pb_move_jog_released)
         
         #
         # Ajout des icones
@@ -92,12 +93,8 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         
         icons = {'fw1' : 'Icons/Arrows_03.png', # Liste des icones
                  'fw10' : 'Icons/Arrows_04.png',
-                 'fwj1' : 'Icons/Arrows_07.png',
-                 'fwj2' : 'Icons/Arrows_08.png',
                  'bw1' : 'Icons/Arrows_02.png',
                  'bw10' : 'Icons/Arrows_01.png',
-                 'bwj1' : 'Icons/Arrows_06.png',
-                 'bwj2' : 'Icons/Arrows_05.png',
                  }
 
         for key in self.pb_move.keys():
@@ -112,6 +109,11 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
             pb.setText('')
             pb.setIcon(icon)
             pb.setIconSize(QSize(32,32))
+            
+        self.Green_Light_Icon_On = QPixmap('Icons/Green_Light_Icon_On.png')
+        self.Green_Light_Icon_Off = QPixmap('Icons/Green_Light_Icon_Off.png')
+        
+        self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_Off)
 
     #
     # Functionsappelées par les boutons
@@ -127,10 +129,20 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         depending on the comboBox_devices index"""
         self.port = self.comboBox_devices.currentText() 
         if self.port != 'None':
-            port_ok = self.test_port()
-            if port_ok:
+            if self.piezo.test_port() :
                 self.connected = True
-                self.initialize()
+                state = self.piezo.get_status()
+                if state == PiezoState.READY_OL:
+                    self.piezo.close_loop()
+                elif state == PiezoState.READY_CL:
+                    pass
+                else :
+                    raise PiezoError("Piezo is not in READY_CL or READY_OL state : {state}")
+                    
+                if self.piezo.is_referenced():
+                    self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
+                    self.label_piezo_referenced.setText("Referenced")
+                    
             else:
                 self.connected = False
         else :
@@ -141,65 +153,49 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         
     
     def spinBox_step_size_value_changed(self):
-        """"set the step size in negative and positive direction
-        21% seems to be the minimum for forward
+        """"set the step size in negative and positive direction in µm
         """
-        step_size = self.spinBox_step_size.value()
+        self.step_size = self.spinBox_step_size.value()
+        self.slider_step_size.blockSignals(True)
+        self.slider_step_size.setValue(int(self.step_size * 1000))
+        self.slider_step_size.blockSignals(False)
         
-        forward = math.floor((100 - 21) * step_size / 100 + 21) # set forward minimum step size
-        backward = step_size
-
-        command = 'XU-' + str(backward) + ',' + str(forward)
-        piezzo.send_command(command, self.port)
-        t.sleep(0.01)
+        
+    def slider_step_size_value_changed(self):
+        self.step_size = self.slider_step_size.value()/1000
+        self.spinBox_step_size.blockSignals(True)
+        self.spinBox_step_size.setValue(self.step_size)
+        self.spinBox_step_size.blockSignals(True)
     
     # push buttons for movement
     
+    def pb_piezo_reference_clicked(self):
+        self.piezo.reference()
+        self.get_position()
+        if self.piezo.is_referenced():
+            self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
+            self.label_piezo_referenced.setText("Referenced")
+    
     def pb_move_fw1_clicked(self):
         "Move forward of 1 step"
-        piezzo.send_command('XR1', self.port)
-        t.sleep(0.01)
+        self.piezo.move_by(self.step_size/1000)
         self.get_position()
         
     def pb_move_fw10_clicked(self):
-        "Move forward of 10 steps"
-        piezzo.send_command('XR10', self.port)
-        t.sleep(0.01)
+        "Move forward of 5 steps"
+        self.piezo.move_by(self.step_size * 5 / 1000)
         self.get_position()
-        
-    def pb_move_fwj1_pressed(self):
-        "Move forward jogging at 50 steps/s"
-        piezzo.send_command('JA1', self.port)
-        
-    def pb_move_fwj2_pressed(self):
-        "Move forward jogging at 1000 steps/s"
-        piezzo.send_command('JA2', self.port)
         
     def pb_move_bw1_clicked(self):
         "Move backward of 1 step"
-        piezzo.send_command('XR-1', self.port)
-        t.sleep(0.01)
+        self.piezo.move_by(- self.step_size / 1000)
         self.get_position()
         
     def pb_move_bw10_clicked(self):
-        "Move backward of 10 steps"
-        piezzo.send_command('XR-10', self.port)
-        t.sleep(0.01)
+        "Move backward 5 steps"
+        self.piezo.move_by(- self.step_size * 5 / 1000)
         self.get_position()
         
-    def pb_move_bwj1_pressed(self):
-        "Move backward jogging at 50 steps/s"
-        piezzo.send_command('JA-1', self.port)
-        
-    def pb_move_bwj2_pressed(self):
-        "Move backward jogging at 1000 steps/s"
-        piezzo.send_command('JA-2', self.port)
-        
-    def pb_move_jog_released(self):
-        "Stop move jogging"
-        piezzo.send_command('ST', self.port)
-        t.sleep(0.01)
-        self.get_position() 
         
     #
     # Autres fonctions
@@ -207,43 +203,28 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
 
     def get_position(self):
         "Get the current position of the device and display it"
-        position = piezzo.send_command_response('TP', self.port)
-        t.sleep(0.01)
-        position = float(position[2:])
-        self.position = position
-        self.lcdNumber_Position.display(self.position)
-        
-    def test_port(self):
-        "Test if the current port is the right device"
-        ID = piezzo.send_command_response('ID?', self.port)
-        t.sleep(0.01)
-        if ID == 'IDCONEX-SAG-LS16P':
-            port_ok = True
-        else:
-            port_ok = False
-        
-        return port_ok
+        position = self.piezo.try_get_position()
+        if position is not None :
+            self.position = position
+            self.lcdNumber_Position.display(self.position)
+
         
     def tools_desactivation(self):
         """activate and desactivate tools if depending on device connection"""
         if self.connected :
             inactive = False
+            self.piezo_position_timer.start()
         else:
             inactive = True
+            self.piezo_position_timer.stop()
         
         self.slider_step_size.setDisabled(inactive)
         self.spinBox_step_size.setDisabled(inactive)
+        self.pb_piezo_reference.setDisabled(inactive)
         
         for pb in self.pb_move.values():
             pb.setDisabled(inactive)
-        
-    def initialize(self):
-        self.spinBox_step_size_value_changed() # Set step size
-        piezzo.send_command('OL')
-        t.sleep(0.01)
-        piezzo.send_command('XF1000', self.port) # set step frequancy to 1000 Hz, to set step size < 100%
-        t.sleep(0.01)
-        self.get_position()
+            
         
     def set_label_connection(self):
         "set self.label_connection depending in the device connection"
@@ -274,9 +255,6 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         
 if __name__ == '__main__':
     "To test the window"
-    # current_dir = os.path.dirname(os.path.abspath(__file__))
-    # parent_dir = os.path.dirname(current_dir)
-    # sys.path.append(parent_dir)
     
     app = QApplication(sys.argv)
     

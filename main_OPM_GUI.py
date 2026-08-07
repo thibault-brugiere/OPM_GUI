@@ -1460,9 +1460,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def openRFS(self):
         "display window to start remote focus stabilisation"
-        if self.RFS_window is None :
-            self.RFS_window = RFS_window(folder_path = Path(self.experiment.data_path), message = False)
-        self.RFS_window.show()
+        pass
+        # if self.RFS_window is None :
+        #     self.RFS_window = RFS_window(folder_path = Path(self.experiment.data_path), message = False)
+        # self.RFS_window.show()
         
     def launch_program(self , shortcut_path):
         try:
