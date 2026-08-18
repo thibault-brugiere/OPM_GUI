@@ -45,6 +45,7 @@ from hardware.functions_camera import CameraThread, functions_camera
 from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
 from hardware.filter_wheel import FilterWheel
 from hardware.Laser_Controller import LaserController
+from  hardware.functions_piezo import piezo_SAS as piezo
 # from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
 # from mock.DAQ import functions_daq
 # from mock.filter_wheel import FilterWheel
@@ -163,6 +164,12 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             print("[WARNING] failled to connect filter wheel")
             self.status_bar.showMessage("[WARNING] failled to connect filter wheel")
             self.filterWheel = NullObject()
+            
+        #
+        # Create the piezo
+        #
+        
+        self.piezo = piezo()
         
         #
         # creation of the channels / lasers
@@ -1402,7 +1409,6 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.experiment.mode in mda_modes :
             self.pb_multidimensional_acquisition_clicked_connect()
         
-
         elif self.experiment.mode == "multiposition" :
             self.pb_multi_position_acquisition_clicked_connect()
 
@@ -1455,7 +1461,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def openAlign_O2_O3(self):
         "display window to aligne O2 and O3 using the piezzo stage"
-        self.alignement_O2_O3 = alignement_O2_O3_Window()
+        self.alignement_O2_O3 = alignement_O2_O3_Window(piezo = self.piezo)
         self.alignement_O2_O3.show()
         
     def openRFS(self):

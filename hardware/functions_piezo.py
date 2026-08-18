@@ -82,11 +82,16 @@ class piezo_SAS() : #SAS for Super Agilis Series
     """
     Control the piezo Super Agilis Series from MKS Newport
     """
-    def __init__(self, port = 'COM6', model = 'IDCONEX-SAG-LS16P'):
+    def __init__(self, port = 'COM6',
+                 model = 'IDCONEX-SAG-LS16P',
+                 min_position = 0.0,
+                 max_position = 0.0):
         self.port = port
         self.model = model
         self.connected = False
         self.position = 0.0
+        self.min_position = min_position
+        self.max_position = max_position
         self._comm_lock = RLock()
         
     def list_serial_ports(self):
@@ -119,6 +124,26 @@ class piezo_SAS() : #SAS for Super Agilis Series
         else :
             self.connected = False
             return False
+        
+    def min_position(self, setting = None):
+        if setting is None :
+            return self.min_position
+        elif type(setting) in [float, int]:
+            self.min_position = float(setting)
+            return self.min_position
+        else :
+            raise PiezoStateError(
+                f"Piezo min_position should be int or float: {type(setting)}")
+
+    def max_position(self, setting = None):
+        if setting is None :
+            return self.max_position
+        elif type(setting) in [float, int]:
+            self.max_position = float(setting)
+            return self.max_position
+        else :
+            raise PiezoStateError(
+                f"Piezo max_position should be int or float: {type(setting)}")
         
     def get_position(self):
         """
@@ -163,7 +188,7 @@ class piezo_SAS() : #SAS for Super Agilis Series
             self._comm_lock.release()
         
     
-    def test_position(self, position: float, tolerance: float  = 0.0001):
+    def test_position(self, position: float, tolerance: float  = 0.00015):
         """
         Compare the actual position of the piezo with another position
 

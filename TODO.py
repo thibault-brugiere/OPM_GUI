@@ -9,6 +9,7 @@ Created on Tue Sep  2 09:03:43 2025
     ########
     # Main #
     ########
+# TODO : ajouter le port du piezo dans les configurations du microscope
 # TODO : faire un dictionnaire.json dans config pour toute la description du microscope
         Pour qu'elle soit enregistrée lors de l'acquisition
 # TODO : Avoir plusieurs LUT (Fire ?)

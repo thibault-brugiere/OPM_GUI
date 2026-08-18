@@ -24,7 +24,7 @@ if __name__ == "__main__":
     parent_dir = os.path.dirname(current_dir)
     sys.path.append(parent_dir)
 
-from hardware.functions_piezo import piezo_SAS as piezo
+from hardware.functions_piezo import piezo_SAS
 from hardware.functions_piezo import PiezoState
 from widget.ui_alignement_O2_O3 import Ui_Form
 
@@ -35,13 +35,14 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
     """
     Show the window to set default channels
     """
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, piezo = None):
         """
         preset_size : Array of preset sizes 
         """
         
         super().__init__(parent)
         self.setupUi(self)
+        self.piezo = piezo
         self.on_init()
         
     def on_init(self):
@@ -95,7 +96,9 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
             
         self.label_piezo_referenced_icon.setPixmap(self.GLI_Pixmap["OFF"])
         
-        self.piezo = piezo()
+        if self.piezo is None :
+            self.piezo = piezo_SAS()
+            
         self.piezo_position_timer = QTimer(self)
         self.piezo_position_timer.setInterval(500)  # ms
         self.piezo_position_timer.timeout.connect(self.get_position)

@@ -170,6 +170,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         if self.piezo.connected :
             try :
                 self.data_image["piezo_position"] = self.piezo.get_position()
+                self.piezo_position = self.data_image["piezo_position"]
             except :
                 pass
         self.new_data.emit(self.preview_frame, self.data_image)
@@ -202,6 +203,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         y_list = []
         piezo_positions = []
         actual_position = self.piezo.get_position()
+        self.piezo_position = actual_position
         self.piezo.move_to(actual_position - step * sampling / 2 / 1000)
         for k in range(sampling) :
             self.piezo.move_by(step/1000)
@@ -225,6 +227,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                 x_list.append(x)
                 y_list.append(y)
                 position = self.piezo.get_position()
+                self.piezo_position = position
                 piezo_positions.append(position)
                 
                 
@@ -267,7 +270,9 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         self.camera_thread.set_mode("preview")
 
         
-    def stabilisation(self, kp = 0.5, max_step_um = 2.0, max_correction_in_row = 5, drift_threshold = 0.5):
+    def stabilisation(self, kp = 0.5, max_step_um = 2.0,
+                      max_correction_in_row = 5, drift_threshold = 0.5,
+                      max_total_displacement_um = 200):
         """
         
 
@@ -321,6 +326,9 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             file.flush()
             
         correction_count = 0
+        self.piezo_position = self.piezo.get_position()
+        max_position = min(self.piezo.max_position, self.piezo_position + max_total_displacement_um / 1000)
+        min_position = max(self.piezo.min_position, self.piezo_position - max_total_displacement_um / 1000)
         
         timer.start()
                 
@@ -356,9 +364,14 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                     um_displacement = self.calibration.calculate_displacement(x, y)
                     
                     if abs(um_displacement) > drift_threshold :
-                        piezo_displacement = um_displacement
-                        self.piezo.move_by(um_displacement/1000)
-                        correction_count += 1
+                        if (self.piezo_position + um_displacement / 1000) > self.piezo.max_position :
+                            piezo_displacement = 0
+                        elif (self.piezo_position + um_displacement / 1000) < self.piezo.min_position :
+                            piezo_displacement = 0
+                        else :
+                            piezo_displacement = um_displacement
+                            self.piezo.move_by(um_displacement/1000)
+                            correction_count += 1
                     
                     else :
                         piezo_displacement = 0
