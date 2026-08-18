@@ -8,16 +8,11 @@ Created on Tue Feb 18 16:30:13 2025
 """
 Convert file.ui to file.py
 
-pyside6-uic widget/ui_alignement_O2_O3.ui -o widget/ui_alignement_O2_O3.py
 pyside6-uic D:/Projets_Python/OPM_GUI/widget/ui_alignement_O2_O3.ui -o D:/Projets_Python/OPM_GUI/widget/ui_alignement_O2_O3.py
 
-TODO : Ajouter le réglage du step size
-
 """
-import math
 import os
 import sys
-import time as t
 
 from PySide6.QtCore import Qt, QSize, QTimer
 from PySide6.QtWidgets import QApplication, QMessageBox, QWidget
@@ -60,6 +55,46 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
                    'bw10' : self.pb_move_bw10,
                    }
         
+        #
+        # Ajout des icones
+        #
+        
+        icons = {'fw1' : 'Icons/Arrows_03.png', # Liste des icones
+                 'fw10' : 'Icons/Arrows_04.png',
+                 'bw1' : 'Icons/Arrows_02.png',
+                 'bw10' : 'Icons/Arrows_01.png',
+                 }
+
+        for key in self.pb_move.keys():
+            pb = self.pb_move[key]
+            if __name__ == "__main__": # Si jamais la fenêtre est appelée depuis ce fichier
+                icon_path = os.path.join(parent_dir, icons[key])
+            else:
+                icon_path = icons[key]
+                
+            icon = QIcon(icon_path)
+            
+            pb.setText('')
+            pb.setIcon(icon)
+            pb.setIconSize(QSize(32,32))
+        
+        GLI_Icon = {'ON' : 'Icons/Green_Light_Icon_On.png',
+               'OFF' : 'Icons/Green_Light_Icon_Off.png' }
+        
+        self.GLI_Pixmap = {'ON'  : None,
+                    'OFF' : None}
+        
+        for key in GLI_Icon.keys() :
+            if __name__ == "__main__":
+                icon_path = os.path.join(parent_dir,  GLI_Icon[key])
+            else :
+                icon_path = GLI_Icon[key]
+                
+            self.GLI_Pixmap[key] = QPixmap(icon_path)
+                
+            
+        self.label_piezo_referenced_icon.setPixmap(self.GLI_Pixmap["OFF"])
+        
         self.piezo = piezo()
         self.piezo_position_timer = QTimer(self)
         self.piezo_position_timer.setInterval(500)  # ms
@@ -86,34 +121,6 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         self.pb_move_fw10.clicked.connect(self.pb_move_fw10_clicked)
         self.pb_move_bw1.clicked.connect(self.pb_move_bw1_clicked)
         self.pb_move_bw10.clicked.connect(self.pb_move_bw10_clicked)
-        
-        #
-        # Ajout des icones
-        #
-        
-        icons = {'fw1' : 'Icons/Arrows_03.png', # Liste des icones
-                 'fw10' : 'Icons/Arrows_04.png',
-                 'bw1' : 'Icons/Arrows_02.png',
-                 'bw10' : 'Icons/Arrows_01.png',
-                 }
-
-        for key in self.pb_move.keys():
-            pb = self.pb_move[key]
-            if __name__ == "__main__": # Si jamais la fenêtre est appelée depuis ce fichier
-                icon_path = os.path.join(parent_dir, icons[key])
-            else:
-                icon_path = icons[key]
-                
-            icon = QIcon(icon_path)
-            
-            pb.setText('')
-            pb.setIcon(icon)
-            pb.setIconSize(QSize(32,32))
-            
-        self.Green_Light_Icon_On = QPixmap('Icons/Green_Light_Icon_On.png')
-        self.Green_Light_Icon_Off = QPixmap('Icons/Green_Light_Icon_Off.png')
-        
-        self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_Off)
 
     #
     # Functionsappelées par les boutons
@@ -140,13 +147,15 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
                     raise PiezoError("Piezo is not in READY_CL or READY_OL state : {state}")
                     
                 if self.piezo.is_referenced():
-                    self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
+                    self.label_piezo_referenced_icon.setPixmap(self.GLI_Pixmap["ON"])
                     self.label_piezo_referenced.setText("Referenced")
                     
             else:
                 self.connected = False
+                self.GLI_Pixmap["OFF"]
         else :
             self.connected = False
+            self.GLI_Pixmap["OFF"]
             
         self.tools_desactivation()
         self.set_label_connection()
@@ -173,7 +182,7 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         self.piezo.reference()
         self.get_position()
         if self.piezo.is_referenced():
-            self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
+            self.label_piezo_referenced_icon.setPixmap(self.GLI_Pixmap["OFF"])
             self.label_piezo_referenced.setText("Referenced")
     
     def pb_move_fw1_clicked(self):

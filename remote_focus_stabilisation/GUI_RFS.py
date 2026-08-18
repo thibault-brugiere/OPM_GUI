@@ -493,6 +493,7 @@ class RFS_window(QWidget, Ui_Form):
             
             if hasattr(self, "stabilisationThread"):
                 self.stop_stabilisation.emit()
+                self.stop_timelaps.emit()
                 self.stabilisationThread.quit()
                 self.stabilisationThread.wait()
     

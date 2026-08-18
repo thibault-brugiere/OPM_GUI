@@ -249,6 +249,7 @@ class piezo_SAS() : #SAS for Super Agilis Series
             if move_back :
                 position = self.get_position()
                 self.send_command("RFP", timeout_s = 15.0)
+                t.sleep(0.1)
                 if not self.test_position(position):
                     raise PiezoEcecutionError(f"Unexpected position after referencing : {position} / {self.get_position()}")
             else :

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>442</width>
-    <height>443</height>
+    <height>382</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -110,19 +110,19 @@
    <item>
     <widget class="QSlider" name="slider_step_size">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the step size for piezo movement as a percentage of the total range.&lt;/p&gt;&lt;p&gt;Adjust between 21% and 100% to control the increment of each movement command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the step size for piezo movement in µm.&lt;/p&gt;&lt;p&gt;Adjust between 0.05µm  and 2µm to control the increment of each movement command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="minimum">
-      <number>1</number>
+      <number>50</number>
      </property>
      <property name="maximum">
       <number>2000</number>
      </property>
      <property name="value">
-      <number>1</number>
+      <number>50</number>
      </property>
      <property name="sliderPosition">
-      <number>1</number>
+      <number>50</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -138,11 +138,14 @@
    </item>
    <item>
     <widget class="QDoubleSpinBox" name="spinBox_step_size">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the step size for piezo movement in µm.&lt;/p&gt;&lt;p&gt;Adjust between 0.05µm and 2µm to control the increment of each movement command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="decimals">
       <number>3</number>
      </property>
      <property name="minimum">
-      <double>0.010000000000000</double>
+      <double>0.050000000000000</double>
      </property>
      <property name="maximum">
       <double>2.000000000000000</double>
@@ -166,7 +169,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 10 step backward.&lt;/p&gt;&lt;p&gt;Around 500nm to 2,5µm depending on step size&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 5 step backward&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>&lt;&lt;</string>
@@ -182,7 +185,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 1 step backward.&lt;/p&gt;&lt;p&gt;Around 50nm to 250nm depending on step size&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 1 step backward.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>&lt;</string>
@@ -198,7 +201,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 1 step forward.&lt;/p&gt;&lt;p&gt;Around 50nm to 250nm depending on step size&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 1 step forward.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>&gt;</string>
@@ -214,7 +217,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 10 step forward&lt;/p&gt;&lt;p&gt;Around 500nm to 2,5µm depending on step size&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move the piezo 10 step forward.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>&gt;&gt;</string>
