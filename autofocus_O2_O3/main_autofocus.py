@@ -15,6 +15,9 @@ warnings.filterwarnings(
 import os
 import time
 
+from PySide6.QtCore import QThread, Signal, QObject
+from PySide6.QtWidgets import QApplication
+
 if __name__ == "__main__" and (__package__ is None or __package__ == ""):
     # Lancement en script : on relance en module pour activer les imports relatifs
     import sys
@@ -30,15 +33,20 @@ from autofocus_O2_O3.Hardware.daq_controller import NIDAQ_Acquisition
 from autofocus_O2_O3.Hardware.camera_controller import camera_acquisition
 from autofocus_O2_O3.Hardware.filter_wheel_controller import FilterWheel
 from autofocus_O2_O3.Hardware.functions_serial_ports import functions_serial_ports
-from autofocus_O2_O3.Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
-from autofocus_O2_O3.Tools.regression import gaussian_fit
+from autofocus_O2_O3.Tools.acquisition_pipeline.acquisition_worker import AutofocusAcquisitionWorker as AcquisitionWorker
+from autofocus_O2_O3.Tools.regression import gaussian_fit, plot_gaussian_fit, create_black_graph
 from autofocus_O2_O3.Tools.signal_generators.multi_channel import generate_channel_signals
+from widget.Autofocus_O2_O3_Window import autofocus_O2_O3_Window
 
 
-class MultiPositionAcquisition:
-    def __init__(self, hcams=None, filterwheel = None, piezo = None, frequency=1e5, interface = False):
-        
-        print('[Main Autofocus] Start multiposition acquisition')
+class AutofocusAcquisition(QObject):
+    autofocus_result_ready = Signal(object, dict) 
+    
+    def __init__(self, hcams=None, filterwheel = None, piezo = None,
+                 n_piezo_positions = 5, piezo_step_mm = 0.002, n_pixels = 10,
+                 frequency=1e5, interface = False):
+        super().__init__()
+        print('[Main Autofocus] Start acquisition')
         
         self.hcams = hcams
         self.filterwheel = filterwheel
@@ -66,14 +74,16 @@ class MultiPositionAcquisition:
             
         # Set the piezo for autofocus
         self.original_piezo_position = self.piezo.get_position()
-        self.n_piezo_positions = 5
-        self.piezo_step_mm = 0.002
+        self.n_piezo_positions = n_piezo_positions
+        self.piezo_step_mm = piezo_step_mm
+        self.n_pixels = n_pixels
         self.piezo_positions = self.create_piezo_positions(self.n_piezo_positions, self.piezo_step_mm)
         self.px_shift = compute_px_shift(self.config.experiment.aspect_ratio,
                                          self.config.microscope.tilt_angle,
                                          self.config.cameras[0].binning,
                                          unit="deg")
         
+        self.channel_name = self.config.channels[0].channel_id
         # Generate tension library
         self.volume_tensions_library = generate_channel_signals(self.config.cameras,
                                                                 [self.config.channels[0]],
@@ -160,16 +170,21 @@ class MultiPositionAcquisition:
         for cam in self.cameras_acquisition:
             worker = AcquisitionWorker(
                 camera_worker=cam,
+                channel_name = self.channel_name,
                 n_steps = self.config.experiment.n_steps,
-                positions = self.piezo_positions,
-                n_pixels = 10,
-                px_shift = self.px_shift)
+                n_positions = self.n_piezo_positions,
+                n_pixels = self.n_pixels,
+                px_shift = self.px_shift,
+                interface = self.interface)
             
             self.acquisition_workers.append(worker)
             
         self.state['acquisition_workers'] = 'ready'
         
         print("[Main Autofocus] acquisition workers initialized")
+        
+    def initialize_count_worker(self):
+        pass
         
     def initialize_filterwheel(self):
         if self.filterwheel is None :
@@ -248,30 +263,49 @@ class MultiPositionAcquisition:
             
             time.sleep(0.011)
 
-        self.stop_all()
-        
         self.piezo_regression()
+
+        self.stop_all()
         
     def piezo_regression(self):
         x = self.piezo_positions
         y = self.acquisition_workers[0].get_max_px_intensity()
         
-        y_fit, r2, x_max, y_max = gaussian_fit(x, y)
+        y_fit, r2, x_max, y_max, parameters = gaussian_fit(x, y)
         
-        print(f"Original position = {self.original_piezo_position:6f}")
-        print(f"    Best position = {x_max:.6f}")
-        print(f"Max intensity = {y_max:.1f}")
-        print(f"R² = {r2:.4f}")
+        if abs(x_max - self.original_piezo_position) < (self.piezo_step_mm * 1.5) :
+            autofocus_quality = True
+        else :
+            autofocus_quality = False
+        
+        if parameters is not None :
+            graph = plot_gaussian_fit(x, y, r2, x_max, y_max, parameters, not self.interface)
+        else :
+            graph = create_black_graph()    
         
         if not self.interface :
+            print(f"Original position = {self.original_piezo_position:6f}")
+            print(f"    Best position = {x_max:.6f}")
+            print(f"Max intensity = {y_max:.1f}")
+            print(f"R² = {r2:.4f}")
+            print(f'Autofocus good : {autofocus_quality}')
+            
             if input("Do you want to use this calibration? [y/N]: ").strip().lower() == "y":
                 self.piezo.move_to(x_max)
             else :
                 self.piezo.move_to(self.original_piezo_position)    
         else :
-            pass
-        
-        
+            parameters = {
+                "channel" : "autofocus",
+                "original_piezo_position" : self.original_piezo_position,
+                "best_piezo_position" : x_max,
+                "max_intensity" : y_max,
+                "R2" : r2,
+                "quality" : autofocus_quality}
+            
+            self.autofocus_result_ready.emit(graph, parameters)
+                
+ 
     def _all_ready(self):
         return all(v == 'ready' for v in self.state.values())
 
@@ -307,7 +341,7 @@ class MultiPositionAcquisition:
 ##############################################################################
 
 if __name__ == "__main__":
-    Autofocus = MultiPositionAcquisition()
+    Autofocus = AutofocusAcquisition()
     Autofocus.initialize_cameras()
     Autofocus.initialize_laser()
     Autofocus.initialize_acquisition_workers()

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>442</width>
-    <height>382</height>
+    <width>451</width>
+    <height>438</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -52,6 +52,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_15">
      <item>
       <widget class="QPushButton" name="pb_piezo_reference">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Reference the pizeo origin, to do onece the piezo is on&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string>Reference</string>
        </property>

@@ -2,7 +2,6 @@ import gc
 import matplotlib.pyplot as plt
 import numpy as np
 import queue
-import os
 from pathlib import Path
 import threading
 from tqdm import tqdm
@@ -36,58 +35,49 @@ class ImageFrame:
         self.channel = channel
 
 # Main class that handles image acquisition, saving, and live viewing in parallel threads
-class AcquisitionWorker(QObject):
+class AutofocusAcquisitionWorker(QObject):
     new_volume_ready = Signal(np.ndarray, dict)  # signal Qt émis avec buffer + metadata
     
-    def __init__(self, camera_worker, n_steps, positions, n_pixels = 10, px_shift = 0, max_volume_queue=10):
+    def __init__(self, camera_worker, channel_name, n_steps, n_positions, n_pixels = 10, px_shift = 0, max_volume_queue=10, interface = False):
         """
         Initialize the acquisition pipeline with multithreaded image reading, buffering, and saving.
 
-        Parameters:
-        - camera_worker: object
+        Parameters
+        ----------
+        camera_worker : object
             An instance of a camera interface class providing a read_camera() method that returns image frames.
-        
-        - save_dir: str
-            Path to the directory where TIFF stacks (volumes) will be saved on disk.
-        
-        - n_steps: int
+        channel_name : str
+            Name of the channel that is imaged for autofocus
+        n_steps : int
             Number of image frames per volume (typically corresponding to Z-slices in a 3D acquisition).
-        
-        - timepoints: int
-            Number of volumes to acquire (typically corresponding to time-lapse or sequential acquisitions).
-            
-        - n_channels: int
-            Number of chennel in each position
-        
-        - n_positions: int
-            Number of positions to acquire in each timepoint
-        
-        - channel_names: list of str, optional
-            List of channel identifiers (e.g., ["GFP", "RFP"]) used for naming saved volumes. Defaults to ["CH"].
-        
-        - mode: str
-            mode of acquisition, "standard" for stardard acquisition and "fast" for fast acquisition
-        
-        - max_volume_queue: int
+        n_positions : int
+            Number of piezo positions to acquire
+        n_pixels : int, optional
+            Number of pixels to average for autofocus. The default is 10.
+        px_shift : int, optional
+            Number of pixels for deskewing image. The default is 0.
+        max_volume_queue : int, optional
             Maximum number of volumes allowed in the internal RAM buffer before being written to disk.
-            This limits memory usage.
-        
-        - save_type:str, optional
-            saves volumes as TIFF stacks; 'RAW' saves raw binary files with accompanying JSON metadata.
-            Defaults to "TIFF"
+            This limits memory usage. The default is 10.
+        interface : bool, optional
+            If an external interface display the images, there is no need to display it from the worker
         """
         super().__init__()
         self.camera = camera_worker
+        self.channel_name = channel_name
         self.n_steps = n_steps
-        self.positions = positions
-        self.max_px_intensity = [None] * len(self.positions)
+        self.n_positions = n_positions
+        self.max_px_intensity = [None] * self.n_positions
         self.n_pixels = n_pixels
         self.px_shift = px_shift
         
         self.max_volume_queue = max_volume_queue
+        self.interface = interface
 
-        self.n_frames = self.n_steps * len(self.positions)
+        self.n_frames = self.n_steps * self.n_positions
         self.frame_in_last_file = 0
+
+        self.start_time = None
 
         self.stop_event = threading.Event()
         self.threads = []
@@ -114,7 +104,7 @@ class AcquisitionWorker(QObject):
         # Initialize tqdm bars
         self.frame_bar = tqdm(total=self.n_frames,
                               desc="Frames Acquired  ", position=0)
-        self.volume_bar = tqdm(total=self.n_steps, desc="Volumes Acquired ", position=1)
+        self.volume_bar = tqdm(total=self.n_steps - 1, desc="Volumes Acquired ", position=1)
         
         self.stop_event.clear()
         self.threads = [
@@ -189,13 +179,13 @@ class AcquisitionWorker(QObject):
                         
                         preview_data = {
                             "volume_id": volume_id,
-                            "channel": 'CH',
+                            "channel": self.channel_name,
                             "shape": current_buffer.shape
                         }
                         
                         self.new_volume_ready.emit(current_buffer.copy(), preview_data)
                         
-                    self.queue_to_save.put(ImageFrame(current_buffer, volume_id, 'CH'))
+                    self.queue_to_save.put(ImageFrame(current_buffer, volume_id, self.channel_name))
 
                     volume_id += 1
                     if not self.buffer_pool.empty():
@@ -229,7 +219,9 @@ class AcquisitionWorker(QObject):
             volume_id = frame.volume_id
             
             max_deskewed_image = np.max(deskew_numpy(buffer, px_shift_y=self.px_shift), axis = 0)
-            self.show_image(max_deskewed_image)
+            
+            if not self.interface :
+                self.show_image(max_deskewed_image)
             
             max_deskewed_image = np.max(deskew_numpy(buffer, px_shift_y=self.px_shift), axis = 0).ravel()
             # ravel transfor 2d matrix into 1D matrix
@@ -261,7 +253,6 @@ class AcquisitionWorker(QObject):
         plt.show()
     
     def get_max_px_intensity(self):
-        print(self.max_px_intensity)
         return self.max_px_intensity
             
     def set_preview_callback(self):

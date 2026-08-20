@@ -30,9 +30,9 @@ import sys
 import tifffile
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import QTimer, Qt  #, QCoreApplication, QEventLoop
+from PySide6.QtCore import QTimer #, Qt ,QCoreApplication, QEventLoop
 from PySide6.QtGui import QPixmap, QImage
-from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox, QSizePolicy
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox #, QSizePolicy
 
 from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
 from acquisition.send_to_acquisition import send_to_ls3_acquisition

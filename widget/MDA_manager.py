@@ -10,11 +10,12 @@ from collections import deque
 import cv2
 import numpy as np
 import os
+import shiboken6
 import sys
 import time
 import threading
 
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtWidgets import QApplication, QWidget, QMessageBox
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtCore import QTimer, QObject, Signal, Slot, QThread, Qt
 
@@ -24,6 +25,7 @@ if __name__ == "__main__":
     parent_dir = os.path.dirname(current_dir)
     sys.path.append(parent_dir)
 
+from hardware.functions_piezo import piezo_SAS
 from image_analysis.Deskew_Numpy import deskew_numpy, compute_px_shift, mean_projection_ignore_zeros
 from multidimensional_acquisition.Live_Viewer.mda_manager_functions import update_timelapse_strip
 from multidimensional_acquisition.Live_Viewer.mda_manager_functions import auto_contrast
@@ -44,6 +46,10 @@ class mda_mannager(QWidget, Ui_Form):
         super().__init__(parent)
         self.setupUi(self)
         self.mda = mda
+        if parent is not None :
+            self.piezo = parent.piezo
+        else :
+            self.piezo = piezo_SAS()
         self.max_preview_size = max_preview_size # Maximum size of preview image in gigabite 
         self.on_init()
         
@@ -322,6 +328,7 @@ class mda_mannager(QWidget, Ui_Form):
         self.mda.initialize_acquisition_workers()
         self.mda.initialize_filterwheel()
         self.set_controller()
+        self.set_autofocus_signal()
         self.mda.configure_daq()
         self.mda.initialize_count_worker()
         
@@ -399,6 +406,21 @@ Preview volumes dropped: {self.preview_dropped}
         worker = self.mda.acquisition_workers[0]
         worker.new_volume_ready.connect(self.handle_new_channel)
         worker.set_preview_callback()
+        
+    def set_autofocus_signal(self):
+        """
+        Connect the mda autofocus if it exist
+        """
+        if hasattr(self.mda, "autofocus_result_ready"):
+            
+            print("MDA valid:", shiboken6.isValid(self.mda))
+            print("MDA type:", type(self.mda))
+            print("MDA parent:", self.mda.parent())
+            
+            self.mda.autofocus_result_ready.connect(
+                self.display_autofocus_graph
+            )
+        
         
     def handle_new_channel(self, channel: np.ndarray, metadata: dict):
         """
@@ -517,41 +539,44 @@ Preview volumes dropped: {self.preview_dropped}
     def receive_projections(self, data):
         # Get the four projections
         channel = data["metadata"]["channel"]
-        self.project_max_front[channel] = data["max_front"]
-        self.project_max_side[channel]  = data["max_side"]
-        self.project_mean_front[channel] = data["mean_front"]
-        self.project_mean_side[channel]  = data["mean_side"]
-        
-        if self.volumes_recived == 1:
-            self.timeline_frame_width = get_timeline_frame_width(self.project_max_front[channel]) + 2
-        
-        # Calculate the timelaps strip
-        self.strip_max[channel] = update_timelapse_strip(self.strip_max[channel], self.project_max_front[channel])
-        self.strip_mean[channel] = update_timelapse_strip(self.strip_mean[channel], self.project_mean_front[channel])
-        
-        # Mets à jour les réglages de la timeline
+        if channel == "autofocus" :
+            self.display_autofocus_graph(channel["graph"], channel["metadata"])
+        else :
+            self.project_max_front[channel] = data["max_front"]
+            self.project_max_side[channel]  = data["max_side"]
+            self.project_mean_front[channel] = data["mean_front"]
+            self.project_mean_side[channel]  = data["mean_side"]
             
-        self.sb_timeline.setMaximum(int(self.volumes_recived))
-        self.slider_timeline.setMaximum(int(self.volumes_recived))
-        
-        if self.timeline_position == int(self.volumes_recived) - 1:
-            self.sb_timeline.setValue(int(self.volumes_recived))
+            if self.volumes_recived == 1:
+                self.timeline_frame_width = get_timeline_frame_width(self.project_max_front[channel]) + 2
             
-        # -------------------------------------------
-        # Handle dropped volumes: add black placeholders
-        # -------------------------------------------
-        # If volumes were dropped while processing was busy, we add black frames
-        # to the timeline strip so the user can SEE the drop (debug-friendly).
-        self._append_dropped_placeholders_if_any(channel)
-    
-        # Update UI preview
-        self.update_preview()
-    
-        # Mark processor idle and immediately process the latest pending volume (if any)
-        self._processor_busy = False
-        self._try_dispatch_processing()
+            # Calculate the timelaps strip
+            self.strip_max[channel] = update_timelapse_strip(self.strip_max[channel], self.project_max_front[channel])
+            self.strip_mean[channel] = update_timelapse_strip(self.strip_mean[channel], self.project_mean_front[channel])
+            
+            # Mets à jour les réglages de la timeline
+                
+            self.sb_timeline.setMaximum(int(self.volumes_recived))
+            self.slider_timeline.setMaximum(int(self.volumes_recived))
+            
+            if self.timeline_position == int(self.volumes_recived) - 1:
+                self.sb_timeline.setValue(int(self.volumes_recived))
+                
+            # -------------------------------------------
+            # Handle dropped volumes: add black placeholders
+            # -------------------------------------------
+            # If volumes were dropped while processing was busy, we add black frames
+            # to the timeline strip so the user can SEE the drop (debug-friendly).
+            self._append_dropped_placeholders_if_any(channel)
         
-        self.update_preview()
+            # Update UI preview
+            self.update_preview()
+        
+            # Mark processor idle and immediately process the latest pending volume (if any)
+            self._processor_busy = False
+            self._try_dispatch_processing()
+            
+            self.update_preview()
         
     def update_preview(self):
         if self.projection == "max":
@@ -665,6 +690,59 @@ Preview volumes dropped: {self.preview_dropped}
         qt_image.setColorTable(self.palettes[self.LUT[self.channel_display]])
         return qt_image
     
+    def display_autofocus_graph(self, graph, metadata, graph_width = 5):
+        if graph is None :
+            return
+        width = self.label_mainImage.width()
+        height = self.label_mainImage.height()
+        graph_height = graph_width * height / width
+        
+        graph.set_size_inches(graph_width, graph_height)
+        
+        graph.tight_layout()
+        graph.canvas.draw()
+        rgba = graph.canvas.buffer_rgba()
+        
+        image = QImage(
+            rgba,
+            rgba.shape[1],
+            rgba.shape[0],
+            QImage.Format_RGBA8888
+            )
+        
+        pixmap = QPixmap.fromImage(image)
+        
+        self.label_mainImage.setPixmap(
+            pixmap.scaled(
+                self.label_mainImage.size(),
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation
+                ))
+        if not metadata["quality"] :
+            sup_line = '\n Bad autofocus, autofocus not applied!!!'
+        else :
+            sup_line = ''
+        self.label_Image_side.setText( # TODO afficher ici avec la bonne police
+f"""
+Original position = {metadata["original_piezo_position"]:6f}
+    Best position = {metadata["best_piezo_position"]:6f}
+    Max intensity = {metadata["max_intensity"]:.1f}
+               R² = {metadata["R2"]:.4f}{sup_line}""")
+         
+        if metadata["quality"] :
+            reply = QMessageBox.question(
+                self,
+                "Confirmation",
+                "Do you want to use this autofocus result?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes)
+        
+            if reply == QMessageBox.Yes:
+                self.piezo.move_to(metadata["best_piezo_position"])
+            else:
+                self.piezo.move_to(metadata["original_piezo_position"])
+        else :
+            self.piezo.move_to(metadata["original_piezo_position"])
     
 class ChannelProcessor(QObject):
     processed = Signal(dict)  # front, side
@@ -676,6 +754,7 @@ class ChannelProcessor(QObject):
     @Slot(np.ndarray)
     def process(self, images):
         channel, metadata = images
+        
         deskewed_channel = deskew_numpy(channel, px_shift_y=self.pixel_shift)
         data = {"max_front" : np.max(deskewed_channel, axis = 0),
             "max_side" : np.max(deskewed_channel, axis = 2),
@@ -683,7 +762,7 @@ class ChannelProcessor(QObject):
             "mean_side" : mean_projection_ignore_zeros(deskewed_channel, axis=2),
             "metadata" : metadata,
         }
-        
+    
         self.processed.emit(data)
         
         
@@ -692,7 +771,8 @@ class ChannelProcessor(QObject):
 if __name__ == '__main__':
     "To test the window"
     # acquisition = "MDA"
-    acquisition = "MPA"
+    # acquisition = "MPA"
+    acquisition = "Autofocus"
     
     # set multidimensional_acquisition importable
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "multidimensional_acquisition"))
@@ -701,14 +781,17 @@ if __name__ == '__main__':
         
     from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
     from multiposition_acquisition.main_MPA import MultiPositionAcquisition
+    from autofocus_O2_O3.main_autofocus import AutofocusAcquisition
+    
+    app = QApplication(sys.argv)
     
     if acquisition == "MDA" :
         MDA = MultidimensionalAcquisition()
     elif acquisition == "MPA" :
         MDA = MultiPositionAcquisition()
-    
-    app = QApplication(sys.argv)
-    
+    elif acquisition == "Autofocus":
+        MDA = AutofocusAcquisition(interface = True)
+
     editor = mda_mannager(MDA)
     editor.show()
     editor.start_acquisition()

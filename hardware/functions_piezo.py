@@ -272,11 +272,8 @@ class piezo_SAS() : #SAS for Super Agilis Series
         """
         if self.get_status() == PiezoState.READY_CL :
             if move_back :
-                position = self.get_position()
                 self.send_command("RFP", timeout_s = 15.0)
-                t.sleep(0.1)
-                if not self.test_position(position):
-                    raise PiezoEcecutionError(f"Unexpected position after referencing : {position} / {self.get_position()}")
+                self.wait_for_motion(10.0)
             else :
                 self.send_command("RFH")
                 self.wait_for_motion(10.0)
@@ -376,7 +373,7 @@ class piezo_SAS() : #SAS for Super Agilis Series
         if self.get_status() == PiezoState.READY_OL:
             steps = math.trunc(steps)
             command = f"XR{steps}"
-            self.send_command(command)
+            self.send_command(command, wait_for_motion = False) # To go a bit faster
         else:
             raise PiezoStateError(f"Controller should be in READY_OL state: {self.get_status()}")
             
