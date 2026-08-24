@@ -6,6 +6,8 @@ Created on Tue Aug 18 15:24:21 2026
 """
 
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 import numpy as np
 from scipy.optimize import curve_fit
 
@@ -111,9 +113,31 @@ def gaussian_fit(x, y):
     except :
         return 0,0,0,0,None
 
-def plot_gaussian_fit(x, y, r_squared, x_max, y_max, parameters, show):
+def plot_show_gaussian_fit(x, y, r_squared, x_max, y_max, parameters):
+        x = np.asarray(x, dtype=float)
+        y = np.asarray(y, dtype=float)
+    
+        # Dense X axis for a smooth fitted curve
+        x_fit = np.linspace(np.min(x), np.max(x), 500)
+        y_fit = gaussian(x_fit, *parameters)
+    
+        plt.figure(figsize=(6, 6))
+    
+        plt.scatter(x, y, label="Data")
+        plt.plot(x_fit, y_fit, label=f"Gaussian fit ($R^2$ = {r_squared:.4f})")
+        plt.scatter(x_max, y_max, marker="x", s=100, label=f"Maximum ({x_max:.6f}, {y_max:.0f})")
+    
+        plt.xlabel("X")
+        plt.ylabel("Intensity")
+        plt.legend()
+        plt.grid(alpha=0.3)
+        plt.tight_layout()
+    
+        plt.show()
+
+def plot_gaussian_fit(x, y, r_squared, x_max, y_max, parameters):
     """
-    Plot experimental points and fitted Gaussian curve.
+    Create a Gaussian regression figure using a non-GUI backend.
 
     Parameters
     ----------
@@ -129,38 +153,23 @@ def plot_gaussian_fit(x, y, r_squared, x_max, y_max, parameters, show):
         Y value of the fitted Gaussian maximum.
     parameters : array_like
         Gaussian parameters: amplitude, center, sigma and offset.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Figure with an Agg canvas attached.
     """
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)
 
-    # Dense X axis for a smooth fitted curve
     x_fit = np.linspace(np.min(x), np.max(x), 500)
     y_fit = gaussian(x_fit, *parameters)
 
-    plt.figure(figsize=(6, 6))
+    # Create figure without any GUI backend
+    fig = Figure(figsize=(8, 5))
+    FigureCanvasAgg(fig)
 
-    plt.scatter(x, y, label="Data")
-    plt.plot(x_fit, y_fit, label=f"Gaussian fit ($R^2$ = {r_squared:.4f})")
-    plt.scatter(x_max, y_max, marker="x", s=100, label=f"Maximum ({x_max:.6f}, {y_max:.0f})")
-
-    plt.xlabel("X")
-    plt.ylabel("Intensity")
-    plt.legend()
-    plt.grid(alpha=0.3)
-    plt.tight_layout()
-    
-    if show :
-        plt.show()
-        
-    # return plt.gcf()
-
-    x = np.asarray(x, dtype=float)
-    y = np.asarray(y, dtype=float)
-
-    x_fit = np.linspace(np.min(x), np.max(x), 500)
-    y_fit = gaussian(x_fit, *parameters)
-
-    fig, ax = plt.subplots(figsize=(8, 5))
+    ax = fig.add_subplot(111)
 
     # Background
     fig.patch.set_facecolor("#303030")
@@ -197,18 +206,15 @@ def plot_gaussian_fit(x, y, r_squared, x_max, y_max, parameters, show):
         label=f"Maximum = {x_max:.4f}"
     )
 
-    # Labels
     ax.set_xlabel("Piezo position", color="white")
     ax.set_ylabel("Intensity", color="white")
 
-    # Ticks
     ax.tick_params(
         axis="both",
         colors="#D9D9D9",
         length=0
     )
 
-    # Grid
     ax.grid(
         axis="y",
         color="#666666",
@@ -216,14 +222,11 @@ def plot_gaussian_fit(x, y, r_squared, x_max, y_max, parameters, show):
         alpha=0.5
     )
 
-    # Remove unnecessary borders
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-
     ax.spines["left"].set_color("#A0A0A0")
     ax.spines["bottom"].set_color("#A0A0A0")
 
-    # Legend
     legend = ax.legend(
         frameon=False,
         fontsize=9
@@ -235,11 +238,6 @@ def plot_gaussian_fit(x, y, r_squared, x_max, y_max, parameters, show):
     fig.tight_layout()
 
     return fig
-
-    # if show :
-    #     plt.show()
-        
-    # return plt.gcf()
     
 def create_black_graph():
     """

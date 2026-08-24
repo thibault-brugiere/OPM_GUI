@@ -95,11 +95,16 @@ class mda_mannager(QWidget, Ui_Form):
             for k in range(self.mda.config.experiment.positions):
                 for ch in self.mda.config.channels :
                     self.channel_names.append(f"{k}_{ch.channel_id}")
+        elif self.mda.config.experiment.mode == "autofocus" :
+            self.total_positions = self.mda.n_piezo_positions
+            self.channel_names = [ch.channel_id for ch in self.mda.config.channels]
+            self.channel_display = self.channel_names[0]
         else :
             self.total_positions = 1
             self.channel_names = [ch.channel_id for ch in self.mda.config.channels]
             self.channel_display = self.channel_names[0]
-            
+        
+        self.graph_show = False # Value used to avoir remplacement of the graph by image
         self.total_timepoints = self.mda.config.experiment.timepoints
         self.total_images = self.total_timepoints * self.mda.config.experiment.n_steps * len(self.mda.config.channels) * self.total_positions
         self.total_channels = len(self.mda.config.channels)
@@ -162,6 +167,7 @@ class mda_mannager(QWidget, Ui_Form):
         #
         
         self.processor_thread = QThread()
+        self.processor_thread.setObjectName("ChannelProcessorThread")
         self.channel_processor = ChannelProcessor(self.pixel_shift)
         self.channel_processor.moveToThread(self.processor_thread)
         self.channel_processor.processed.connect(self.receive_projections)
@@ -333,7 +339,10 @@ class mda_mannager(QWidget, Ui_Form):
         self.mda.initialize_count_worker()
         
         # Lancer l'acquisition dans un thread à part
-        threading.Thread(target=self.mda.run, daemon=True).start()
+        self.acquisition_thread = threading.Thread(target=self.mda.run,
+                                                   name="MDA_AcquisitionThread",
+                                                   daemon=True)
+        self.acquisition_thread.start()
         self.info_timer.start(30)
         
         #
@@ -580,13 +589,15 @@ Preview volumes dropped: {self.preview_dropped}
         
     def update_preview(self):
         if self.projection == "max":
-            self.display_image(self.project_max_front[self.channel_display])
-            self.display_side_view(self.project_max_side[self.channel_display])
+            if not self.graph_show :
+                self.display_image(self.project_max_front[self.channel_display])
+                self.display_side_view(self.project_max_side[self.channel_display])
             self.display_timelapse_strip(self.strip_max[self.channel_display], self.label_timeline)
             
         elif self.projection == "mean":
-            self.display_image(self.project_mean_front[self.channel_display])
-            self.display_side_view(self.project_mean_side[self.channel_display])
+            if not self.graph_show :
+                self.display_image(self.project_mean_front[self.channel_display])
+                self.display_side_view(self.project_mean_side[self.channel_display])
             self.display_timelapse_strip(self.strip_mean[self.channel_display], self.label_timeline)
         
         
@@ -693,6 +704,8 @@ Preview volumes dropped: {self.preview_dropped}
     def display_autofocus_graph(self, graph, metadata, graph_width = 5):
         if graph is None :
             return
+        self.pb_grayscale_auto_clicked()
+        self.graph_show = True
         width = self.label_mainImage.width()
         height = self.label_mainImage.height()
         graph_height = graph_width * height / width
@@ -701,7 +714,10 @@ Preview volumes dropped: {self.preview_dropped}
         
         graph.tight_layout()
         graph.canvas.draw()
+
         rgba = graph.canvas.buffer_rgba()
+
+
         
         image = QImage(
             rgba,
@@ -743,6 +759,15 @@ Original position = {metadata["original_piezo_position"]:6f}
                 self.piezo.move_to(metadata["original_piezo_position"])
         else :
             self.piezo.move_to(metadata["original_piezo_position"])
+            
+    def closeEvent(self, event):
+        self.info_timer.stop()
+
+        if self.processor_thread.isRunning():
+            self.processor_thread.quit()
+            self.processor_thread.wait()
+        
+        event.accept()
     
 class ChannelProcessor(QObject):
     processed = Signal(dict)  # front, side

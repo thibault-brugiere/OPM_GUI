@@ -118,7 +118,9 @@ class camera_acquisition():
         # Trigger settings
         self.hcam.cav["trigger_source"] = 2 # 1=internal, 2=external, 3=software, 4=master pulse
         
-        if self.experiment.mode == "standard" or self.experiment.mode == "LS3" or self.experiment.mode == "multiposition": 
+        global_expose_mode = ["standard","LS3","multiposition","autofocus"]
+        
+        if self.experiment.mode in global_expose_mode : 
             self.hcam.cav["trigger_mode"] = 1 # 1=normal, 2=start
             self.hcam.cav["trigger_active"] = 2 # 1=edge, 2=level, 3=syncreadout
             self.hcam.cav["trigger_global_exposure"] = 5 # 3 = delayed,  2 = global reset, # 5 Global reset ?

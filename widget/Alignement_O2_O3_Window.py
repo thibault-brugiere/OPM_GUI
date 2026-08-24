@@ -50,15 +50,15 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         self.setWindowTitle('alignement O2 - O3')
         self.setWindowFlag(Qt.Window)  # Assure que la fenêtre est indépendante
         
+        #
+        # Ajout des icones
+        #
+        
         self.pb_move = {'fw1' : self.pb_move_fw1, # Liste des push buttons
                    'fw10' : self.pb_move_fw10,
                    'bw1' : self.pb_move_bw1,
                    'bw10' : self.pb_move_bw10,
                    }
-        
-        #
-        # Ajout des icones
-        #
         
         icons = {'fw1' : 'Icons/Arrows_03.png', # Liste des icones
                  'fw10' : 'Icons/Arrows_04.png',
@@ -99,6 +99,8 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         if self.piezo is None :
             self.piezo = piezo_SAS()
             
+        self.connected = self.piezo.connected
+            
         self.piezo_position_timer = QTimer(self)
         self.piezo_position_timer.setInterval(500)  # ms
         self.piezo_position_timer.timeout.connect(self.get_position)
@@ -137,28 +139,28 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
     def comboBox_devices_indexChanged(self):
         """"set the self.port and self.connection status as well as the interface
         depending on the comboBox_devices index"""
-        self.port = self.comboBox_devices.currentText() 
+        self.piezo.close()
+        self.port = self.comboBox_devices.currentText()
         if self.port != 'None':
-            if self.piezo.test_port() :
-                self.connected = True
-                state = self.piezo.get_status()
-                if state == PiezoState.READY_OL:
-                    self.piezo.close_loop()
-                elif state == PiezoState.READY_CL:
-                    pass
-                else :
-                    raise PiezoError("Piezo is not in READY_CL or READY_OL state : {state}")
-                    
-                if self.piezo.is_referenced():
-                    self.label_piezo_referenced_icon.setPixmap(self.GLI_Pixmap["ON"])
-                    self.label_piezo_referenced.setText("Referenced")
-                    
-            else:
+            try :
+                self.piezo.change_port(self.port)
+                self.piezo.connect()
+            except :
                 self.connected = False
                 self.GLI_Pixmap["OFF"]
-        else :
-            self.connected = False
-            self.GLI_Pixmap["OFF"]
+            
+            self.connected = True
+            state = self.piezo.get_status()
+            if state == PiezoState.READY_OL:
+                self.piezo.close_loop()
+            elif state == PiezoState.READY_CL:
+                pass
+            else :
+                raise PiezoError("Piezo is not in READY_CL or READY_OL state : {state}")
+                
+            if self.piezo.is_referenced():
+                self.label_piezo_referenced_icon.setPixmap(self.GLI_Pixmap["ON"])
+                self.label_piezo_referenced.setText("Referenced")
             
         self.tools_desactivation()
         self.set_label_connection()
@@ -215,10 +217,11 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
 
     def get_position(self):
         "Get the current position of the device and display it"
-        position = self.piezo.try_get_position()
-        if position is not None :
-            self.position = position
-            self.lcdNumber_Position.display(self.position)
+        if self.connected :
+            position = self.piezo.try_get_position()
+            if position is not None :
+                self.position = position
+                self.lcdNumber_Position.display(self.position)
 
         
     def tools_desactivation(self):
@@ -258,6 +261,7 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         )
 
         if reply == QMessageBox.Yes:
+            self.piezo.close()
             # self.position_timer.stop()
             event.accept()
         elif reply == QMessageBox.No:

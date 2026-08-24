@@ -225,6 +225,7 @@ class MultidimensionalAcquisition:
         """
         self.count_worker = CountWorker(self.daq, self.filterwheel, self.filters_mouve)
         self.count_thread = QThread()
+        self.count_thread.setObjectName("CountThread")
         self.count_worker.moveToThread(self.count_thread)
         self.count_thread.started.connect(self.count_worker.start)
         self.count_worker.trigger_received.connect(self.on_trigger_detected)

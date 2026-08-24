@@ -10,7 +10,7 @@
             "hpos": 1960,
             "vsize": 512,
             "vpos": 928,
-            "exposure_time": 0.01,
+            "exposure_time": 0.03,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
             "image_readout_time": 0.0019296
@@ -35,24 +35,24 @@
             },
             "filter": "GFP",
             "camera": 0,
-            "exposure_time": 10.0
+            "exposure_time": 30.0
         }
     },
     "experiment": {
-        "exp_name": "Image",
-        "data_path": "D:/Projets_Python/OPM_GUI/Images",
-        "timepoints": 1,
-        "time_intervals": 1.0,
-        "total_duration": 10.0,
+        "exp_name": "Beads_timelaps",
+        "data_path": "D:/Images_OPM/Metrologie-Developpement/20260821_RFS",
+        "timepoints": 60,
+        "time_intervals": 120.0,
+        "total_duration": 7200.0,
         "mode": "standard",
         "positions": 0,
         "scanner_position": 0,
-        "scan_range": 20.279883589761845,
+        "scan_range": 9.734344123085686,
         "stage_scan_range": 300,
         "scanV_range": 0,
         "scanV_overlap": 0.25,
         "aspect_ratio": 3.3563985247091197,
-        "n_steps": 26,
+        "n_steps": 13,
         "step_size": 0.8111953435904738,
         "slit_aperture": 800
     },

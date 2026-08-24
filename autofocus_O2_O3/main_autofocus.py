@@ -34,9 +34,8 @@ from autofocus_O2_O3.Hardware.camera_controller import camera_acquisition
 from autofocus_O2_O3.Hardware.filter_wheel_controller import FilterWheel
 from autofocus_O2_O3.Hardware.functions_serial_ports import functions_serial_ports
 from autofocus_O2_O3.Tools.acquisition_pipeline.acquisition_worker import AutofocusAcquisitionWorker as AcquisitionWorker
-from autofocus_O2_O3.Tools.regression import gaussian_fit, plot_gaussian_fit, create_black_graph
+from autofocus_O2_O3.Tools.regression import gaussian_fit, plot_gaussian_fit, create_black_graph, plot_show_gaussian_fit
 from autofocus_O2_O3.Tools.signal_generators.multi_channel import generate_channel_signals
-from widget.Autofocus_O2_O3_Window import autofocus_O2_O3_Window
 
 
 class AutofocusAcquisition(QObject):
@@ -52,6 +51,10 @@ class AutofocusAcquisition(QObject):
         self.filterwheel = filterwheel
         self.fw_None = True if self.filterwheel is None else False # To properly close the filterwheel
         self.piezo = piezo if piezo is not None else piezo_SAS()
+        
+        self._own_piezo_connection = not self.piezo.connect()
+        if self._own_piezo_connection :
+            self.piezo.connect()
         
         if not self.piezo.is_referenced() :
             raise ValueError(f'Piezo must be hommed, current value : {self.piezo.is_referenced()}')
@@ -241,6 +244,7 @@ class AutofocusAcquisition(QObject):
         
         for piezo_position in self.piezo_positions :
             pos += 1
+            self.position += 1
             
             self.piezo.move_to(piezo_position)
 
@@ -262,10 +266,10 @@ class AutofocusAcquisition(QObject):
                 print("[INFO Autofocus] Acquisition interrupted by user.")
             
             time.sleep(0.011)
-
-        self.piezo_regression()
-
+            
         self.stop_all()
+        
+        self.piezo_regression()
         
     def piezo_regression(self):
         x = self.piezo_positions
@@ -276,12 +280,7 @@ class AutofocusAcquisition(QObject):
         if abs(x_max - self.original_piezo_position) < (self.piezo_step_mm * 1.5) :
             autofocus_quality = True
         else :
-            autofocus_quality = False
-        
-        if parameters is not None :
-            graph = plot_gaussian_fit(x, y, r2, x_max, y_max, parameters, not self.interface)
-        else :
-            graph = create_black_graph()    
+            autofocus_quality = False  
         
         if not self.interface :
             print(f"Original position = {self.original_piezo_position:6f}")
@@ -289,12 +288,19 @@ class AutofocusAcquisition(QObject):
             print(f"Max intensity = {y_max:.1f}")
             print(f"R² = {r2:.4f}")
             print(f'Autofocus good : {autofocus_quality}')
-            
+            if parameters is not None :
+                plot_show_gaussian_fit(x, y, r2, x_max, y_max, parameters)
+                
             if input("Do you want to use this calibration? [y/N]: ").strip().lower() == "y":
                 self.piezo.move_to(x_max)
             else :
                 self.piezo.move_to(self.original_piezo_position)    
         else :
+            if parameters is not None :
+                graph = plot_gaussian_fit(x, y, r2, x_max, y_max, parameters)
+            else :
+                graph = create_black_graph()  
+                
             parameters = {
                 "channel" : "autofocus",
                 "original_piezo_position" : self.original_piezo_position,
@@ -330,6 +336,9 @@ class AutofocusAcquisition(QObject):
                 self.daq.stop()
             if self.daq.state == "ready" :
                 self.daq.close()
+        
+        if self._own_piezo_connection :
+            self.piezo.close()
 
         print("[Main Autofocus] Acquisition stopped and hardware released.")
         

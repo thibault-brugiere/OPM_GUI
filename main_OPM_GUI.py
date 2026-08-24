@@ -56,6 +56,7 @@ from remote_focus_stabilisation.GUI_RFS import RFS_window
 from multidimensional_acquisition.main_MDA import MultidimensionalAcquisition
 from LS3_acquisition.main_LS3 import Light_sheet_stabilized_scanning
 from multiposition_acquisition.main_MPA import MultiPositionAcquisition
+from autofocus_O2_O3.main_autofocus import AutofocusAcquisition
 
 from ui_Control_Microscope_Main import Ui_MainWindow
 
@@ -285,6 +286,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         
         self.protocol_experiment_mode = {
+            "Autofocus" : "autofocus",
             "Multidimensional acquisition" : "standard",
             "Fast-Multidimensional acquisition" : "fast",
             "Single plane acquisition" : "single_plane",
@@ -293,6 +295,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.comboBox_protocol.clear()
         self.comboBox_protocol.addItems(list(self.protocol_experiment_mode.keys()))
+        self.comboBox_protocol.setCurrentText("Multidimensional acquisition")
         self.enable_protocol_tools()
         
         #
@@ -1284,6 +1287,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.spinBox_scanV_range,
             self.spinBox_scanV_overlap]
         
+        tool_autofocus = []
+        
         for tool in tools_MDA + tools_single_plane + tools_LS3:
             tool.setDisabled(True)
             
@@ -1298,6 +1303,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
         elif mode == "LS3" :
             for tool in tools_LS3 : tool.setEnabled(True)
+            
+        elif mode == "autofocus" :
+            for tool in tool_autofocus : tool.setEnabled(True)
     
     def pb_multidimensional_acquisition_clicked_connect(self):
             
@@ -1391,6 +1399,38 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.status_bar.showMessage("First channel shouldn't be None or empty", 5000)
             
+    def pb_autofocus_clicked_connect(self):
+        print(f"start autofocus : {self.experiment.mode}")
+        self._stop_preview()
+        
+        channel_acquisition = functions_ui.get_active_channel([self.comboBox_channel_name.currentText()], self.channel)
+        
+        experiment = self.experiment
+        experiment.scan_range = 4.0
+        experiment.timepoints = 1
+        
+        send_to_multidimensionnal_acquisition(self.camera,
+                                              self.filterWheel,
+                                              channel_acquisition,
+                                              experiment,
+                                              self.microscope,
+                                              dirname = 'autofocus_O2_O3/Config',
+                                              filename = 'GUI_parameters.json')
+        
+        self.status_bar.showMessage("start autofocus")
+        
+        Autofocus = AutofocusAcquisition(self.hcam,
+                                         self.filterWheel,
+                                         self.piezo,
+                                         n_piezo_positions = 5,
+                                         piezo_step_mm = 0.002,
+                                         n_pixels = 10,
+                                         interface = True)
+        
+        self.Autofocus_manager = mda_mannager(Autofocus)
+        self.Autofocus_manager.show()
+        self.Autofocus_manager.start_acquisition()
+            
     def _stop_preview(self):
         if self.is_preview:
             # Eteint l'acquisition si nécessaire
@@ -1414,6 +1454,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
 
         elif self.experiment.mode == "LS3" :
             self.pb_LS3_acquisition_clicked_connect()
+            
+        elif self.experiment.mode == "autofocus":
+            self.pb_autofocus_clicked_connect()
             
 
     ##################################
