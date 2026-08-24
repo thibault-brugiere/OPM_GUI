@@ -5,6 +5,7 @@
     "galvo_response_time": 0.3,
     "galvo_flyback_time": 3.0,
     "stage_port": "COM10",
+    "piezo_port" : "COM6",
     "trans_mirror_ser_num": "37009743",
     "trans_camera_ser_num": 31842,
     "stabilise_camera_ser_num": 36805,

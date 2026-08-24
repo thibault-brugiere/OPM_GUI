@@ -171,6 +171,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         
         self.piezo = piezo()
+        self.piezo.change_port(self.microscope.piezo_port)
         
         #
         # creation of the channels / lasers
@@ -1401,35 +1402,39 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
     def pb_autofocus_clicked_connect(self):
         print(f"start autofocus : {self.experiment.mode}")
-        self._stop_preview()
+        if not self.piezo.connected :
+            self._stop_preview()
+            
+            channel_acquisition = functions_ui.get_active_channel([self.comboBox_channel_name.currentText()], self.channel)
+            
+            experiment = self.experiment
+            experiment.scan_range = 4.0
+            experiment.timepoints = 1
+            
+            send_to_multidimensionnal_acquisition(self.camera,
+                                                  self.filterWheel,
+                                                  channel_acquisition,
+                                                  experiment,
+                                                  self.microscope,
+                                                  dirname = 'autofocus_O2_O3/Config',
+                                                  filename = 'GUI_parameters.json')
+            
+            self.status_bar.showMessage("start autofocus")
+            
+            Autofocus = AutofocusAcquisition(self.hcam,
+                                             self.filterWheel,
+                                             self.piezo,
+                                             n_piezo_positions = 5,
+                                             piezo_step_mm = 0.002,
+                                             n_pixels = 10,
+                                             interface = True)
+            
+            self.Autofocus_manager = mda_mannager(Autofocus)
+            self.Autofocus_manager.show()
+            self.Autofocus_manager.start_acquisition()
         
-        channel_acquisition = functions_ui.get_active_channel([self.comboBox_channel_name.currentText()], self.channel)
-        
-        experiment = self.experiment
-        experiment.scan_range = 4.0
-        experiment.timepoints = 1
-        
-        send_to_multidimensionnal_acquisition(self.camera,
-                                              self.filterWheel,
-                                              channel_acquisition,
-                                              experiment,
-                                              self.microscope,
-                                              dirname = 'autofocus_O2_O3/Config',
-                                              filename = 'GUI_parameters.json')
-        
-        self.status_bar.showMessage("start autofocus")
-        
-        Autofocus = AutofocusAcquisition(self.hcam,
-                                         self.filterWheel,
-                                         self.piezo,
-                                         n_piezo_positions = 5,
-                                         piezo_step_mm = 0.002,
-                                         n_pixels = 10,
-                                         interface = True)
-        
-        self.Autofocus_manager = mda_mannager(Autofocus)
-        self.Autofocus_manager.show()
-        self.Autofocus_manager.start_acquisition()
+        else :
+            self.statusbar.showMessage('Piezo already in use', 5000)
             
     def _stop_preview(self):
         if self.is_preview:
@@ -1504,8 +1509,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def openAlign_O2_O3(self):
         "display window to aligne O2 and O3 using the piezzo stage"
-        self.alignement_O2_O3 = alignement_O2_O3_Window(piezo = self.piezo)
-        self.alignement_O2_O3.show()
+        if not self.piezo.connected :
+            self.alignement_O2_O3 = alignement_O2_O3_Window(piezo = self.piezo)
+            self.alignement_O2_O3.show()
+        else :
+            self.statusbar.showMessage('Piezo already in use', 5000)
         
     def openRFS(self):
         "display window to start remote focus stabilisation"

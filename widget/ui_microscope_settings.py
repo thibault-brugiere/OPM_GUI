@@ -23,7 +23,7 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(840, 970)
+        Form.resize(518, 1114)
         self.verticalLayout = QVBoxLayout(Form)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout_7 = QHBoxLayout()
@@ -125,6 +125,23 @@ class Ui_Form(object):
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_20)
+
+        self.horizontalLayout_24 = QHBoxLayout()
+        self.horizontalLayout_24.setObjectName(u"horizontalLayout_24")
+        self.label_piezo_port = QLabel(Form)
+        self.label_piezo_port.setObjectName(u"label_piezo_port")
+        self.label_piezo_port.setMinimumSize(QSize(122, 0))
+        self.label_piezo_port.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_24.addWidget(self.label_piezo_port)
+
+        self.lineEdit_piezo_port = QLineEdit(Form)
+        self.lineEdit_piezo_port.setObjectName(u"lineEdit_piezo_port")
+
+        self.horizontalLayout_24.addWidget(self.lineEdit_piezo_port)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_24)
 
         self.line_1 = QFrame(Form)
         self.line_1.setObjectName(u"line_1")
@@ -489,6 +506,7 @@ class Ui_Form(object):
         self.label_mag_total.setText(QCoreApplication.translate("Form", u"Mag Total:", None))
         self.label_stage.setText(QCoreApplication.translate("Form", u"Stage", None))
         self.label_stage_port.setText(QCoreApplication.translate("Form", u"Stage port:", None))
+        self.label_piezo_port.setText(QCoreApplication.translate("Form", u"Piezo port:", None))
         self.label_Preview.setText(QCoreApplication.translate("Form", u"Preview", None))
         self.label_mirror_ser_num.setText(QCoreApplication.translate("Form", u"mirror serial number:", None))
         self.label_galvanometer.setText(QCoreApplication.translate("Form", u"Galvanometer", None))

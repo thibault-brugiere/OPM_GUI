@@ -96,10 +96,15 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
             
         self.label_piezo_referenced_icon.setPixmap(self.GLI_Pixmap["OFF"])
         
+        #
+        # Check the connexion of the piezo
+        #
+        
         if self.piezo is None :
             self.piezo = piezo_SAS()
-            
+        
         self.connected = self.piezo.connected
+        self._own_piezo_connection = not self.connected
             
         self.piezo_position_timer = QTimer(self)
         self.piezo_position_timer.setInterval(500)  # ms
@@ -110,6 +115,7 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         self.comboBox_devices_indexChanged()
         self.step_size = 0.1
         
+        self.try_piezo()
         
         #
         # Connexion entre les boutons et les fonctions
@@ -126,7 +132,37 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         self.pb_move_fw10.clicked.connect(self.pb_move_fw10_clicked)
         self.pb_move_bw1.clicked.connect(self.pb_move_bw1_clicked)
         self.pb_move_bw10.clicked.connect(self.pb_move_bw10_clicked)
-
+    
+    def try_piezo(self):
+        "Try to connect the piezo witout the setting the port"
+        if not self.piezo.connected :
+            try :
+                self.piezo.connect()
+                self.connected = True
+            except :
+                pass
+        
+        if self.piezo.connected :
+            self._set_piezo()
+            self.comboBox_devices.setCurrentText(self.piezo.port)
+            self.comboBox_devices.setEnabled(False)
+            
+        self.tools_desactivation()
+        self.set_label_connection()  
+            
+    def _set_piezo(self):
+        state = self.piezo.get_status()
+        if state == PiezoState.READY_OL:
+            self.piezo.close_loop()
+        elif state == PiezoState.READY_CL:
+            pass
+        else :
+            raise PiezoError("Piezo is not in READY_CL or READY_OL state : {state}")
+        
+        if self.piezo.is_referenced():
+            self.label_piezo_referenced_icon.setPixmap(self.GLI_Pixmap["ON"])
+            self.label_piezo_referenced.setText("Referenced")
+            
     #
     # Functionsappelées par les boutons
     #
@@ -145,26 +181,14 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
             try :
                 self.piezo.change_port(self.port)
                 self.piezo.connect()
+                self.connected = True
             except :
                 self.connected = False
                 self.GLI_Pixmap["OFF"]
-            
-            self.connected = True
-            state = self.piezo.get_status()
-            if state == PiezoState.READY_OL:
-                self.piezo.close_loop()
-            elif state == PiezoState.READY_CL:
-                pass
-            else :
-                raise PiezoError("Piezo is not in READY_CL or READY_OL state : {state}")
-                
-            if self.piezo.is_referenced():
-                self.label_piezo_referenced_icon.setPixmap(self.GLI_Pixmap["ON"])
-                self.label_piezo_referenced.setText("Referenced")
+                return
             
         self.tools_desactivation()
-        self.set_label_connection()
-        
+        self.set_label_connection()        
     
     def spinBox_step_size_value_changed(self):
         """"set the step size in negative and positive direction in µm
@@ -261,13 +285,14 @@ class alignement_O2_O3_Window(QWidget, Ui_Form):
         )
 
         if reply == QMessageBox.Yes:
-            self.piezo.close()
-            # self.position_timer.stop()
+            self.piezo_position_timer.stop()
+            if self._own_piezo_connection :
+                self.piezo.close()
             event.accept()
         elif reply == QMessageBox.No:
             event.ignore()
         else:
-            event.accept()
+            event.ignore()
         
 if __name__ == '__main__':
     "To test the window"

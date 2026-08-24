@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>840</width>
-    <height>970</height>
+    <width>518</width>
+    <height>1114</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -179,6 +179,29 @@
      </item>
      <item>
       <widget class="QLineEdit" name="lineEdit_stage_port"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_24">
+     <item>
+      <widget class="QLabel" name="label_piezo_port">
+       <property name="minimumSize">
+        <size>
+         <width>122</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Piezo port:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_piezo_port"/>
      </item>
     </layout>
    </item>

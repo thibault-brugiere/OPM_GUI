@@ -50,6 +50,7 @@ class mda_mannager(QWidget, Ui_Form):
             self.piezo = parent.piezo
         else :
             self.piezo = piezo_SAS()
+            
         self.max_preview_size = max_preview_size # Maximum size of preview image in gigabite 
         self.on_init()
         
@@ -99,6 +100,7 @@ class mda_mannager(QWidget, Ui_Form):
             self.total_positions = self.mda.n_piezo_positions
             self.channel_names = [ch.channel_id for ch in self.mda.config.channels]
             self.channel_display = self.channel_names[0]
+            
         else :
             self.total_positions = 1
             self.channel_names = [ch.channel_id for ch in self.mda.config.channels]
@@ -422,10 +424,6 @@ Preview volumes dropped: {self.preview_dropped}
         """
         if hasattr(self.mda, "autofocus_result_ready"):
             
-            print("MDA valid:", shiboken6.isValid(self.mda))
-            print("MDA type:", type(self.mda))
-            print("MDA parent:", self.mda.parent())
-            
             self.mda.autofocus_result_ready.connect(
                 self.display_autofocus_graph
             )
@@ -744,7 +742,11 @@ Original position = {metadata["original_piezo_position"]:6f}
     Best position = {metadata["best_piezo_position"]:6f}
     Max intensity = {metadata["max_intensity"]:.1f}
                R² = {metadata["R2"]:.4f}{sup_line}""")
-         
+        
+        self._own_piezo_connection = not self.piezo.connected
+        if self._own_piezo_connection :
+            self.piezo.connect()
+        
         if metadata["quality"] :
             reply = QMessageBox.question(
                 self,
@@ -753,12 +755,16 @@ Original position = {metadata["original_piezo_position"]:6f}
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.Yes)
         
+            
             if reply == QMessageBox.Yes:
                 self.piezo.move_to(metadata["best_piezo_position"])
             else:
                 self.piezo.move_to(metadata["original_piezo_position"])
         else :
             self.piezo.move_to(metadata["original_piezo_position"])
+        
+        if self._own_piezo_connection :
+            self.piezo.close()
             
     def closeEvent(self, event):
         self.info_timer.stop()

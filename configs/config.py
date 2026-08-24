@@ -87,6 +87,7 @@ class microscope(object):
         
         # stage
         self.stage_port = 'COM10'
+        self.piezo_port = 'COM6'
         
         # Preview
         self.trans_mirror_ser_num = 37009743
@@ -258,6 +259,7 @@ class microscope(object):
         self.galvo_response_time = microscope_dict["galvo_response_time"]
         self.galvo_flyback_time = microscope_dict["galvo_flyback_time"]
         self.stage_port = microscope_dict["stage_port"]
+        self.piezo_port = microscope_dict["piezo_port"]
         self.trans_mirror_ser_num = microscope_dict["trans_mirror_ser_num"]
         self.trans_camera_ser_num = microscope_dict["trans_camera_ser_num"]
         self.stabilise_camera_ser_num = microscope_dict["stabilise_camera_ser_num"]
