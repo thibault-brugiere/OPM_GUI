@@ -250,7 +250,7 @@ class piezo_SAS() : #SAS for Super Agilis Series
             self._comm_lock.release()
         
     
-    def test_position(self, position: float, tolerance: float  = 0.00015) -> bool:
+    def test_position(self, position: float, tolerance: float  = 0.000300) -> bool:
         """
         Compare the actual position of the piezo with another position
 

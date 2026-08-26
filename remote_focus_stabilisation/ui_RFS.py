@@ -25,8 +25,8 @@ class Ui_Form(object):
         if not Form.objectName():
             Form.setObjectName(u"Form")
         Form.resize(1085, 1024)
-        self.horizontalLayout_17 = QHBoxLayout(Form)
-        self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
+        self.horizontalLayout_18 = QHBoxLayout(Form)
+        self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.horizontalLayout_14 = QHBoxLayout()
@@ -359,16 +359,24 @@ class Ui_Form(object):
 
         self.horizontalLayout_12 = QHBoxLayout()
         self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
-        self.label_calibrate = QLabel(Form)
-        self.label_calibrate.setObjectName(u"label_calibrate")
-
-        self.horizontalLayout_12.addWidget(self.label_calibrate)
-
         self.pb_calibrate = QPushButton(Form)
         self.pb_calibrate.setObjectName(u"pb_calibrate")
-        self.pb_calibrate.setCheckable(True)
+        self.pb_calibrate.setCheckable(False)
 
         self.horizontalLayout_12.addWidget(self.pb_calibrate)
+
+        self.label_calibrated_icon = QLabel(Form)
+        self.label_calibrated_icon.setObjectName(u"label_calibrated_icon")
+        self.label_calibrated_icon.setMinimumSize(QSize(32, 32))
+        self.label_calibrated_icon.setMaximumSize(QSize(32, 32))
+
+        self.horizontalLayout_12.addWidget(self.label_calibrated_icon)
+
+        self.label_calibrated = QLabel(Form)
+        self.label_calibrated.setObjectName(u"label_calibrated")
+        self.label_calibrated.setMinimumSize(QSize(30, 0))
+
+        self.horizontalLayout_12.addWidget(self.label_calibrated)
 
         self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -377,12 +385,33 @@ class Ui_Form(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_12)
 
+        self.horizontalLayout_17 = QHBoxLayout()
+        self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
+        self.pb_calibration_save = QPushButton(Form)
+        self.pb_calibration_save.setObjectName(u"pb_calibration_save")
+        self.pb_calibration_save.setCheckable(False)
+
+        self.horizontalLayout_17.addWidget(self.pb_calibration_save)
+
+        self.pb_calibration_load = QPushButton(Form)
+        self.pb_calibration_load.setObjectName(u"pb_calibration_load")
+        self.pb_calibration_load.setCheckable(False)
+
+        self.horizontalLayout_17.addWidget(self.pb_calibration_load)
+
+        self.horizontalSpacer_14 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_17.addItem(self.horizontalSpacer_14)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_17)
+
         self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_3)
 
 
-        self.horizontalLayout_17.addLayout(self.verticalLayout_5)
+        self.horizontalLayout_18.addLayout(self.verticalLayout_5)
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
@@ -559,7 +588,7 @@ class Ui_Form(object):
         self.verticalLayout_4.addWidget(self.label_graph)
 
 
-        self.horizontalLayout_17.addLayout(self.verticalLayout_4)
+        self.horizontalLayout_18.addLayout(self.verticalLayout_4)
 
 
         self.retranslateUi(Form)
@@ -612,8 +641,11 @@ class Ui_Form(object):
         self.pb_move_fw1.setText(QCoreApplication.translate("Form", u">", None))
         self.label_position.setText(QCoreApplication.translate("Form", u"Position (\u00b5m)", None))
         self.label_message.setText(QCoreApplication.translate("Form", u"TextLabel", None))
-        self.label_calibrate.setText(QCoreApplication.translate("Form", u"Calibrate", None))
         self.pb_calibrate.setText(QCoreApplication.translate("Form", u"calibrate", None))
+        self.label_calibrated_icon.setText("")
+        self.label_calibrated.setText(QCoreApplication.translate("Form", u"Not calibrated", None))
+        self.pb_calibration_save.setText(QCoreApplication.translate("Form", u"Save calibration", None))
+        self.pb_calibration_load.setText(QCoreApplication.translate("Form", u"Load calibration", None))
         self.label_image_preview.setText("")
         self.cb_LUT.setItemText(0, QCoreApplication.translate("Form", u"Grayscale", None))
 

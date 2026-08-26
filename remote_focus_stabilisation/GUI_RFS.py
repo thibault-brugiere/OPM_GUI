@@ -3,17 +3,13 @@
 Created on Fri Apr 24 14:57:20 2026
 
 @author: tbrugiere
-"""
-"""
-Convert file.ui to file.py
 
-pyside6-uic widget/ui_channel_editor.ui -o widget/ui_channel_editor.py
+Convert file.ui to file.py
 
 pyside6-uic D:/Projets_Python/OPM_GUI/remote_focus_stabilisation/ui_RFS.ui -o D:/Projets_Python/OPM_GUI/remote_focus_stabilisation/ui_RFS.py
 
 """
 
-import atexit
 import numpy as np
 import os
 import sys
@@ -23,7 +19,7 @@ import pylablib as pll
 pll.par['devices/dlls/thorlabs_tlcam'] = r"C:\Program Files\Thorlabs\ThorImageCAM\Bin\thorlabs_tsi_camera_sdk.dll"
 
 from PySide6.QtCore import QTimer, QThread, Signal, Qt, QElapsedTimer
-from PySide6.QtWidgets import QApplication, QWidget, QFileDialog
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
 from PySide6.QtGui import QPixmap, QImage
 
 # Ajoutez le dossier parent au sys.path si le fichier est exécuté directement
@@ -35,7 +31,7 @@ if __name__ == "__main__":
 from remote_focus_stabilisation.ui_RFS import Ui_Form
 from remote_focus_stabilisation.Tools.plots import create_stabilisation_plot
 from remote_focus_stabilisation.main_stabilisation import remote_focus_stabilisation
-from hardware.functions_piezo import piezo_SAS as piezo
+from hardware.functions_piezo import piezo_SAS
 from hardware.functions_piezo import PiezoState
 from hardware.functions_DAQ import functions_daq
 
@@ -53,9 +49,10 @@ class RFS_window(QWidget, Ui_Form):
     stop_timelaps = Signal()
     start_stabilisation = Signal()
     stop_stabilisation = Signal()
+    ask_position = Signal()
     
     def __init__(self, camera_sn = '36805',
-                 piezo_port = None,
+                 piezo = None,
                  NIDAQ_out = "Dev1/port0/Line13",
                  folder_path = None,
                  message = True,
@@ -64,13 +61,21 @@ class RFS_window(QWidget, Ui_Form):
         super().__init__(parent)
         self.setupUi(self)
         
-        
         self.camera_sn = camera_sn
-        self.piezo_port = piezo_port
+        self.piezo_port = None
         self.NIDAQ_out = NIDAQ_out
         self.folder_path = folder_path
         
-        self.piezo = piezo()
+        if piezo is not None :
+            self.piezo = piezo
+        else :
+            self.piezo = piezo_SAS()
+            
+        self._own_piezo_connection = not self.piezo.connected
+        if self._own_piezo_connection :
+            self.piezo.connect()
+            
+        self.position = 0
         
         #
         # Check the DAQ connection
@@ -98,7 +103,7 @@ class RFS_window(QWidget, Ui_Form):
                                                         folder_path=self.folder_path,
                                                         message = message,
                                                         piezo = self.piezo)
-            
+        
         self.stabilisationThread = QThread()
         self.stabilisationThread.setObjectName("stabilisationThread")
         self.stabilisation.moveToThread(self.stabilisationThread)
@@ -106,14 +111,15 @@ class RFS_window(QWidget, Ui_Form):
         
         self.stabilisation.new_data.connect(self.store_frame) # Channel received
         self.stabilisation.new_stabilisation.connect(self.update_graph)
+        self.stabilisation.new_calibration.connect(self.get_calibation)
+        self.stabilisation.new_piezo_position.connect(self.received_piezo_position)
         
         self.start_calibration.connect(self.stabilisation.start_calibration)
         self.start_timelaps.connect(self.stabilisation.timelaps)
-        self.stop_timelaps.connect(self.stabilisation.stop_timelaps,
-                                   Qt.DirectConnection)
+        self.stop_timelaps.connect(self.stabilisation.stop_timelaps,Qt.DirectConnection)
         self.start_stabilisation.connect(self.stabilisation.stabilisation)
-        self.stop_stabilisation.connect(self.stabilisation.stop_stabilisation,
-                                        Qt.DirectConnection)
+        self.stop_stabilisation.connect(self.stabilisation.stop_stabilisation,Qt.DirectConnection)
+        self.ask_position.connect(self.stabilisation.get_piezo_position)
         
         self.stabilisationThread.start()
         
@@ -181,7 +187,7 @@ class RFS_window(QWidget, Ui_Form):
         self.label_stabilize_icon.setPixmap(self.Green_Light_Icon_Off)
         self.label_timelaps_icon.setPixmap(self.Green_Light_Icon_Off)
         self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_Off)
-        
+        self.label_calibrated_icon.setPixmap(self.Green_Light_Icon_Off)
         
         self.tools_desactivation()
         
@@ -199,6 +205,8 @@ class RFS_window(QWidget, Ui_Form):
         self.pb_move_fw1.clicked.connect(self.pb_move_fw1_clicked)
         self.pb_move_bw1.clicked.connect(self.pb_move_bw1_clicked)
         self.pb_calibrate.clicked.connect(self.pb_calibrate_clicked)
+        self.pb_calibration_save.clicked.connect(self.pb_calibration_save_clicked)
+        self.pb_calibration_load.clicked.connect(self.pb_calibration_load_clicked)
         # Combo box grayscale
         self.cb_preview_zoom.currentIndexChanged.connect(self.cb_preview_zoom_index_changed)
         self.sb_min_grayscale.valueChanged.connect(self.sb_grayscale_value_changed)
@@ -210,6 +218,7 @@ class RFS_window(QWidget, Ui_Form):
     #
     # Functions called by buttons
     #
+    
     def pb_saving_clicked(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Data Directory")
         if folder is not None :
@@ -221,15 +230,13 @@ class RFS_window(QWidget, Ui_Form):
         if self.pb_laser_on.isChecked():
             self.label_laser_icon.setPixmap(self.Red_Light_Icon_On)
             self.label_laser.setText('ON ')
-            functions_daq.digital_out(True, self.NIDAQ_out) # Force the transmission light OFF
             self.laser_on = True
-            self.stabilisation.laser_on = True
         else :
             self.label_laser_icon.setPixmap(self.Red_Light_Icon_Off)
             self.label_laser.setText('OFF')
-            functions_daq.digital_out(False, self.NIDAQ_out) # Force the transmission light OFF
             self.laser_on = False
-            self.stabilisation.laser_on = False
+            
+        self.stabilisation.turn_laser_on(self.laser_on)
     
     def pb_stabilize_clicked(self):
         if self.pb_stabilize.isChecked():
@@ -238,20 +245,23 @@ class RFS_window(QWidget, Ui_Form):
                 self.label_stabilize.setText('ON ')
                 self.stabilisation.stabilisation_period_s = self.sb_stabilise_time.value()
                 self.start_stabilisation.emit()
-                self.pb_laser_on.setDisabled(True)
-                self.pb_timelaps.setDisabled(True)
-                self.sb_stabilise_time.setDisabled(True)
-                self.pb_timelaps.setDisabled(True)
+                stab = True
             else :
                 self.pb_stabilize.setChecked(False)
+                stab = False
         else :
             self.label_stabilize_icon.setPixmap(self.Green_Light_Icon_Off)
             self.label_stabilize.setText('OFF')
             self.stop_stabilisation.emit()
-            self.pb_laser_on.setEnabled(True)
-            self.pb_timelaps.setEnabled(True)
-            self.sb_stabilise_time.setEnabled(True)
-            self.pb_timelaps.setEnabled(True)
+            stab = False
+        
+        self.comboBox_devices.setDisabled(stab)
+        self.pb_laser_on.setDisabled(stab)
+        self.pb_timelaps.setDisabled(stab)
+        self.sb_stabilise_time.setDisabled(stab)
+        self.pb_calibrate.setDisabled(stab)
+        self.pb_calibration_save.setDisabled(stab)
+        self.pb_calibration_load.setDisabled(stab)
             
     def pb_timelaps_clicked(self) :
         if self.pb_timelaps.isChecked():
@@ -259,51 +269,66 @@ class RFS_window(QWidget, Ui_Form):
             self.label_timelaps.setText('ON ')
             self.stabilisation.timelaps_period_s = self.sb_timelaps_time.value()
             self.start_timelaps.emit()
-            self.pb_stabilize.setDisabled(True)
+            timelaps = True
+            
         else :
             self.label_timelaps_icon.setPixmap(self.Green_Light_Icon_Off)
             self.label_timelaps.setText('OFF')
             self.stop_timelaps.emit()
+            timelaps = False
             self.pb_stabilize.setEnabled(True)
+            
+        self.pb_stabilize.setDisabled(timelaps)
+        self.pb_stabilize.setEnabled(timelaps)
+        self.pb_calibrate.setDisabled(timelaps)
+        self.pb_calibration_save.setDisabled(timelaps)
+        self.pb_calibration_load.setDisabled(timelaps)
             
     def comboBox_devices_indexChanged(self):
         """"set the self.piezo_port and self.connection status as well as the interface
         depending on the comboBox_devices index"""
-        self.piezo_port = self.comboBox_devices.currentText() 
-        if self.piezo_port != 'None':
-            self.piezo.change_port(self.piezo_port)
-            if self.piezo.test_port() :
+        self.piezo.close()
+        piezo_port = self.comboBox_devices.currentText() 
+        if piezo_port != 'None':
+            try :
+                self.piezo.change_port(piezo_port)
+                self.piezo.connect()
                 self.piezo_connected = True
-                self.get_position()
-                state = self.piezo.get_status()
-                if state == PiezoState.READY_OL:
-                    self.piezo.close_loop()
-                elif state == PiezoState.READY_CL:
-                    pass
-                else :
-                    raise PiezoError("Piezo is not in READY_CL or READY_OL state : {state}")
-                    
-                if self.piezo.is_referenced():
-                    self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
-                    self.label_piezo_referenced.setText("Referenced")
-                
-                self.stabilisation.set_piezo_port(self.piezo_port)
-                
-            else:
+            except :
                 self.piezo_connected = False
-                print("[RFS] piezo not connected")
-        else :
-            self.piezo_connected = False
+                return
+                
+            state = self.piezo.get_status()
+            if state == PiezoState.READY_OL:
+                self.piezo.close_loop()
+            elif state == PiezoState.READY_CL:
+                pass
+            else :
+                raise PiezoError("Piezo is not in READY_CL or READY_OL state : {state}")
+            
+            
+            self.ask_position.emit()
+            
+            if self.piezo.is_referenced():
+                self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
+                self.label_piezo_referenced.setText("Referenced")
         
         self.tools_desactivation()
         self.set_label_connection()
     
     def pb_piezo_reference_clicked(self):
-        self.piezo.reference()
-        self.get_position()
-        if self.piezo.is_referenced():
-            self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
-            self.label_piezo_referenced.setText("Referenced")
+        reply = QMessageBox.question(
+            self,
+            "Confirmation",
+            "Do you want to start piezo referencing?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes)
+        if reply == QMessageBox.Yes :
+            self.piezo.reference()
+            self.ask_position.emit()
+            if self.piezo.is_referenced():
+                self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
+                self.label_piezo_referenced.setText("Referenced")
         
     def slider_step_size_value_changed(self):
         self.step_size_um = float(self.slider_step_size.value())/100
@@ -320,19 +345,32 @@ class RFS_window(QWidget, Ui_Form):
     def pb_move_fw1_clicked(self):
         "Move forward of 1 step"
         self.piezo.move_by(self.step_size_um/1000) # step size is in mm for pizo
-        self.get_position()
+        self.ask_position.emit()
     
     def pb_move_bw1_clicked(self):
         "Move backward of 1 step"
         self.piezo.move_by(-self.step_size_um/1000) # step size is in mm for pizo
-        self.get_position()
+        self.ask_position.emit()
         
     def pb_calibrate_clicked(self):
         if self.laser_on :
-            self.start_calibration.emit()
-            self.calibrated = True
+            reply = QMessageBox.question(
+                self,
+                "Confirmation",
+                "Do you want to start calibration?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes)
+            if reply == QMessageBox.Yes :
+                self.start_calibration.emit()
+                self.label_calibrated.setText("Calibration")
         else :
-            self.label_message.setText("Laser should be on")  
+            self.label_message.setText("Laser should be on")
+            
+    def pb_calibration_save_clicked(self):
+        self.stabilisation.save_calibration()
+    
+    def pb_calibration_load_clicked(self):
+        self.stabilisation.load_calibration()
     
     def cb_preview_zoom_index_changed(self):
         zoom_list = [0.5,0.5,1,2,3,4]
@@ -388,20 +426,11 @@ class RFS_window(QWidget, Ui_Form):
     #
     # Others functions
     #
-    
-    def get_position(self):
-        "Get the current position of the device and display it"
-        position = self.piezo.get_position()
-        self.lcdNumber_Position.display(position)
         
     def set_comboBox_devices(self):
         "set the indexes of the comboBox_devices depending on avaliable devices"
         self.comboBox_devices.addItems(['None'])
         self.comboBox_devices.addItems(self.devices)
-        
-    def test_port(self):
-        "Test if the current port is the right device"
-        return self.piezo.test_port()
         
     def tools_desactivation(self):
         if self.piezo_connected :
@@ -482,6 +511,21 @@ class RFS_window(QWidget, Ui_Form):
             
             self.label_graph.setPixmap(QPixmap.fromImage(plot))
             
+    def get_calibation(self, data):
+        self.calibrated = data["calibrated"]
+        if self.calibrated :
+            self.label_calibrated_icon.setPixmap(self.Green_Light_Icon_On)
+            self.label_calibrated.setText('Calibrated')
+        else :
+            self.label_calibrated_icon.setPixmap(self.Green_Light_Icon_Off)
+            self.label_calibrated.setText('Not calibrated')
+            
+    def received_piezo_position(self, position):
+        pos = position["position"]
+        self.position = pos
+        if type(pos) is int :
+            self.lcdNumber_Position.display(position)
+            
     def change_folder(self, folder) :
         self.folder_path = folder
         self.stabilisation.change_folder(folder)
@@ -490,7 +534,10 @@ class RFS_window(QWidget, Ui_Form):
         """Stop worker threads before closing the window."""
     
         try:
-            
+            self.pb_laser_on.setChecked(False)
+            self.pb_laser_on_clicked()
+            if self._own_piezo_connection :
+                self.piezo.close()
             if hasattr(self, "stabilisationThread"):
                 self.stop_stabilisation.emit()
                 self.stop_timelaps.emit()
@@ -505,8 +552,6 @@ class RFS_window(QWidget, Ui_Form):
     
 ##############################################################################
 if __name__ == '__main__':
-    
-    
     
     app = QApplication(sys.argv)
 
