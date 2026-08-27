@@ -9,6 +9,7 @@ warnings.filterwarnings("ignore", message="Mean of empty slice")
 warnings.filterwarnings("ignore", message="invalid value encountered")
 
 import contextlib
+from datetime import datetime
 import json
 import numpy as np
 import os
@@ -50,7 +51,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                  camera_sn = '36805',
                  piezo = None,
                  NIDAQ_out = "Dev1/port0/Line13",
-                 folder_path = Path(r"D:\Images_OPM\Metrologie-Developpement\20260821_RFS"),
+                 folder_path = Path(r"D:\Projets_Python\OPM_GUI\Images"),
                  message = True,
                  parent = None):
         
@@ -107,6 +108,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         # Parameters for stabilisation and timelaps
         self.stabilisation_period_s = 60
         self.timelaps_period_s = 60
+        self.drift_threshold = 0.3 # Maximum displacement in um from the original position before correction
         
         # Start camera acquisition in separate thread
         self.camera_thread = TLCameraThread(self.tlcam)
@@ -309,7 +311,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
 
         
     def stabilisation(self, kp = 0.5, max_step_um = 2.0,
-                      max_correction_in_row = 5, drift_threshold = 0.3,
+                      max_correction_in_row = 5,
                       max_total_displacement_um = 200):
         """
         
@@ -322,8 +324,6 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
             Maximum step of the piezo in one correction. The default is 2.0 µm.
         max_correction_in_row : int, optional
             maximum correction steps in a row. The default is 5.
-        drift_threshold : float, optional.
-            Maximum displacement in px on the camera from the original position before correction
 
         Raises
         ------
@@ -355,7 +355,8 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         
         get_position = True
         
-        file_path = os.path.join(self.folder, "stabilization_log.txt")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_path = os.path.join(self.folder, f"{timestamp}_RFS_stabilisation.txt")
         
         with open(file_path, "a", encoding="utf-8") as file:
             file.write('current_time,x,y,position,displacement,piezo_displacement\n')
@@ -402,7 +403,7 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
                         
                     um_displacement = self.calibration.calculate_displacement(x, y)
                     
-                    if abs(um_displacement) > drift_threshold :
+                    if abs(um_displacement) > self.drift_threshold :
                         
                         piezo_displacement = np.clip(
                             kp * um_displacement,
@@ -483,7 +484,8 @@ class remote_focus_stabilisation(QObject): # Nécessaire pour le fonctionnement 
         
         get_position = True
         
-        file_path = os.path.join(self.folder, "timelaps_log.txt")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_path = os.path.join(self.folder, f"{timestamp}_RFS_timelaps.txt")
         
         with open(file_path, "a", encoding="utf-8") as file:
             file.write('current_time,x,y,position,um_displacement,piezo_displacement\n')
@@ -681,14 +683,12 @@ class Calibration():
     
     def save_data(self):
         data = self.get_calibration_data()
-        # file_path = os.path.join('remote_focus_stabilisation', 'data_calibration.json')
         file_path = 'data_calibration.json'
         
         with open(file_path, 'w') as file:
             json.dump(data, file, indent = 4)
     
     def load_data(self):
-        # file_path = os.path.join('remote_focus_stabilisation', 'data_calibration.json')
         file_path = 'data_calibration.json'
         
         if os.path.exists(file_path):

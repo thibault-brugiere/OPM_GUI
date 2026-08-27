@@ -13,14 +13,13 @@ pyside6-uic D:/Projets_Python/OPM_GUI/remote_focus_stabilisation/ui_RFS.ui -o D:
 import numpy as np
 import os
 import sys
-import time as t
 
 import pylablib as pll
 pll.par['devices/dlls/thorlabs_tlcam'] = r"C:\Program Files\Thorlabs\ThorImageCAM\Bin\thorlabs_tsi_camera_sdk.dll"
 
-from PySide6.QtCore import QTimer, QThread, Signal, Qt, QElapsedTimer
+from PySide6.QtCore import QThread, Signal, Qt, QElapsedTimer
 from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
-from PySide6.QtGui import QPixmap, QImage
+from PySide6.QtGui import QPixmap
 
 # Ajoutez le dossier parent au sys.path si le fichier est exécuté directement
 if __name__ == "__main__":
@@ -70,10 +69,6 @@ class RFS_window(QWidget, Ui_Form):
             self.piezo = piezo
         else :
             self.piezo = piezo_SAS()
-            
-        self._own_piezo_connection = not self.piezo.connected
-        if self._own_piezo_connection :
-            self.piezo.connect()
             
         self.position = 0
         
@@ -129,6 +124,25 @@ class RFS_window(QWidget, Ui_Form):
         self.setWindowTitle('Active Remote Focus Stabilization')
         
         #
+        # Ajout des icones
+        #
+        
+        if __name__ == "__main__": # Si jamais la fenêtre est appelée depuis ce fichier
+            self.fw1_icon = QPixmap(os.path.join(parent_dir, 'Icons/Arrows_03.png'))
+            self.bw1_icon = QPixmap(os.path.join(parent_dir, 'Icons/Arrows_02.png'))
+            self.Red_Light_Icon_On = QPixmap(os.path.join(parent_dir, 'Icons/Red_Light_Icon_On.png'))
+            self.Red_Light_Icon_Off = QPixmap(os.path.join(parent_dir, 'Icons/Red_Light_Icon_Off.png'))
+            self.Green_Light_Icon_On = QPixmap(os.path.join(parent_dir, 'Icons/Green_Light_Icon_On.png'))
+            self.Green_Light_Icon_Off = QPixmap(os.path.join(parent_dir, 'Icons/Green_Light_Icon_Off.png'))
+        else:
+            self.fw1_icon = QPixmap('Icons/Arrows_03.png')
+            self.bw1_icon = QPixmap('Icons/Arrows_02.png')
+            self.Red_Light_Icon_On = QPixmap('Icons/Red_Light_Icon_On.png')
+            self.Red_Light_Icon_Off = QPixmap('Icons/Red_Light_Icon_Off.png')
+            self.Green_Light_Icon_On = QPixmap('Icons/Green_Light_Icon_On.png')
+            self.Green_Light_Icon_Off = QPixmap('Icons/Green_Light_Icon_Off.png')
+        
+        #
         # Parameters
         #
         
@@ -159,25 +173,7 @@ class RFS_window(QWidget, Ui_Form):
         self.devices = self.piezo.list_serial_ports() # Récupére la liste des devices disponibles
         self.set_comboBox_devices()
         self.comboBox_devices_indexChanged()
-
-        #
-        # Ajout des icones
-        #
-        
-        if __name__ == "__main__": # Si jamais la fenêtre est appelée depuis ce fichier
-            self.fw1_icon = QPixmap(os.path.join(parent_dir, 'Icons/Arrows_03.png'))
-            self.bw1_icon = QPixmap(os.path.join(parent_dir, 'Icons/Arrows_02.png'))
-            self.Red_Light_Icon_On = QPixmap(os.path.join(parent_dir, 'Icons/Red_Light_Icon_On.png'))
-            self.Red_Light_Icon_Off = QPixmap(os.path.join(parent_dir, 'Icons/Red_Light_Icon_Off.png'))
-            self.Green_Light_Icon_On = QPixmap(os.path.join(parent_dir, 'Icons/Green_Light_Icon_On.png'))
-            self.Green_Light_Icon_Off = QPixmap(os.path.join(parent_dir, 'Icons/Green_Light_Icon_Off.png'))
-        else:
-            self.fw1_icon = QPixmap('Icons/Arrows_03.png')
-            self.bw1_icon = QPixmap('Icons/Arrows_02.png')
-            self.Red_Light_Icon_On = QPixmap('Icons/Red_Light_Icon_On.png')
-            self.Red_Light_Icon_Off = QPixmap('Icons/Red_Light_Icon_Off.png')
-            self.Green_Light_Icon_On = QPixmap('Icons/Green_Light_Icon_On.png')
-            self.Green_Light_Icon_Off = QPixmap('Icons/Green_Light_Icon_Off.png')
+        self.try_piezo()
             
         self.pb_move_fw1.setText('')
         self.pb_move_fw1.setIcon(self.fw1_icon)
@@ -207,6 +203,8 @@ class RFS_window(QWidget, Ui_Form):
         self.pb_calibrate.clicked.connect(self.pb_calibrate_clicked)
         self.pb_calibration_save.clicked.connect(self.pb_calibration_save_clicked)
         self.pb_calibration_load.clicked.connect(self.pb_calibration_load_clicked)
+        self.sb_drift_threshold.valueChanged.connect(self.sb_drift_threshold_value_changed)
+        self.slider_drift_threshold.valueChanged.connect(self.slider_drift_threshold_value_changed)
         # Combo box grayscale
         self.cb_preview_zoom.currentIndexChanged.connect(self.cb_preview_zoom_index_changed)
         self.sb_min_grayscale.valueChanged.connect(self.sb_grayscale_value_changed)
@@ -218,7 +216,23 @@ class RFS_window(QWidget, Ui_Form):
     #
     # Functions called by buttons
     #
-    
+    def try_piezo(self):
+        "Try to connect the piezo witout the setting the port"
+        if not self.piezo.connected :
+            try :
+                self.piezo.connect()
+                self.piezo_connected = True
+            except :
+                pass
+            
+        if self.piezo.connected :
+            self.comboBox_devices.setCurrentText(self.piezo.port)
+            self.prepare_piezo()
+            self.comboBox_devices.setEnabled(False)
+            
+        self.tools_desactivation()
+        self.set_label_connection()
+        
     def pb_saving_clicked(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Data Directory")
         if folder is not None :
@@ -244,6 +258,7 @@ class RFS_window(QWidget, Ui_Form):
                 self.label_stabilize_icon.setPixmap(self.Green_Light_Icon_On)
                 self.label_stabilize.setText('ON ')
                 self.stabilisation.stabilisation_period_s = self.sb_stabilise_time.value()
+                self.stabilisation.drift_threshold = self.sb_drift_threshold.value()
                 self.start_stabilisation.emit()
                 stab = True
             else :
@@ -255,13 +270,14 @@ class RFS_window(QWidget, Ui_Form):
             self.stop_stabilisation.emit()
             stab = False
         
-        self.comboBox_devices.setDisabled(stab)
+        # self.comboBox_devices.setDisabled(stab)
         self.pb_laser_on.setDisabled(stab)
         self.pb_timelaps.setDisabled(stab)
         self.sb_stabilise_time.setDisabled(stab)
         self.pb_calibrate.setDisabled(stab)
         self.pb_calibration_save.setDisabled(stab)
         self.pb_calibration_load.setDisabled(stab)
+        self.pb_piezo_reference.setDisabled(stab)
             
     def pb_timelaps_clicked(self) :
         if self.pb_timelaps.isChecked():
@@ -279,7 +295,6 @@ class RFS_window(QWidget, Ui_Form):
             self.pb_stabilize.setEnabled(True)
             
         self.pb_stabilize.setDisabled(timelaps)
-        self.pb_stabilize.setEnabled(timelaps)
         self.pb_calibrate.setDisabled(timelaps)
         self.pb_calibration_save.setDisabled(timelaps)
         self.pb_calibration_load.setDisabled(timelaps)
@@ -297,24 +312,27 @@ class RFS_window(QWidget, Ui_Form):
             except :
                 self.piezo_connected = False
                 return
-                
-            state = self.piezo.get_status()
-            if state == PiezoState.READY_OL:
-                self.piezo.close_loop()
-            elif state == PiezoState.READY_CL:
-                pass
-            else :
-                raise PiezoError("Piezo is not in READY_CL or READY_OL state : {state}")
             
-            
-            self.ask_position.emit()
-            
-            if self.piezo.is_referenced():
-                self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
-                self.label_piezo_referenced.setText("Referenced")
+            self.prepare_piezo()
         
         self.tools_desactivation()
         self.set_label_connection()
+        
+    def prepare_piezo(self):
+        state = self.piezo.get_status()
+        if state == PiezoState.READY_OL:
+            self.piezo.close_loop()
+        elif state == PiezoState.READY_CL:
+            pass
+        else :
+            raise PiezoError("Piezo is not in READY_CL or READY_OL state : {state}")
+        
+        
+        self.ask_position.emit()
+        
+        if self.piezo.is_referenced():
+            self.label_piezo_referenced_icon.setPixmap(self.Green_Light_Icon_On)
+            self.label_piezo_referenced.setText("Referenced")
     
     def pb_piezo_reference_clicked(self):
         reply = QMessageBox.question(
@@ -371,6 +389,18 @@ class RFS_window(QWidget, Ui_Form):
     
     def pb_calibration_load_clicked(self):
         self.stabilisation.load_calibration()
+        
+    def sb_drift_threshold_value_changed(self):
+        drift_threshold_um = self.sb_drift_threshold.value()
+        self.slider_drift_threshold.blockSignals(True)
+        self.slider_drift_threshold.setValue(drift_threshold_um)
+        self.slider_drift_threshold.blockSignals(False)
+    
+    def slider_drift_threshold_value_changed(self):
+        drift_threshold_um = float(self.slider_drift_threshold.value())/100
+        self.sb_drift_threshold.blockSignals(True)
+        self.sb_drift_threshold.setValue(drift_threshold_um)
+        self.sb_drift_threshold.blockSignals(False)
     
     def cb_preview_zoom_index_changed(self):
         zoom_list = [0.5,0.5,1,2,3,4]
@@ -521,7 +551,7 @@ class RFS_window(QWidget, Ui_Form):
             self.label_calibrated.setText('Not calibrated')
             
     def received_piezo_position(self, position):
-        pos = position["position"]
+        pos = f'{position["position"]:.6f}'
         self.position = pos
         if type(pos) is int :
             self.lcdNumber_Position.display(position)
@@ -536,8 +566,7 @@ class RFS_window(QWidget, Ui_Form):
         try:
             self.pb_laser_on.setChecked(False)
             self.pb_laser_on_clicked()
-            if self._own_piezo_connection :
-                self.piezo.close()
+            self.piezo.close()
             if hasattr(self, "stabilisationThread"):
                 self.stop_stabilisation.emit()
                 self.stop_timelaps.emit()

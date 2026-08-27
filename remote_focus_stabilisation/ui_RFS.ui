@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1085</width>
-    <height>1024</height>
+    <width>1231</width>
+    <height>1023</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_18">
+  <layout class="QHBoxLayout" name="horizontalLayout_19">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_5">
      <item>
@@ -441,13 +441,13 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the step size for piezo movement as a percentage of the total range.&lt;/p&gt;&lt;p&gt;Adjust between 21% and 100% to control the increment of each movement command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="minimum">
-          <number>1</number>
+          <number>10</number>
          </property>
          <property name="maximum">
-          <number>1000</number>
+          <number>200</number>
          </property>
          <property name="value">
-          <number>100</number>
+          <number>50</number>
          </property>
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -460,7 +460,7 @@
           <double>0.010000000000000</double>
          </property>
          <property name="maximum">
-          <double>10.000000000000000</double>
+          <double>2.000000000000000</double>
          </property>
          <property name="singleStep">
           <double>0.100000000000000</double>
@@ -803,6 +803,50 @@
       </widget>
      </item>
      <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_18">
+       <item>
+        <spacer name="horizontalSpacer_15">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_Stabilisation">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Stabilisation</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_16">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayout_12">
        <item>
         <widget class="QPushButton" name="pb_calibrate">
@@ -847,6 +891,26 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="pb_calibration_save">
+         <property name="text">
+          <string>Save</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pb_calibration_load">
+         <property name="text">
+          <string>Load</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_9">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -864,22 +928,56 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_17">
        <item>
-        <widget class="QPushButton" name="pb_calibration_save">
-         <property name="text">
-          <string>Save calibration</string>
+        <widget class="QLabel" name="label_calibrated_2">
+         <property name="minimumSize">
+          <size>
+           <width>30</width>
+           <height>0</height>
+          </size>
          </property>
-         <property name="checkable">
-          <bool>false</bool>
+         <property name="text">
+          <string>Threshold (µm)</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pb_calibration_load">
-         <property name="text">
-          <string>Load calibration</string>
+        <widget class="QSlider" name="slider_drift_threshold">
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>0</height>
+          </size>
          </property>
-         <property name="checkable">
-          <bool>false</bool>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the step size for piezo movement as a percentage of the total range.&lt;/p&gt;&lt;p&gt;Adjust between 21% and 100% to control the increment of each movement command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="minimum">
+          <number>10</number>
+         </property>
+         <property name="maximum">
+          <number>200</number>
+         </property>
+         <property name="value">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="sb_drift_threshold">
+         <property name="minimum">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>2.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.300000000000000</double>
          </property>
         </widget>
        </item>

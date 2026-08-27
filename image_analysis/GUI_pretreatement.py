@@ -498,7 +498,7 @@ class PretreatementWindow(QWidget, Ui_Form):
         elif reply == QMessageBox.No:
             event.ignore()
         else:
-            event.accept()
+            event.ignore()
             
 def ask_user_confirmation(parent=None, message: str = None) -> bool:
     """

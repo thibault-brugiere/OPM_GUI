@@ -30,9 +30,10 @@ import sys
 import tifffile
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import QTimer #, Qt ,QCoreApplication, QEventLoop
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import QPixmap, QImage
-from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox #, QSizePolicy
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QComboBox
+from PySide6.QtGui import QIcon
 
 from acquisition.send_to_acquisition import send_to_multidimensionnal_acquisition
 from acquisition.send_to_acquisition import send_to_ls3_acquisition
@@ -85,6 +86,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def on_init(self):
         self.setWindowTitle('Control Microscope')
+        self.setWindowIcon(QIcon("Icons/main_icon.png"))
         
         #Crée la status bar
         self.status_bar = self.statusBar()
@@ -426,8 +428,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
                                                  QtWidgets.QMessageBox.No))
         if result == QtWidgets.QMessageBox.Yes:
             # permet d'ajouter du code pour fermer proprement
+            print("[Main] Stopping the microscope and releasing the hardware.")
             if self.is_preview:
-                # Stop acquisition if necessary
                 self.pb_stop_preview_clicked()
             # Turn of lasers if necessary
             self.pb_laser_emission.setChecked(False)
@@ -436,6 +438,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             # Close hardware thar needs to be closed
             self.filterWheel.close()
             functions_camera.close_cameras(self.hcam)
+            try : self.piezo.stop_motion()
+            except : pass
+            self.piezo.close()
             
             event.accept()
         else:
@@ -1517,10 +1522,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def openRFS(self):
         "display window to start remote focus stabilisation"
-        pass
-        # if self.RFS_window is None :
-        #     self.RFS_window = RFS_window(folder_path = Path(self.experiment.data_path), message = False)
-        # self.RFS_window.show()
+        # pass
+        if self.RFS_window is None :
+            self.RFS_window = RFS_window(folder_path = Path(self.experiment.data_path), piezo = self.piezo, message = True)
+        self.RFS_window.show()
         
     def launch_program(self , shortcut_path):
         try:

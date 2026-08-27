@@ -24,9 +24,9 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(1085, 1024)
-        self.horizontalLayout_18 = QHBoxLayout(Form)
-        self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
+        Form.resize(1231, 1023)
+        self.horizontalLayout_19 = QHBoxLayout(Form)
+        self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.horizontalLayout_14 = QHBoxLayout()
@@ -248,9 +248,9 @@ class Ui_Form(object):
         self.slider_step_size = QSlider(Form)
         self.slider_step_size.setObjectName(u"slider_step_size")
         self.slider_step_size.setMinimumSize(QSize(120, 0))
-        self.slider_step_size.setMinimum(1)
-        self.slider_step_size.setMaximum(1000)
-        self.slider_step_size.setValue(100)
+        self.slider_step_size.setMinimum(10)
+        self.slider_step_size.setMaximum(200)
+        self.slider_step_size.setValue(50)
         self.slider_step_size.setOrientation(Qt.Horizontal)
 
         self.horizontalLayout_9.addWidget(self.slider_step_size)
@@ -258,7 +258,7 @@ class Ui_Form(object):
         self.sb_step_size = QDoubleSpinBox(Form)
         self.sb_step_size.setObjectName(u"sb_step_size")
         self.sb_step_size.setMinimum(0.010000000000000)
-        self.sb_step_size.setMaximum(10.000000000000000)
+        self.sb_step_size.setMaximum(2.000000000000000)
         self.sb_step_size.setSingleStep(0.100000000000000)
         self.sb_step_size.setValue(0.500000000000000)
 
@@ -357,6 +357,25 @@ class Ui_Form(object):
 
         self.verticalLayout_5.addWidget(self.label_message)
 
+        self.horizontalLayout_18 = QHBoxLayout()
+        self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
+        self.horizontalSpacer_15 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_18.addItem(self.horizontalSpacer_15)
+
+        self.label_Stabilisation = QLabel(Form)
+        self.label_Stabilisation.setObjectName(u"label_Stabilisation")
+        self.label_Stabilisation.setFont(font)
+
+        self.horizontalLayout_18.addWidget(self.label_Stabilisation)
+
+        self.horizontalSpacer_16 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_18.addItem(self.horizontalSpacer_16)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_18)
+
         self.horizontalLayout_12 = QHBoxLayout()
         self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
         self.pb_calibrate = QPushButton(Form)
@@ -378,6 +397,18 @@ class Ui_Form(object):
 
         self.horizontalLayout_12.addWidget(self.label_calibrated)
 
+        self.pb_calibration_save = QPushButton(Form)
+        self.pb_calibration_save.setObjectName(u"pb_calibration_save")
+        self.pb_calibration_save.setCheckable(False)
+
+        self.horizontalLayout_12.addWidget(self.pb_calibration_save)
+
+        self.pb_calibration_load = QPushButton(Form)
+        self.pb_calibration_load.setObjectName(u"pb_calibration_load")
+        self.pb_calibration_load.setCheckable(False)
+
+        self.horizontalLayout_12.addWidget(self.pb_calibration_load)
+
         self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_12.addItem(self.horizontalSpacer_9)
@@ -387,17 +418,30 @@ class Ui_Form(object):
 
         self.horizontalLayout_17 = QHBoxLayout()
         self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
-        self.pb_calibration_save = QPushButton(Form)
-        self.pb_calibration_save.setObjectName(u"pb_calibration_save")
-        self.pb_calibration_save.setCheckable(False)
+        self.label_calibrated_2 = QLabel(Form)
+        self.label_calibrated_2.setObjectName(u"label_calibrated_2")
+        self.label_calibrated_2.setMinimumSize(QSize(30, 0))
 
-        self.horizontalLayout_17.addWidget(self.pb_calibration_save)
+        self.horizontalLayout_17.addWidget(self.label_calibrated_2)
 
-        self.pb_calibration_load = QPushButton(Form)
-        self.pb_calibration_load.setObjectName(u"pb_calibration_load")
-        self.pb_calibration_load.setCheckable(False)
+        self.slider_drift_threshold = QSlider(Form)
+        self.slider_drift_threshold.setObjectName(u"slider_drift_threshold")
+        self.slider_drift_threshold.setMinimumSize(QSize(120, 0))
+        self.slider_drift_threshold.setMinimum(10)
+        self.slider_drift_threshold.setMaximum(200)
+        self.slider_drift_threshold.setValue(100)
+        self.slider_drift_threshold.setOrientation(Qt.Horizontal)
 
-        self.horizontalLayout_17.addWidget(self.pb_calibration_load)
+        self.horizontalLayout_17.addWidget(self.slider_drift_threshold)
+
+        self.sb_drift_threshold = QDoubleSpinBox(Form)
+        self.sb_drift_threshold.setObjectName(u"sb_drift_threshold")
+        self.sb_drift_threshold.setMinimum(0.100000000000000)
+        self.sb_drift_threshold.setMaximum(2.000000000000000)
+        self.sb_drift_threshold.setSingleStep(0.100000000000000)
+        self.sb_drift_threshold.setValue(0.300000000000000)
+
+        self.horizontalLayout_17.addWidget(self.sb_drift_threshold)
 
         self.horizontalSpacer_14 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -411,7 +455,7 @@ class Ui_Form(object):
         self.verticalLayout_5.addItem(self.verticalSpacer_3)
 
 
-        self.horizontalLayout_18.addLayout(self.verticalLayout_5)
+        self.horizontalLayout_19.addLayout(self.verticalLayout_5)
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
@@ -588,7 +632,7 @@ class Ui_Form(object):
         self.verticalLayout_4.addWidget(self.label_graph)
 
 
-        self.horizontalLayout_18.addLayout(self.verticalLayout_4)
+        self.horizontalLayout_19.addLayout(self.verticalLayout_4)
 
 
         self.retranslateUi(Form)
@@ -641,11 +685,16 @@ class Ui_Form(object):
         self.pb_move_fw1.setText(QCoreApplication.translate("Form", u">", None))
         self.label_position.setText(QCoreApplication.translate("Form", u"Position (\u00b5m)", None))
         self.label_message.setText(QCoreApplication.translate("Form", u"TextLabel", None))
+        self.label_Stabilisation.setText(QCoreApplication.translate("Form", u"Stabilisation", None))
         self.pb_calibrate.setText(QCoreApplication.translate("Form", u"calibrate", None))
         self.label_calibrated_icon.setText("")
         self.label_calibrated.setText(QCoreApplication.translate("Form", u"Not calibrated", None))
-        self.pb_calibration_save.setText(QCoreApplication.translate("Form", u"Save calibration", None))
-        self.pb_calibration_load.setText(QCoreApplication.translate("Form", u"Load calibration", None))
+        self.pb_calibration_save.setText(QCoreApplication.translate("Form", u"Save", None))
+        self.pb_calibration_load.setText(QCoreApplication.translate("Form", u"Load", None))
+        self.label_calibrated_2.setText(QCoreApplication.translate("Form", u"Threshold (\u00b5m)", None))
+#if QT_CONFIG(tooltip)
+        self.slider_drift_threshold.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Set the step size for piezo movement as a percentage of the total range.</p><p>Adjust between 21% and 100% to control the increment of each movement command</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.label_image_preview.setText("")
         self.cb_LUT.setItemText(0, QCoreApplication.translate("Form", u"Grayscale", None))
 
