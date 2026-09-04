@@ -46,7 +46,8 @@ from hardware.functions_camera import CameraThread, functions_camera
 from hardware.functions_DAQ import functions_daq # A remplacer aussi dans hardware.Laser_Controller
 from hardware.filter_wheel import FilterWheel
 from hardware.Laser_Controller import LaserController
-from  hardware.functions_piezo import piezo_SAS as piezo
+from hardware.functions_piezo import piezo_SAS as piezo
+from hardware.functions_Stage_ASI import Stage_ASI
 # from mock.hamamatsu import DCAM # A remplacer aussi dans hardware functions_camera et main_MDA
 # from mock.DAQ import functions_daq
 # from mock.filter_wheel import FilterWheel
@@ -174,6 +175,26 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.piezo = piezo()
         self.piezo.change_port(self.microscope.piezo_port)
+        self.piezo.connect()
+        if self.piezo.test_port() :
+            print("[OK] Piezo connection")
+        else :
+            print("[WARNING] Piezo not connected")
+        self.piezo.close()
+        
+        #
+        # Create the stage
+        #
+        
+        self.stage = Stage_ASI()
+        self.stage.change_port(self.microscope.stage_port)
+        self.stage.connect()
+        if self.stage.test_port() :
+            self.stage.set_acceleration(400,400,400)
+            print("[OK] Stage connection")
+        else :
+            print("[WARNING] Stage not connected")
+        self.stage.close()
         
         #
         # creation of the channels / lasers
@@ -699,7 +720,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         
     def pb_multipositions_clicked_connect(self):
-        self.multi_position_edditor = multi_position_edditor(self.microscope.stage_port, self.positions, self)
+        self.multi_position_edditor = multi_position_edditor(self.positions, self, self.stage)
         self.multi_position_edditor.show()
         
     def _set_lcdNumber_multipositions(self):
@@ -1362,7 +1383,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
             self.status_bar.showMessage("start Light_sheet_stabilized_scanning acquisition")
             
-            LS3 = Light_sheet_stabilized_scanning(self.hcam, self.filterWheel)
+            LS3 = Light_sheet_stabilized_scanning(self.hcam, self.filterWheel, self.stage)
             
             self.LS3_manager = ls3_mannager(LS3, self)
             self.LS3_manager.show()
@@ -1396,7 +1417,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
             self.status_bar.showMessage("start multiposition acquisition")
             
-            MPA = MultiPositionAcquisition(self.hcam, self.filterWheel)
+            MPA = MultiPositionAcquisition(self.hcam, self.filterWheel, self.stage)
             
             self.MPA_manager = mda_mannager(MPA, self)
             self.MPA_manager.show()

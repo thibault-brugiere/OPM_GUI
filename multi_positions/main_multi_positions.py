@@ -11,7 +11,6 @@ from functools import partial
 import os
 import string
 import sys
-import time as t
 
 # from PySide6.QtCore import QTimer, QThread, Signal, Qt, QElapsedTimer
 from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
@@ -28,14 +27,13 @@ if __name__ == "__main__":
 from multi_positions.positions import Positions
 from multi_positions.ui_multi_position import Ui_Form
 from hardware.functions_Stage_ASI import Stage_ASI
-from hardware.functions_serial_ports import functions_serial_ports as serial_port
     
 class multi_position_edditor(QWidget, Ui_Form):
     
-    def __init__(self, port = None, positions = None, parent = None):
+    def __init__(self, positions = None, parent = None, stage = None):
         super().__init__(parent)
         self.setupUi(self)
-        self.port = port
+        self.stage = stage
         
         if positions is not None :
             self.positions = positions
@@ -48,19 +46,28 @@ class multi_position_edditor(QWidget, Ui_Form):
         self.setWindowTitle('Multi position')
         self.setWindowFlag(Qt.Window)  # Assure que la fenêtre est indépendante
         
+        #
+        # Check the connexion of the stage
+        #
+        
+        if self.stage is None :
+            self.stage = Stage_ASI()
+            
+        self.stage_connected = self.stage.connected
+        self._own_stage_connection = not self.stage_connected
+        
         self.stage_connected = False
-        if self.port is not None :
-            if self.test_port() :
-                self.stage_connected = True
-                self.stage = Stage_ASI(self.port)
-                self.comboBox_devices.setEnabled(False)
         
         self.alphabet = string.ascii_lowercase
         
-        self.devices = serial_port.list_serial_ports()
+        self.devices = self.stage.list_serial_ports()
         self.set_comboBox_devices()
-        self.tools_desactivation()
-        self._refresh_table()
+        self.comboBox_devices_indexChanged()
+        self.try_stage()
+        
+        #
+        # Connexion entre les boutons et les fonctions
+        #
         
         self.pb_save.clicked.connect(self.save_positions)
         self.pb_load.clicked.connect(self.load_positions)
@@ -69,6 +76,22 @@ class multi_position_edditor(QWidget, Ui_Form):
         self.pb_remove_all_positions.clicked.connect(self.pb_remove_all_positions_clicked)
         self.pb_sort_snake.clicked.connect(self.pb_sort_snake_clicked)
         self.pb_sort_nearest.clicked.connect(self.pb_sort_nearest_clicked)
+        
+    def try_stage(self):
+        "Try to connect the stage witout the setting the port"
+        if not self.stage.connected :
+            try :
+                self.stage.connect()
+            except :
+                pass
+        
+        if self.stage.connected :
+            self.stage_connected = True
+            self.comboBox_devices.setCurrentText(self.stage.port)
+            self.comboBox_devices.setEnabled(False)
+            
+        self.tools_desactivation()
+        self._refresh_table()
         
     def set_comboBox_devices(self):
         "set the indexes of the comboBox_devices depending on avaliable devices"
@@ -86,31 +109,23 @@ class multi_position_edditor(QWidget, Ui_Form):
             self.label_connection.setText('Connected')
         else :
             self.label_connection.setText('Not Connected')
-    
-    def test_port(self):
-            response = serial_port.send_command_response("W X Y Z", self.port)
-            if response[0:2] == ':A':
-                return True
-            
-            else :
-                return False
                 
     def comboBox_devices_indexChanged(self):
         """"set the self.port and self.connection status as well as the interface
         depending on the comboBox_devices index"""
+        self.stage.close()
+        self.stage_connected = False
         self.port = self.comboBox_devices.currentText() 
         if self.port != 'None':
-            if self.test_port():
-                self.stage_connected = True
-                self.comboBox_devices.setEnabled(False)
-                t.sleep(0.01)
-                self.stage = Stage_ASI(self.port)
-                
-            else:
-                self.stage_connected = False
-                print("not connected")
-        else :
-            self.stage_connected = False
+            try :
+                self.stage.change_port(self.port)
+                self.stage.connect()
+                if self.stage.test_port() :
+                    self.connected = True
+                else :
+                    self.stage.close()
+            except :
+                pass
         
         self.tools_desactivation()
         
@@ -325,7 +340,8 @@ class multi_position_edditor(QWidget, Ui_Form):
                                       (QMessageBox.Yes |
                                        QMessageBox.No))
         if result == QMessageBox.Yes:
-            
+            if self._own_stage_connection :
+                self.stage.close()
             try :
                 self.parent().positions = self.positions
                 self.parent()._set_lcdNumber_multipositions()

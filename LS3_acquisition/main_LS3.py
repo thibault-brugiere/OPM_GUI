@@ -39,12 +39,13 @@ from LS3_acquisition.Tools.signal_generators.single_channel_ls3 import generate_
 
 
 class Light_sheet_stabilized_scanning:
-    def __init__(self, hcams=None, filterwheel = None, frequency=1e5, scan_axis = 'Y'):
+    def __init__(self, hcams=None, filterwheel = None, stage = None, frequency=1e5, scan_axis = 'Y'):
         
         print('[Main LS3] Start Light sheet stabilized stage scanning')
         
         self.hcams = hcams
         self.filterwheel = filterwheel
+        self.stage = stage
         self.fw_None = True if self.filterwheel is None else False # To properly close the filterwheel
         self.frequency = frequency
         self.scan_axis = scan_axis
@@ -205,7 +206,16 @@ class Light_sheet_stabilized_scanning:
         print("[Main LS3] DAQ ready")
         
     def configure_stage(self):
-        self.stage = Stage_ASI(port = self.config.microscope.stage_port)
+        if self.stage is None :
+            self.stage = Stage_ASI()
+            
+        try :
+            self.stage.connect()
+        except :
+            raise RuntimeError("Impossible to connect Stage")
+        if not self.stage.test_port() :
+            raise RuntimeError("Impossible to connect Stage")
+
         self.stage_position = self.stage.get_position() # Actual position in XYZ
         self.state['stage'] = 'ready'
     
@@ -338,9 +348,9 @@ class Light_sheet_stabilized_scanning:
                         images = [w.total_images for w in self.acquisition_workers]
                         if all(v >= expected_frames for v in images):
                             break
-                        time.sleep(0.05)
+                        time.sleep(0.01)
                     while self.stage.is_moving(): # Wait until stage stops moving 
-                        time.sleep(0.05)
+                        time.sleep(0.01)
                         
                 except:
                     print("[INFO] Acquisition interrupted by user.")
@@ -348,7 +358,6 @@ class Light_sheet_stabilized_scanning:
                 self.daq.close()
                 self.daq.stop()
                     
-        self.stage.set_speed() # Put back the stage to riginal speed
         self.stage.go_to_position(self.stage_position)
         self.stop_all()
         
@@ -366,6 +375,8 @@ class Light_sheet_stabilized_scanning:
         for cam in self.cameras_acquisition :
             cam.stop_acquisition()
             cam.release_camera()
+            
+        self.stage.close()
         
         if self.fw_None :
             self.filterwheel.close()

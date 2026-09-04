@@ -33,22 +33,20 @@ from multiposition_acquisition.Hardware.camera_controller import camera_acquisit
 from multiposition_acquisition.Hardware.filter_wheel_controller import FilterWheel
 from multiposition_acquisition.Hardware.functions_Stage_ASI import Stage_ASI
 from multiposition_acquisition.Hardware.functions_serial_ports import functions_serial_ports
-# from multiposition_acquisition.Hardware.mock import Mock_functions_serial_ports as functions_serial_ports
-# from multiposition_acquisition.Hardware.mock import MockDAQAcquisition as NIDAQ_Acquisition
-# from multiposition_acquisition.Hardware.mock import MockCameraAcquisition as camera_acquisition
 from multiposition_acquisition.Tools.acquisition_pipeline.acquisition_worker import AcquisitionWorker
 from multiposition_acquisition.Tools.acquisition_pipeline.count_worker import CountWorker, mouvement_sequence
 from multiposition_acquisition.Tools.saving import prepare_saving_directory, save_metadata
 from multiposition_acquisition.Tools.signal_generators.multi_channel import generate_channel_signals
 
 class MultiPositionAcquisition:
-    def __init__(self, hcams=None, filterwheel = None, frequency=1e5):
+    def __init__(self, hcams=None, filterwheel = None, stage = None, frequency=1e5):
         
         print('[Main MPA] Start multiposition acquisition')
         
         self.hcams = hcams
         self.filterwheel = filterwheel
-        self.stage = Stage_ASI()
+        self.stage = stage
+        self.initialize_stage()
         self.fw_None = True if self.filterwheel is None else False # To properly close the filterwheel
         self.frequency = frequency
         
@@ -109,6 +107,17 @@ class MultiPositionAcquisition:
                       }
         
         self.cw = False # Vérifie sur le countworker existe
+        
+    def initialize_stage(self):
+        if self.stage is None :
+            self.stage = Stage_ASI()
+        
+        try :
+            self.stage.connect()
+        except :
+            raise RuntimeError("Impossible to connect Stage")
+        if not self.stage.test_port() :
+            raise RuntimeError("Impossible to connect Stage")
 
     def initialize_cameras(self):
         for i, cam_cfg in enumerate(self.config.cameras):
@@ -327,6 +336,8 @@ class MultiPositionAcquisition:
         
         self.count_thread.quit()
         self.count_thread.wait()
+        
+        self.stage.close()
         
         if self.fw_None :
             self.filterwheel.close()
