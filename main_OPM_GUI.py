@@ -1412,7 +1412,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
             channel_acquisition = functions_ui.get_active_channel([self.comboBox_channel_name.currentText()], self.channel)
             
-            experiment = self.experiment
+            experiment = copy.deepcopy(self.experiment)
             experiment.scan_range = 4.0
             experiment.timepoints = 1
             

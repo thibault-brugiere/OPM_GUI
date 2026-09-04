@@ -654,7 +654,7 @@ class piezo_SAS() : #SAS for Super Agilis Series
              
         error = self.query('TB')
         if error != 'TB@ No error' :
-            print("f'[Piezo] Controller reported and error: {error}'")
+            print(f"[Piezo] Controller reported and error: {error}")
             # raise PiezoControllerError(f'Controller reported and error: {error}')
             
     def wait_for_motion(self, timeout_s:float = 10.0) -> None:

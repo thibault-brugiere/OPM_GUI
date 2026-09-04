@@ -57,6 +57,7 @@ class AutofocusAcquisition(QObject):
             self.piezo.connect()
         
         if not self.piezo.is_referenced() :
+            self.piezo.close()
             raise ValueError(f'Piezo must be hommed, current value : {self.piezo.is_referenced()}')
             
         self.frequency = frequency
@@ -202,6 +203,7 @@ class AutofocusAcquisition(QObject):
         print("[Main Autofocus] filter wheel initialized")
                 
         self.filterwheel.moveToFilter(self.config.experiment.channels[0].filter)
+        self.filterwheel.setTrigMove(0)
 
     def configure_daq(self):
         self.daq = NIDAQ_Acquisition()

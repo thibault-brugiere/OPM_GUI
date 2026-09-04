@@ -6,6 +6,7 @@ Created on Tue Dec  9 10:55:10 2025
 """
 
 import atexit
+import serial
 
 from LS3_acquisition.Hardware.functions_serial_ports import functions_serial_ports as serial_port
 
@@ -28,6 +29,28 @@ class Stage_ASI:
         except:
             raise NameError("ASI stage: connection error")
             
+    def list_serial_ports(self) -> list:
+        """
+        List all available serial ports.
+        """
+        ports = serial.tools.list_ports.comports()
+        devices = []
+        for port in ports:
+            devices.append(port.device)
+            
+        return devices
+    
+    def get_port(self) -> str:
+        """
+        Return the port of the stage
+
+        Returns
+        -------
+        TYPE
+            str
+
+        """
+        return self.port
         
     def set_scan(self, SPEED:float, SCANR_start:float, SCANR_stop:float, SCANV_start:float,
                  SCANV_stop:float, SCANV_number_of_lines:float = 1, axis:str = 'X', retrace = 100):

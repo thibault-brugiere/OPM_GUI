@@ -6,14 +6,14 @@
             "vchipsize": 2368,
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
-            "hsize": 512,
-            "hpos": 1960,
-            "vsize": 512,
-            "vpos": 928,
-            "exposure_time": 0.03,
+            "hsize": 748,
+            "hpos": 1840,
+            "vsize": 748,
+            "vpos": 808,
+            "exposure_time": 0.02,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
-            "image_readout_time": 0.0019296
+            "image_readout_time": 0.0027920727272727273
         }
     },
     "channels": {
@@ -33,20 +33,20 @@
                 "561": 0,
                 "640": 0
             },
-            "filter": "GFP",
+            "filter": "empty5",
             "camera": 0,
-            "exposure_time": 30.0
+            "exposure_time": 20.0
         }
     },
     "experiment": {
-        "exp_name": "Image",
-        "data_path": "D:/Projets_Python/OPM_GUI/Images",
+        "exp_name": "NS_GFP_TD_Tomato_1Week_Multi-position_1min",
+        "data_path": "D:/Images_OPM/NeuroSpheres_Growth-Cone/20260901_NS_GFP_TD_Tomato",
         "timepoints": 1,
-        "time_intervals": 1.0,
-        "total_duration": 10.0,
+        "time_intervals": 60.0,
+        "total_duration": 10800.0,
         "mode": "autofocus",
-        "positions": 0,
-        "scanner_position": 0,
+        "positions": 4,
+        "scanner_position": -51,
         "scan_range": 4.055976717952369,
         "stage_scan_range": 300,
         "scanV_range": 0,

@@ -6,14 +6,14 @@
             "vchipsize": 2368,
             "pixel_size": 4.6000000000000005,
             "sample_pixel_size": 0.15535292131036815,
-            "hsize": 512,
-            "hpos": 1960,
-            "vsize": 512,
-            "vpos": 928,
-            "exposure_time": 0.03,
+            "hsize": 748,
+            "hpos": 1840,
+            "vsize": 748,
+            "vpos": 808,
+            "exposure_time": 0.02,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
-            "image_readout_time": 0.0019296
+            "image_readout_time": 0.0027920727272727273
         }
     },
     "channels": {
@@ -33,26 +33,46 @@
                 "561": 0,
                 "640": 0
             },
-            "filter": "GFP",
+            "filter": "empty5",
             "camera": 0,
-            "exposure_time": 30.0
+            "exposure_time": 20.0
+        },
+        "channel_CY3.5": {
+            "channel_id": "CY3.5",
+            "is_active": true,
+            "channel_order": null,
+            "laser_is_active": {
+                "405": false,
+                "488": false,
+                "561": true,
+                "640": false
+            },
+            "laser_power": {
+                "405": 0,
+                "488": 0,
+                "561": 5,
+                "640": 0
+            },
+            "filter": "CY3.5",
+            "camera": 0,
+            "exposure_time": 20.0
         }
     },
     "experiment": {
-        "exp_name": "RFS",
-        "data_path": "D:/Images_OPM/Metrologie-Developpement/20260827_RFS",
-        "timepoints": 14,
-        "time_intervals": 1800.0,
-        "total_duration": 25200.0,
+        "exp_name": "NS_GFP_TD_Tomato_1Week_Multi-position_1min",
+        "data_path": "D:/Images_OPM/NeuroSpheres_Growth-Cone/20260901_NS_GFP_TD_Tomato",
+        "timepoints": 180,
+        "time_intervals": 60.0,
+        "total_duration": 10800.0,
         "mode": "standard",
-        "positions": 0,
+        "positions": 4,
         "scanner_position": 0,
-        "scan_range": 99.77702726162828,
+        "scan_range": 120.05691085139013,
         "stage_scan_range": 300,
         "scanV_range": 0,
         "scanV_overlap": 0.25,
         "aspect_ratio": 3.3563985247091197,
-        "n_steps": 124,
+        "n_steps": 149,
         "step_size": 0.8111953435904738,
         "slit_aperture": 800
     },
