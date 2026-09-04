@@ -93,6 +93,90 @@ def parse_mda_filenames(folder: str | Path) -> dict[str, Any]:
         "images": sorted(images_set),
     }
 
+_PATTERN_MPA = re.compile(r"^(?P<channel>.+?)_pos_(?P<position>\d{2})_t_(?P<image>\d{4})$")
+
+def parse_mpa_filenames(folder: str | Path) -> dict[str, Any] :
+    """
+    Parse filenames in a folder following the pattern:
+    {channel}_ps_{position:02d}_t_{image:04d}
+
+    The file extension is ignored during parsing
+    (e.g. '.tif', '.tiff').
+
+    Only files matching the pattern are considered. Others are ignored.
+
+    Parameters
+    ----------
+    folder : str | Path
+        Folder containing the image files.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the folder does not exist.
+    NotADirectoryError
+        If ``folder`` is not a directory.
+
+    Returns
+    -------
+    dict[str, Any]
+        Dictionary containing:
+    - ``files``: list of dict with keys:
+        ``path`` (Path), ``channel`` (str), ``position`` (int),``image`` (int),
+        sorted by (channel, position, image)
+    - ``channels``: sorted list of unique channel names
+    - ``positions``: sorted list of unique positions names
+    - ``images``: sorted list of unique image indices (int)
+    """
+    folder = Path(folder)
+
+    if not folder.exists():
+        raise FileNotFoundError(f"Dossier introuvable : {folder}")
+    if not folder.is_dir():
+        raise NotADirectoryError(f"Ce n'est pas un dossier : {folder}")
+
+    parsed_files: list[dict[str, Any]] = []
+    channels_set: set[str] = set()
+    positions_set: set[int] = set()
+    images_set: set[int] = set()
+
+    for path in folder.iterdir():
+        if not path.is_file():
+            continue
+
+        stem = path.stem
+        match = _PATTERN_MPA.match(stem)
+        if match is None:
+            continue
+
+        channel = match.group("channel")
+        position = match.group("position")
+        image = int(match.group("image"))
+        
+        if channel.startswith("deskew"):
+            continue
+
+        parsed_files.append({
+            "path": path,
+            "channel": channel,
+            "position" : position,
+            "image": image,
+            "process": True,
+        })
+
+        channels_set.add(channel)
+        positions_set.add(position)
+        images_set.add(image)
+
+    parsed_files.sort(key=lambda item: (item["channel"], item["position"],item["image"]))
+
+    return {
+        "files": parsed_files,
+        "channels": sorted(channels_set),
+        "positions": sorted(positions_set),
+        "images": sorted(images_set),
+    }
+
 _PATTERN_LS3 = re.compile(r"^Position_(?P<position>\d{4})_(?P<channel>[A-Za-z0-9.-]+)_file_(?P<index>\d{4})$")
 
 def parse_ls3_filenames(folder: str | Path) -> dict[str, Any]:
@@ -474,7 +558,16 @@ if __name__ == "__main__":
     # result_ls3_zarr = parse_ls3_deskew_foldernames(folder_ls3_zarr)
     # print('files :', result_ls3_zarr["files"])
     
-    print("PSF folder")
-    folder_psf = r"D:\Images_OPM\Yonathan\20260703_25S_Live\20260703_114454_25S_Live\PSF"
-    result_psf = parse_psf_foldernames(folder_psf)
-    print('files :', result_psf["files"])
+    # print("PSF folder")
+    # folder_psf = r"D:\Images_OPM\Yonathan\20260703_25S_Live\20260703_114454_25S_Live\PSF"
+    # result_psf = parse_psf_foldernames(folder_psf)
+    # print('files :', result_psf["files"])
+    
+    folder_mpa = r"D:\Images_OPM\NeuroSpheres_Growth-Cone\20260831_NS_GFP_TD_Tomato\20260831_111718_NS_GFP_TD_Tomato_1Week_Multi-position_1min"
+    result_mpa = parse_mpa_filenames(folder_mpa)
+    
+    print("MPA folder")
+    metadata_mpa = get_metadata(folder_mpa)
+    print("px_size :", metadata_mpa["px_size"])
+    print("angle :", metadata_mpa["angle"])
+    print("aspect_ratio :", metadata_mpa["aspect_ratio"])

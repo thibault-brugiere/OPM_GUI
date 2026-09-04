@@ -21,6 +21,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QMessageBox, QWidget
 from PySide6.QtWidgets import QFileDialog
 from PySide6.QtCore import QThread, Signal
+from PySide6.QtGui import QIcon
 
 # Ajoutez le dossier parent au sys.path si le fichier est exécuté directement
 if __name__ == "__main__":
@@ -29,7 +30,7 @@ if __name__ == "__main__":
     sys.path.append(parent_dir)
 
 from image_analysis.ui_pretreatement import Ui_Form
-from image_analysis.parsename import parse_mda_filenames, parse_ls3_filenames, parse_ls3_foldernames, parse_ls3_deskew_foldernames, parse_psf_foldernames
+from image_analysis.parsename import parse_mda_filenames, parse_ls3_filenames, parse_ls3_foldernames, parse_ls3_deskew_foldernames, parse_psf_foldernames, parse_mpa_filenames
 from image_analysis.Auto_deskew_rotate_cupy import auto_deskew_rotate_mda
 from image_analysis.Auto_deskew_rotate_cupy import auto_deskew_rotate_deconv_mda
 from image_analysis.Auto_deskew_rotate_cupy import auto_deskew_rotate_ls3 as auto_deskew_rotate_ls3_entire_volume
@@ -82,6 +83,7 @@ class PretreatementWindow(QWidget, Ui_Form):
         #
         
         self.setWindowTitle('Pretreatement')
+        self.setWindowIcon(QIcon("Icons/main_icon.png"))
         self.setWindowFlag(Qt.Window)  # Assure que la fenêtre est indépendante
         self.label_parameters.setText("Ready")
         self.label_psf.setText("No PSF detected")
@@ -205,6 +207,7 @@ class PretreatementWindow(QWidget, Ui_Form):
             self._pb_setEnabled()
             
             self.parse_mda = parse_mda_filenames(self.folder_path)
+            self.parse_mpa = parse_mpa_filenames(self.folder_path)
             self.parse_ls3_file = parse_ls3_filenames(self.folder_path)
             self.parse_ls3_folder = parse_ls3_foldernames(self.folder_path)
             self.parse_ls3_deskew = parse_ls3_deskew_foldernames(self.folder_path)
@@ -215,6 +218,17 @@ class PretreatementWindow(QWidget, Ui_Form):
                 nchannels = len(self.parse_mda['channels'])
                 nimages = len(self.parse_mda['images'])
                 self.label_parameters.setText(f"MDA detected\n{nfiles} files\n{nchannels} channels\n{nimages} images")
+                self.pb_start_MDAdeskew.setEnabled(True)
+                self.cb_only_deskew.setEnabled(True)
+                self.cb_decon.setEnabled(True)
+                file_detected = True
+                
+            if len(self.parse_mpa['files']) != 0:
+                nfiles = len(self.parse_mpa['files'])
+                nchannels = len(self.parse_mpa['channels'])
+                npositions = len(self.parse_mpa['positions'])
+                nimages = len(self.parse_mpa['images'])
+                self.label_parameters.setText(f"MPA detected\n{nfiles} files\n{nchannels} channels\n{npositions} positions\n{nimages} images")
                 self.pb_start_MDAdeskew.setEnabled(True)
                 self.cb_only_deskew.setEnabled(True)
                 self.cb_decon.setEnabled(True)
@@ -292,6 +306,7 @@ class PretreatementWindow(QWidget, Ui_Form):
             message = "\nNo PSF file set"
         
         if message is not None :
+            pass
             print(f"message : {message}")
         self.label_parameters.setText(self.label_parameters.text() + message)
         self.cb_decon.setEnabled(enable)

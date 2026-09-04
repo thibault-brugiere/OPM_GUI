@@ -32,7 +32,7 @@ def auto_deskew_rotate_mda(folder, only_deskew = False,
                            progress_file_callback = None,
                            stop_requested_callback=None):
     """
-    Automaticalli deskew and rotate (optionnaly) images from MDA protocol contained in a folder.
+    Automaticalli deskew and rotate (optionnaly) images from MDA and MPA protocol contained in a folder.
     The images should be in a folder in the format : "{channel}_volume_{:04d}.tif"
     It save the images in the same folder in the format: "deskew-rotate_Position_{channel}_volume_{:04d}.tif"
 
@@ -56,9 +56,14 @@ def auto_deskew_rotate_mda(folder, only_deskew = False,
     """
     
     parse_mda = parsename.parse_mda_filenames(folder)
+    parse_mpa = parsename.parse_mpa_filenames(folder) # Modifié ici pour ne pas changer toute la fonction
     metadata = parsename.get_metadata(folder)
     
-    if len(parse_mda['files']) == 0 :
+    if len(parse_mda['files']) != 0 :
+        pass
+    elif len(parse_mpa['files']) != 0 :
+        parse_mda = parse_mpa # Modifié ici pour ne pas changer toute la fonction
+    else :
         return
     
     if progress_folder_callback is not None :
