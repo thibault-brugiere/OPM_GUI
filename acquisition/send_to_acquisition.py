@@ -110,6 +110,8 @@ def send_to_multidimensionnal_acquisition(camera_list, filterwheel, channel_list
                              'galvo_response_time' : microscope.galvo_response_time,
                              'galvo_flyback_time' : microscope.galvo_flyback_time,
                              'stage_port' : microscope.stage_port,
+                             'stage_acceleration' : microscope.stage_acceleration,
+                             'stage_speed' : microscope.stage_speed,
                              'filter_changing_time' : microscope.filter_changing_time,
                              'filters': microscope.filters,
                              'lasers': microscope.lasers,

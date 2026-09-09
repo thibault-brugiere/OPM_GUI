@@ -73,6 +73,13 @@ class microscope_settings_window(QWidget, Ui_Form):
                      'filter6' : self.lineEdit_Filter6
                      }
         
+        self.spinBoxes = {'x_accel' : self.sb_stage_acceleration_X,
+                          'y_accel' : self.sb_stage_acceleration_Y,
+                          'z_accel' : self.sb_stage_acceleration_Z,
+                          'x_speed' : self.sb_stage_maximum_speed_X,
+                          'y_speed' : self.sb_stage_maximum_speed_Y,
+                          'z_speed' : self.sb_stage_maximum_speed_Z}
+        
         self.microscope_params = {'tilt_angle' : self.microscope.tilt_angle,
                              'mag_total' : self.microscope.mag_total,
                              'stage_port' : self.microscope.stage_port,
@@ -91,7 +98,12 @@ class microscope_settings_window(QWidget, Ui_Form):
                              'filter4' : self.microscope.filters[3],
                              'filter5' : self.microscope.filters[4],
                              'filter6' : self.microscope.filters[5],
-                             }
+                             'x_accel' : self.microscope.stage_acceleration[0],
+                             'y_accel' : self.microscope.stage_acceleration[1],
+                             'z_accel' : self.microscope.stage_acceleration[2],
+                             'x_speed' : self.microscope.stage_speed[0],
+                             'y_speed' : self.microscope.stage_speed[1],
+                             'z_speed' : self.microscope.stage_speed[2]}
         
         self.param_type = {'tilt_angle' : 'float',
                            'mag_total' : 'float',
@@ -115,14 +127,18 @@ class microscope_settings_window(QWidget, Ui_Form):
         
         self.param_filters = ['filter1','filter2','filter3','filter4','filter5','filter6']
         
+        
         #
         # Initialisation of the lineEdits
         #
         
         for key in self.lineEdits.keys():
             self.lineEdits[key].editingFinished.connect(self.test_lineEdit)
+        for key in self.spinBoxes.keys():
+            self.spinBoxes[key].valueChanged.connect(self.set_sb_values)
         
         self.init_lineEdit()
+        self.init_spinBoxes()
         
     ####################################
     ## Functions called by line edits ##
@@ -133,6 +149,12 @@ class microscope_settings_window(QWidget, Ui_Form):
             self.lineEdits[key].blockSignals(True)
             self.lineEdits[key].setText(str(self.microscope_params[key]))
             self.lineEdits[key].blockSignals(False)
+            
+    def init_spinBoxes(self):
+        for key in self.spinBoxes.keys():
+            self.spinBoxes[key].blockSignals(True)
+            self.spinBoxes[key].setValue(self.microscope_params[key])
+            self.spinBoxes[key].blockSignals(False)
         
     def test_lineEdit(self):
         for key in self.lineEdits.keys():
@@ -151,11 +173,21 @@ class microscope_settings_window(QWidget, Ui_Form):
                 if key in self.param_filters :
                     self.message_filters = """\n[WARNING]Changes has been made in filters,
 you have to set changes in channels too"""
+        
+    def set_sb_values(self):
+        for key in self.spinBoxes.keys() :
+            self.microscope_params[key] = self.spinBoxes[key].value()
                     
     def set_values(self):
         self.microscope.tilt_angle = self.microscope_params['tilt_angle']
         self.microscope.mag_total = self.microscope_params['mag_total']
         self.microscope.stage_port = self.microscope_params['stage_port']
+        self.microscope.stage_acceleration[0] = self.microscope_params['x_accel']
+        self.microscope.stage_acceleration[1] = self.microscope_params['y_accel']
+        self.microscope.stage_acceleration[2] = self.microscope_params['z_accel']
+        self.microscope.stage_speed[0] = self.microscope_params['x_speed']
+        self.microscope.stage_speed[1] = self.microscope_params['y_speed']
+        self.microscope.stage_speed[2] = self.microscope_params['z_speed']
         self.microscope.piezo_port = self.microscope_params['piezo_port']
         self.microscope.trans_mirror_ser_num = self.microscope_params['trans_mirror_ser_num']
         self.microscope.volts_per_um = self.microscope_params['volts_per_um']
@@ -172,6 +204,8 @@ you have to set changes in channels too"""
                                    self.microscope_params['filter5'],
                                    self.microscope_params['filter6'],
                                    ]
+        
+        
                     
     def closeEvent(self, event):
         reply = QMessageBox.question(

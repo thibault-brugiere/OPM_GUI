@@ -30,10 +30,11 @@ from hardware.functions_Stage_ASI import Stage_ASI
     
 class multi_position_edditor(QWidget, Ui_Form):
     
-    def __init__(self, positions = None, parent = None, stage = None):
+    def __init__(self, positions = None, parent = None, stage = None, microscope = None):
         super().__init__(parent)
         self.setupUi(self)
         self.stage = stage
+        self.microscope = microscope
         
         if positions is not None :
             self.positions = positions
@@ -63,11 +64,47 @@ class multi_position_edditor(QWidget, Ui_Form):
         self.devices = self.stage.list_serial_ports()
         self.set_comboBox_devices()
         self.comboBox_devices_indexChanged()
+        
+        self.spinBoxes = {
+            'x_accel' : self.sb_stage_acceleration_X,
+            'y_accel' : self.sb_stage_acceleration_Y,
+            'z_accel' : self.sb_stage_acceleration_Z,
+            'x_speed' : self.sb_stage_maximum_speed_X,
+            'y_speed' : self.sb_stage_maximum_speed_Y,
+            'z_speed' : self.sb_stage_maximum_speed_Z}
+        
+        self.stage_params = {
+            'x_accel' : None,
+            'y_accel' : None,
+            'z_accel' : None,
+            'x_speed' : None,
+            'y_speed' : None,
+            'z_speed' : None}
+            
+        if self.microscope is not None :
+
+            self.microscope_params = {
+                'x_accel' : self.microscope.stage_acceleration[0],
+                'y_accel' : self.microscope.stage_acceleration[1],
+                'z_accel' : self.microscope.stage_acceleration[2],
+                'x_speed' : self.microscope.stage_speed[0],
+                'y_speed' : self.microscope.stage_speed[1],
+                'z_speed' : self.microscope.stage_speed[2]}
+            
+            for key in self.spinBoxes.keys():
+                self.spinBoxes[key].blockSignals(True)
+                self.spinBoxes[key].setValue(self.microscope_params[key])
+                self.spinBoxes[key].blockSignals(False)
+                self.stage_params[key] = self.microscope_params[key]
+        
         self.try_stage()
         
         #
         # Connexion entre les boutons et les fonctions
         #
+        
+        for key in self.spinBoxes.keys():
+            self.spinBoxes[key].editingFinished.connect(self.speed_acceleration_changed)
         
         self.pb_save.clicked.connect(self.save_positions)
         self.pb_load.clicked.connect(self.load_positions)
@@ -76,7 +113,24 @@ class multi_position_edditor(QWidget, Ui_Form):
         self.pb_remove_all_positions.clicked.connect(self.pb_remove_all_positions_clicked)
         self.pb_sort_snake.clicked.connect(self.pb_sort_snake_clicked)
         self.pb_sort_nearest.clicked.connect(self.pb_sort_nearest_clicked)
+    
+    def _get_stage_parameters(self):
+        accels = self.stage.get_acceleration()
+        speeds = self.stage.get_speed()
         
+        self.stage_params = {
+            'x_accel' : accels[0],
+            'y_accel' : accels[1],
+            'z_accel' : accels[2],
+            'x_speed' : speeds[0],
+            'y_speed' : speeds[1],
+            'z_speed' : speeds[2]}
+        
+        for key in self.spinBoxes.keys():
+            self.spinBoxes[key].blockSignals(True)
+            self.spinBoxes[key].setValue(self.stage_params[key])
+            self.spinBoxes[key].blockSignals(False)
+    
     def try_stage(self):
         "Try to connect the stage witout the setting the port"
         if not self.stage.connected :
@@ -89,9 +143,30 @@ class multi_position_edditor(QWidget, Ui_Form):
             self.stage_connected = True
             self.comboBox_devices.setCurrentText(self.stage.port)
             self.comboBox_devices.setEnabled(False)
+            if self.microscope is None :
+                self._get_stage_parameters()
+            else :
+                self.speed_acceleration_changed()
             
         self.tools_desactivation()
         self._refresh_table()
+        
+    def speed_acceleration_changed(self):
+        if self.stage.connected :
+            if self.stage.is_moving() :
+                for key in self.spinBoxes.keys() :
+                    self.spinBoxes[key].blockSignals(True)
+                    self.spinBoxes[key].setValue(self.stage_params[key])
+                    self.spinBoxes[key].blockSignals(False)
+                    return
+        
+            for key in self.spinBoxes.keys() :
+                self.stage_params[key] = self.spinBoxes[key].value()
+                    
+            self.stage.set_acceleration(self.stage_params["x_accel"],self.stage_params["y_accel"],self.stage_params["z_accel"])
+            self.stage.set_speed(self.stage_params["x_speed"],self.stage_params["y_speed"],self.stage_params["z_speed"])
+            
+            self._send_to_parent()
         
     def set_comboBox_devices(self):
         "set the indexes of the comboBox_devices depending on avaliable devices"
@@ -319,6 +394,13 @@ class multi_position_edditor(QWidget, Ui_Form):
         if self.parent is not None :
             self.parent().positions = self.positions
             self.parent()._set_lcdNumber_multipositions()
+            
+            self.microscope.stage_acceleration[0] = self.stage_params['x_accel']
+            self.microscope.stage_acceleration[1] = self.stage_params['y_accel']
+            self.microscope.stage_acceleration[2] = self.stage_params['z_accel']
+            self.microscope.stage_speed[0] = self.stage_params['x_speed']
+            self.microscope.stage_speed[1] = self.stage_params['y_speed']
+            self.microscope.stage_speed[2] = self.stage_params['z_speed']
     
     def ask_user(self, title = "Confirm deletion", message = "Would you like to delete position ?"):
         result = QMessageBox.question(self,

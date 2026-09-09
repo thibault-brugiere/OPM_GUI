@@ -151,6 +151,8 @@ class config():
         micro.galvo_response_time = micro_data["galvo_response_time"]
         micro.galvo_flyback_time = micro_data["galvo_flyback_time"]
         micro.stage_port = micro_data["stage_port"]
+        micro.stage_acceleration = micro_data["stage_acceleration"]
+        micro.stage_speed = micro_data["stage_speed"]
         micro.filter_changing_time = micro_data["filter_changing_time"]
         micro.filters = micro_data["filters"]
         micro.lasers = micro_data["lasers"]

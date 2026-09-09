@@ -291,6 +291,7 @@ class PretreatementWindow(QWidget, Ui_Form):
     def _activate_psf_tools(self):
         enable = False
         message = None
+        print(self.parse_psf)
         if self.parse_psf is not None :
             if len(self.parse_psf['channels']) != 0 :
                 if self.parse_mda is not None :
@@ -306,9 +307,9 @@ class PretreatementWindow(QWidget, Ui_Form):
             message = "\nNo PSF file set"
         
         if message is not None :
-            pass
             print(f"message : {message}")
-        self.label_parameters.setText(self.label_parameters.text() + message)
+            self.label_parameters.setText(self.label_parameters.text() + message)
+            
         self.cb_decon.setEnabled(enable)
         self.sb_decon_iter.setEnabled(enable)
         

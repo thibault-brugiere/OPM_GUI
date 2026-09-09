@@ -154,7 +154,10 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         else :
             self.label_daq_detected.setText('WARNING: No ni-DAQ detected ! Please restart the interface.')
         
-        functions_daq.digital_out(False, self.microscope.daq_channels["transmission_light"]) # Force the transmission light OFF
+        try :
+            functions_daq.digital_out(False, self.microscope.daq_channels["transmission_light"]) # Force the transmission light OFF
+        except :
+            pass
         
         #
         # Connect to the filter wheel
@@ -190,7 +193,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         self.stage.change_port(self.microscope.stage_port)
         self.stage.connect()
         if self.stage.test_port() :
-            self.stage.set_acceleration(400,400,400)
+            self.stage.set_acceleration(*self.microscope.stage_acceleration)
+            self.stage.set_speed(*self.microscope.stage_speed)
             print("[OK] Stage connection")
         else :
             print("[WARNING] Stage not connected")
@@ -720,7 +724,7 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         #
         
     def pb_multipositions_clicked_connect(self):
-        self.multi_position_edditor = multi_position_edditor(self.positions, self, self.stage)
+        self.multi_position_edditor = multi_position_edditor(self.positions, self, self.stage, self.microscope)
         self.multi_position_edditor.show()
         
     def _set_lcdNumber_multipositions(self):

@@ -46,7 +46,6 @@ class MultiPositionAcquisition:
         self.hcams = hcams
         self.filterwheel = filterwheel
         self.stage = stage
-        self.initialize_stage()
         self.fw_None = True if self.filterwheel is None else False # To properly close the filterwheel
         self.frequency = frequency
         
@@ -108,12 +107,17 @@ class MultiPositionAcquisition:
         
         self.cw = False # Vérifie sur le countworker existe
         
+        self.initialize_stage()
+        
     def initialize_stage(self):
         if self.stage is None :
             self.stage = Stage_ASI()
         
         try :
-            self.stage.connect()
+            if not self.stage.connected :
+                self.stage.connect()
+            self.stage.set_speed(*self.config.microscope.stage_speed)
+            self.stage.set_acceleration(*self.config.microscope.stage_acceleration)
         except :
             raise RuntimeError("Impossible to connect Stage")
         if not self.stage.test_port() :

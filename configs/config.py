@@ -87,6 +87,8 @@ class microscope(object):
         
         # stage
         self.stage_port = 'COM10'
+        self.stage_acceleration = [400,400,300] # in ms for X, Y and Z axis
+        self.stage_speed = [5.74592, 5.74592, 1.2864] # in mm/s for X, Y and Z axis
         self.piezo_port = 'COM6'
         
         # Preview
@@ -225,6 +227,9 @@ class microscope(object):
             
             # stage
             "stage_port" : self.stage_port,
+            "stage_acceleration" : self.stage_acceleration,
+            "stage_speed" : self.stage_speed,
+            "piezo_port" : self.piezo_port,
             
             # Preview
             "trans_mirror_ser_num" : self.trans_mirror_ser_num,
@@ -259,6 +264,8 @@ class microscope(object):
         self.galvo_response_time = microscope_dict["galvo_response_time"]
         self.galvo_flyback_time = microscope_dict["galvo_flyback_time"]
         self.stage_port = microscope_dict["stage_port"]
+        self.stage_acceleration = microscope_dict["stage_acceleration"]
+        self.stage_speed = microscope_dict["stage_speed"]
         self.piezo_port = microscope_dict["piezo_port"]
         self.trans_mirror_ser_num = microscope_dict["trans_mirror_ser_num"]
         self.trans_camera_ser_num = microscope_dict["trans_camera_ser_num"]

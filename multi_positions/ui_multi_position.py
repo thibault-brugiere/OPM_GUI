@@ -15,17 +15,22 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QHeaderView,
-    QLabel, QPushButton, QSizePolicy, QSpacerItem,
-    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QHBoxLayout,
+    QHeaderView, QLabel, QPushButton, QSizePolicy,
+    QSpacerItem, QSpinBox, QTableWidget, QTableWidgetItem,
+    QVBoxLayout, QWidget)
 
 class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
         Form.resize(1163, 654)
-        self.verticalLayout = QVBoxLayout(Form)
-        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout_3 = QVBoxLayout(Form)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.verticalLayout_2 = QVBoxLayout()
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.label_serial_port = QLabel(Form)
@@ -63,7 +68,7 @@ class Ui_Form(object):
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.verticalLayout_2.addLayout(self.horizontalLayout)
 
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -92,7 +97,92 @@ class Ui_Form(object):
         self.horizontalLayout_2.addItem(self.horizontalSpacer_2)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+
+
+        self.horizontalLayout_3.addLayout(self.verticalLayout_2)
+
+        self.verticalLayout = QVBoxLayout()
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.horizontalLayout_25 = QHBoxLayout()
+        self.horizontalLayout_25.setObjectName(u"horizontalLayout_25")
+        self.label_stage_acceleration = QLabel(Form)
+        self.label_stage_acceleration.setObjectName(u"label_stage_acceleration")
+        self.label_stage_acceleration.setMinimumSize(QSize(122, 0))
+        self.label_stage_acceleration.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_25.addWidget(self.label_stage_acceleration)
+
+        self.sb_stage_acceleration_X = QSpinBox(Form)
+        self.sb_stage_acceleration_X.setObjectName(u"sb_stage_acceleration_X")
+        self.sb_stage_acceleration_X.setMinimum(100)
+        self.sb_stage_acceleration_X.setMaximum(1000)
+
+        self.horizontalLayout_25.addWidget(self.sb_stage_acceleration_X)
+
+        self.sb_stage_acceleration_Y = QSpinBox(Form)
+        self.sb_stage_acceleration_Y.setObjectName(u"sb_stage_acceleration_Y")
+        self.sb_stage_acceleration_Y.setMinimum(100)
+        self.sb_stage_acceleration_Y.setMaximum(1000)
+
+        self.horizontalLayout_25.addWidget(self.sb_stage_acceleration_Y)
+
+        self.sb_stage_acceleration_Z = QSpinBox(Form)
+        self.sb_stage_acceleration_Z.setObjectName(u"sb_stage_acceleration_Z")
+        self.sb_stage_acceleration_Z.setMinimum(70)
+        self.sb_stage_acceleration_Z.setMaximum(1000)
+        self.sb_stage_acceleration_Z.setValue(70)
+        self.sb_stage_acceleration_Z.setDisplayIntegerBase(10)
+
+        self.horizontalLayout_25.addWidget(self.sb_stage_acceleration_Z)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_25)
+
+        self.horizontalLayout_26 = QHBoxLayout()
+        self.horizontalLayout_26.setObjectName(u"horizontalLayout_26")
+        self.label_stage_maximum_speed = QLabel(Form)
+        self.label_stage_maximum_speed.setObjectName(u"label_stage_maximum_speed")
+        self.label_stage_maximum_speed.setMinimumSize(QSize(122, 0))
+        self.label_stage_maximum_speed.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_26.addWidget(self.label_stage_maximum_speed)
+
+        self.sb_stage_maximum_speed_X = QDoubleSpinBox(Form)
+        self.sb_stage_maximum_speed_X.setObjectName(u"sb_stage_maximum_speed_X")
+        self.sb_stage_maximum_speed_X.setDecimals(3)
+        self.sb_stage_maximum_speed_X.setMinimum(1.000000000000000)
+        self.sb_stage_maximum_speed_X.setMaximum(10.000000000000000)
+        self.sb_stage_maximum_speed_X.setValue(5.750000000000000)
+
+        self.horizontalLayout_26.addWidget(self.sb_stage_maximum_speed_X)
+
+        self.sb_stage_maximum_speed_Y = QDoubleSpinBox(Form)
+        self.sb_stage_maximum_speed_Y.setObjectName(u"sb_stage_maximum_speed_Y")
+        self.sb_stage_maximum_speed_Y.setDecimals(3)
+        self.sb_stage_maximum_speed_Y.setMinimum(1.000000000000000)
+        self.sb_stage_maximum_speed_Y.setMaximum(10.000000000000000)
+        self.sb_stage_maximum_speed_Y.setValue(5.750000000000000)
+
+        self.horizontalLayout_26.addWidget(self.sb_stage_maximum_speed_Y)
+
+        self.sb_stage_maximum_speed_Z = QDoubleSpinBox(Form)
+        self.sb_stage_maximum_speed_Z.setObjectName(u"sb_stage_maximum_speed_Z")
+        self.sb_stage_maximum_speed_Z.setDecimals(3)
+        self.sb_stage_maximum_speed_Z.setMinimum(1.000000000000000)
+        self.sb_stage_maximum_speed_Z.setMaximum(10.000000000000000)
+        self.sb_stage_maximum_speed_Z.setValue(1.286000000000000)
+
+        self.horizontalLayout_26.addWidget(self.sb_stage_maximum_speed_Z)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_26)
+
+
+        self.horizontalLayout_3.addLayout(self.verticalLayout)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_3)
 
         self.table_positions = QTableWidget(Form)
         if (self.table_positions.columnCount() < 10):
@@ -119,7 +209,7 @@ class Ui_Form(object):
         self.table_positions.setHorizontalHeaderItem(9, __qtablewidgetitem9)
         self.table_positions.setObjectName(u"table_positions")
 
-        self.verticalLayout.addWidget(self.table_positions)
+        self.verticalLayout_3.addWidget(self.table_positions)
 
 
         self.retranslateUi(Form)
@@ -143,6 +233,26 @@ class Ui_Form(object):
         self.pb_remove_all_positions.setText(QCoreApplication.translate("Form", u"Remove All", None))
         self.pb_sort_snake.setText(QCoreApplication.translate("Form", u"Snake Sort", None))
         self.pb_sort_nearest.setText(QCoreApplication.translate("Form", u"Nearest sort", None))
+        self.label_stage_acceleration.setText(QCoreApplication.translate("Form", u"Acceleration time (XYZ):", None))
+#if QT_CONFIG(tooltip)
+        self.sb_stage_acceleration_X.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>sets the amount of time in milliseconds that it takes an axis motor speed to go from stopped to the maximum speed</p><p>For X axis</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.sb_stage_acceleration_Y.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>sets the amount of time in milliseconds that it takes an axis motor speed to go from stopped to the maximum speed</p><p>For Y axis</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.sb_stage_acceleration_Z.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>sets the amount of time in milliseconds that it takes an axis motor speed to go from stopped to the maximum speed</p><p>For Z axis</p><p><br/></p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_stage_maximum_speed.setText(QCoreApplication.translate("Form", u"Maximum speed (XYZ):", None))
+#if QT_CONFIG(tooltip)
+        self.sb_stage_maximum_speed_X.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Set speed in mm/s of the axis movement</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.sb_stage_maximum_speed_Y.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Set speed in mm/s of the axis movement</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.sb_stage_maximum_speed_Z.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Set speed in mm/s of the axis movement</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         ___qtablewidgetitem = self.table_positions.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("Form", u"Enabled", None));
         ___qtablewidgetitem1 = self.table_positions.horizontalHeaderItem(1)
