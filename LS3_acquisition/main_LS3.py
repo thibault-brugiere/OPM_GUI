@@ -369,12 +369,15 @@ class Light_sheet_stabilized_scanning:
         Stop all acquisition workers and DAQ tasks. Can be called at the end of acquisition
         or via external user action (e.g. GUI button).
         """
-        for worker in self.acquisition_workers:
-            worker.stop()
-            
-        for cam in self.cameras_acquisition :
-            cam.stop_acquisition()
-            cam.release_camera()
+        
+        if self.state['acquisition_workers'] != 'idle' :
+            for worker in self.acquisition_workers:
+                worker.stop()
+        
+        if self.state['camera'] != 'idle' :
+            for cam in self.cameras_acquisition :
+                cam.stop_acquisition()
+                cam.release_camera()
             
         self.stage.close()
         

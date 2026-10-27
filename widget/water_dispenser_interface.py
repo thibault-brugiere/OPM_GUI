@@ -113,7 +113,7 @@ class Water_Dispenser_window(QWidget, Ui_Form):
         self.on_init()
         
     def on_init(self):
-        self.setWindowTitle('Active Remote Focus Stabilization')
+        self.setWindowTitle('Water Dispenser')
         
         #
         # Ajout des icones
@@ -319,7 +319,8 @@ class Water_Dispenser_window(QWidget, Ui_Form):
             self.pb_start_stop.setChecked(True)
             
     def handle_communication_error(self, signal):
-        print(f'communication error {signal}')
+        # print(f'communication error {signal}')
+        return
             
     def closeEvent(self, event):
         """Stop worker threads before closing the window."""

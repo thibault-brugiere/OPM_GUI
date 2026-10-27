@@ -37,7 +37,7 @@ class functions_ui():
         - Must not contain forbidden characters.
         """
         
-        forbidden_chars = r'[\\/:*?"<>| ù]'  # Liste des caractères interdits, y compris l'espace
+        forbidden_chars = r'[_\\/:*?"<>| ù]'  # Liste des caractères interdits, y compris l'espace
 
         if re.search(forbidden_chars, name):
             name_ok = False

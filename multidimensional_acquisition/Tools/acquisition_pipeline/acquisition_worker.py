@@ -14,6 +14,9 @@ from PySide6.QtCore import Signal, QObject
 _STOP = object()
 
 def _drain_queue(q: "queue.Queue"):
+    if q is None:
+        return
+    
     try:
         while True:
             q.get_nowait()

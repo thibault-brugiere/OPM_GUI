@@ -10,7 +10,7 @@
             "hpos": 1960,
             "vsize": 512,
             "vpos": 928,
-            "exposure_time": 0.01,
+            "exposure_time": 0.03,
             "binning": 1,
             "line_readout_time": 7.3090909090909095e-06,
             "image_readout_time": 0.0019296
@@ -35,17 +35,17 @@
             },
             "filter": "GFP",
             "camera": 0,
-            "exposure_time": 10.0
+            "exposure_time": 30.0
         }
     },
     "experiment": {
         "exp_name": "Image",
         "data_path": "D:/Projets_Python/OPM_GUI/Images",
-        "timepoints": 2,
-        "time_intervals": 15.0,
-        "total_duration": 30.0,
+        "timepoints": 5,
+        "time_intervals": 30.0,
+        "total_duration": 150.0,
         "mode": "standard",
-        "positions": 4,
+        "positions": 0,
         "scanner_position": 0,
         "scan_range": 20.279883589761845,
         "stage_scan_range": 300,

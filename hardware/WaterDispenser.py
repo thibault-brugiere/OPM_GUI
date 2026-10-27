@@ -179,6 +179,9 @@ class WaterDispenser():
         WaterDispenserProtocolError
             If the Arduino does not return a valid stop acknowledgement.
         """
+        if not self.connected :
+            return
+        
         message = self.query("stop")
         
         if not message.startswith("STOP DONE") :

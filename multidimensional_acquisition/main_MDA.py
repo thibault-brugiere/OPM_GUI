@@ -285,12 +285,14 @@ class MultidimensionalAcquisition:
         or via external user action (e.g. GUI button).
         """
 
-        for worker in self.acquisition_workers:
-            worker.stop()
-            
-        for cam in self.cameras_acquisition :
-            cam.stop_acquisition()
-            cam.release_camera()
+        if self.state['acquisition_workers'] != 'idle' :
+            for worker in self.acquisition_workers:
+                worker.stop()
+        
+        if self.state['camera'] != 'idle' :
+            for cam in self.cameras_acquisition :
+                cam.stop_acquisition()
+                cam.release_camera()
         
         self.count_worker.stop()
         

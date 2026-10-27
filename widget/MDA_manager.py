@@ -57,6 +57,7 @@ class mda_mannager(QWidget, Ui_Form):
     def on_init(self):
         self.setWindowTitle('Multidimensionnal Acquisition')
         self.setWindowFlag(Qt.Window) 
+        self.setWindowModality(Qt.WindowModal)
         
         
         ###############################
@@ -334,6 +335,8 @@ class mda_mannager(QWidget, Ui_Form):
         self.mda.initialize_cameras()
         self.mda.initialize_laser()
         self.mda.initialize_acquisition_workers()
+        if self.mda.config.experiment.mode == "multiposition" :
+            self.mda.initialize_stabilisation_worker()
         self.mda.initialize_filterwheel()
         self.set_controller()
         self.set_autofocus_signal()
@@ -765,15 +768,21 @@ Original position = {metadata["original_piezo_position"]:6f}
         
         if self._own_piezo_connection :
             self.piezo.close()
-            
-    def closeEvent(self, event):
-        self.info_timer.stop()
-
-        if self.processor_thread.isRunning():
-            self.processor_thread.quit()
-            self.processor_thread.wait()
         
-        event.accept()
+    def closeEvent(self, event):
+        # Show a dialog box asking the user to close the interface
+        result = QMessageBox.question(self,
+                                      "Confirm Exit...",
+                                      "Do you want to stop the acquisition and exit ?",
+                                      (QMessageBox.Yes |
+                                       QMessageBox.No))
+        if result == QMessageBox.Yes:
+            print("[Main] Stopping the microscope and releasing the hardware.")
+            self.pb_stop_clicked()
+            
+            event.accept()
+        else:
+            event.ignore()
     
 class ChannelProcessor(QObject):
     processed = Signal(dict)  # front, side

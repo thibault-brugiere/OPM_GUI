@@ -136,7 +136,7 @@ class ThorlabsFW103():
             self.angle = self.getAngle()
             print("[OK] FW103 connected")
         except:
-            print('[FW103]: Connection failed, check not connected from another program (Kinesis GUI)')    
+            print('[FW103] Connection failed, check not connected from another program (Kinesis GUI)')    
         
     def close(self):
         """
@@ -180,9 +180,9 @@ class ThorlabsFW103():
         timeout_ms : int
             Move timeout in milliseconds.
         """
-        print("[FW103]: Homing Motor...")
+        print("[FW103] Homing Motor...")
         self.device.Home(60000)  # 60 seconds
-        print("[FW103]: Motor Homed.")
+        print("[FW103] Motor Homed.")
         
         self.angle = self.getAngle()
     

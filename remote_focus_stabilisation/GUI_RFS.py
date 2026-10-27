@@ -385,7 +385,15 @@ class RFS_window(QWidget, Ui_Form):
             self.label_message.setText("Laser should be on")
             
     def pb_calibration_save_clicked(self):
-        self.stabilisation.save_calibration()
+        reply = QMessageBox.question(
+            self,
+            "Confirmation",
+            "Do you want to save calibration datas?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes)
+        if reply == QMessageBox.Yes :
+            self.stabilisation.save_calibration()
+        
     
     def pb_calibration_load_clicked(self):
         self.stabilisation.load_calibration()

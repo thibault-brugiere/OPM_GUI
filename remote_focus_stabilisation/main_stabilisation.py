@@ -682,11 +682,14 @@ class Calibration():
         return um_displacement
     
     def save_data(self):
-        data = self.get_calibration_data()
-        file_path = 'data_calibration.json'
-        
-        with open(file_path, 'w') as file:
-            json.dump(data, file, indent = 4)
+        if self.calibrated :
+            data = self.get_calibration_data()
+            file_path = 'data_calibration.json'
+            
+            with open(file_path, 'w') as file:
+                json.dump(data, file, indent = 4)
+        else :
+            raise ValueError("Stabilisation is not calibrated")
     
     def load_data(self):
         file_path = 'data_calibration.json'

@@ -118,7 +118,7 @@ class Stage_ASI:
             self.close()
             raise StageCommunicationError(
             f"Device on port {self.port!r} is not the expected "
-            f"stage controller ({self.model!r})."
+            f"stage controller {self.query('WHO')[3:]},({self.model!r})."
         )
             
     def close(self) -> None:

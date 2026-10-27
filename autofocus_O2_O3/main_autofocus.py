@@ -105,6 +105,9 @@ class AutofocusAcquisition(QObject):
                       'daq': 'idle'
                       }
         
+        self._stopping = False
+        self._stopped = False
+        
         self.cw = False # Vérifie sur le countworker existe
         
     def create_piezo_positions(self, n_pos:int, step_mm:float) -> list:
@@ -322,7 +325,11 @@ class AutofocusAcquisition(QObject):
         Stop all acquisition workers and DAQ tasks. Can be called at the end of acquisition
         or via external user action (e.g. GUI button).
         """
-
+        if self._stopping or self._stopped :
+            return
+        
+        self._stopping = True
+        
         for worker in self.acquisition_workers:
             worker.stop()
             
@@ -348,6 +355,9 @@ class AutofocusAcquisition(QObject):
                       'acquisition_workers' : 'idle',
                       'daq': 'idle'
                       }
+        
+        self._stopped = True
+        self._stopping = False
 
 ##############################################################################
 

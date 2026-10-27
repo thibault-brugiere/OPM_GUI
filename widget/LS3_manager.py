@@ -14,7 +14,7 @@ import sys
 import time
 import threading
 
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtWidgets import QApplication, QWidget, QMessageBox
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtCore import QTimer, QObject, Signal, Slot, QThread, Qt
 
@@ -50,7 +50,7 @@ class ls3_mannager(QWidget, Ui_Form):
         
         self.setWindowTitle('Multidimensionnal Acquisition')
         self.setWindowFlag(Qt.Window) 
-        
+        self.setWindowModality(Qt.WindowModal)
         
         ###############################
         ## Creation of the Variables ##
@@ -585,6 +585,20 @@ Preview volumes dropped: {self.preview_dropped}
         qt_image.setColorTable(self.palettes[self.LUT[self.channel_display]])
         return qt_image.copy()
     
+    def closeEvent(self, event):
+        # Show a dialog box asking the user to close the interface
+        result = QMessageBox.question(self,
+                                      "Confirm Exit...",
+                                      "Do you want to stop the acquisition and exit ?",
+                                      (QMessageBox.Yes |
+                                       QMessageBox.No))
+        if result == QMessageBox.Yes:
+            print("[Main] Stopping the microscope and releasing the hardware.")
+            self.pb_stop_clicked()
+            
+            event.accept()
+        else:
+            event.ignore()
     
 class ChannelProcessor(QObject):
     processed = Signal(dict)
