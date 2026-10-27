@@ -4,7 +4,7 @@ Created on Wed Jun  3 16:46:08 2026
 
 @author: tbrugiere
 """
-
+from copy import deepcopy
 import json
 import string
 
@@ -136,5 +136,24 @@ class Positions:
         with open(filename, "r") as f:
             pos_dict = json.load(f)
             self.from_dict(pos_dict)
+            
+    
+    def copy(self, active_only: bool = False) -> "Positions":
+        """
+        Create an independent copy of the positions.
+
+        :param active_only: Copy only enabled positions if True.
+        :return: A new Positions instance.
+        """
+        new_positions = Positions()
+
+        new_positions._positions = [
+            deepcopy(pos)
+            for pos in self._positions
+            if pos.enabled or not active_only
+        ]
+
+        new_positions.i = len(new_positions)
+        return new_positions
         
         

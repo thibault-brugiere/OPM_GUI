@@ -70,8 +70,8 @@ class Ui_MainWindow(object):
         self.action_RFS.setObjectName(u"action_RFS")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.horizontalLayout_42 = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_42.setObjectName(u"horizontalLayout_42")
+        self.horizontalLayout_43 = QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_43.setObjectName(u"horizontalLayout_43")
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setSizeConstraint(QLayout.SetMinimumSize)
@@ -639,14 +639,14 @@ class Ui_MainWindow(object):
         self.verticalLayout.addItem(self.verticalSpacer)
 
 
-        self.horizontalLayout_42.addLayout(self.verticalLayout)
+        self.horizontalLayout_43.addLayout(self.verticalLayout)
 
         self.line = QFrame(self.centralwidget)
         self.line.setObjectName(u"line")
         self.line.setFrameShape(QFrame.Shape.VLine)
         self.line.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_42.addWidget(self.line)
+        self.horizontalLayout_43.addWidget(self.line)
 
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
@@ -773,6 +773,20 @@ class Ui_MainWindow(object):
 
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_41)
+
+        self.horizontalLayout_42 = QHBoxLayout()
+        self.horizontalLayout_42.setObjectName(u"horizontalLayout_42")
+        self.checkBox_stage_stabilisation = QCheckBox(self.centralwidget)
+        self.checkBox_stage_stabilisation.setObjectName(u"checkBox_stage_stabilisation")
+
+        self.horizontalLayout_42.addWidget(self.checkBox_stage_stabilisation)
+
+        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_42.addItem(self.horizontalSpacer_10)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_42)
 
         self.line_3 = QFrame(self.centralwidget)
         self.line_3.setObjectName(u"line_3")
@@ -948,7 +962,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addWidget(self.groupBox_channel_order)
 
-        self.verticalSpacer_2 = QSpacerItem(378, 130, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.verticalSpacer_2 = QSpacerItem(378, 58, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_2)
 
@@ -1023,14 +1037,14 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.addLayout(self.horizontalLayout_40)
 
 
-        self.horizontalLayout_42.addLayout(self.verticalLayout_5)
+        self.horizontalLayout_43.addLayout(self.verticalLayout_5)
 
         self.line_2 = QFrame(self.centralwidget)
         self.line_2.setObjectName(u"line_2")
         self.line_2.setFrameShape(QFrame.Shape.VLine)
         self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.horizontalLayout_42.addWidget(self.line_2)
+        self.horizontalLayout_43.addWidget(self.line_2)
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
@@ -1257,7 +1271,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.addLayout(self.horizontalLayout_25)
 
 
-        self.horizontalLayout_42.addLayout(self.verticalLayout_4)
+        self.horizontalLayout_43.addLayout(self.verticalLayout_4)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -1508,6 +1522,7 @@ class Ui_MainWindow(object):
         self.label_total_duration.setText(QCoreApplication.translate("MainWindow", u"Total duration", None))
         self.label_multipositions.setText(QCoreApplication.translate("MainWindow", u"Multi positions", None))
         self.pb_multipositions.setText(QCoreApplication.translate("MainWindow", u"set positions", None))
+        self.checkBox_stage_stabilisation.setText(QCoreApplication.translate("MainWindow", u"Stage stabilisation", None))
         self.label_scanner_settings.setText(QCoreApplication.translate("MainWindow", u"Scanner Settings", None))
 #if QT_CONFIG(tooltip)
         self.slider_scanner_position.setToolTip(QCoreApplication.translate("MainWindow", u"Adjust the scanner position.\n"

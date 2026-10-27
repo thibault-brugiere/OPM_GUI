@@ -1313,6 +1313,8 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
         
         tools_single_plane = [self.spinBox_timepoints]
         
+        tools_multi_position = [self.checkBox_stage_stabilisation]
+        
         tools_LS3 = [self.spinBox_number_channels,
             self.spinBox_stage_scan_range,
             self.spinBox_scanV_range,
@@ -1337,6 +1339,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
         elif mode == "autofocus" :
             for tool in tool_autofocus : tool.setEnabled(True)
+            
+        if mode == "multiposition" :
+            for tool in tools_multi_position : tool.setEnabled(True)
+        else :
+            for tool in tools_multi_position : tool.setEnabled(False)
     
     def pb_multidimensional_acquisition_clicked_connect(self):
             
@@ -1421,7 +1428,9 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             
             self.status_bar.showMessage("start multiposition acquisition")
             
-            MPA = MultiPositionAcquisition(self.hcam, self.filterWheel, self.stage)
+            stabilisation = self.checkBox_stage_stabilisation.isChecked()
+            
+            MPA = MultiPositionAcquisition(self.hcam, self.filterWheel, self.stage, stabilisation=stabilisation)
             
             self.MPA_manager = mda_mannager(MPA, self)
             self.MPA_manager.show()
@@ -1485,6 +1494,11 @@ class GUI_Microscope(QtWidgets.QMainWindow, Ui_MainWindow):
             self.pb_multidimensional_acquisition_clicked_connect()
         
         elif self.experiment.mode == "multiposition" :
+            if self.positions.get_n_active_positions() < 1 :
+                print(f"Not enough active positions : {self.positions.get_n_active_positions()}")
+                self.statusbar.showMessage('No active positions for multi position acquisition', 5000)
+                return
+                
             self.pb_multi_position_acquisition_clicked_connect()
 
         elif self.experiment.mode == "LS3" :

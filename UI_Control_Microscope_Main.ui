@@ -23,7 +23,7 @@
    <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_42">
+   <layout class="QHBoxLayout" name="horizontalLayout_43">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="sizeConstraint">
@@ -1690,6 +1690,30 @@ This value is linked to the total duration.</string>
        </layout>
       </item>
       <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_42">
+        <item>
+         <widget class="QCheckBox" name="checkBox_stage_stabilisation">
+          <property name="text">
+           <string>Stage stabilisation</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_10">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
        <widget class="Line" name="line_3">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -1985,7 +2009,7 @@ This defines the maximum displacement during scanning.</string>
         <property name="sizeHint" stdset="0">
          <size>
           <width>378</width>
-          <height>130</height>
+          <height>58</height>
          </size>
         </property>
        </spacer>

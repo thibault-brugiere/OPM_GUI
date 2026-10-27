@@ -37,15 +37,17 @@ from multiposition_acquisition.Tools.acquisition_pipeline.acquisition_worker imp
 from multiposition_acquisition.Tools.acquisition_pipeline.count_worker import CountWorker, mouvement_sequence
 from multiposition_acquisition.Tools.saving import prepare_saving_directory, save_metadata
 from multiposition_acquisition.Tools.signal_generators.multi_channel import generate_channel_signals
+from multiposition_acquisition.Tools.acquisition_pipeline.stabilisation_worker import Stabilisation_Worker
 
 class MultiPositionAcquisition:
-    def __init__(self, hcams=None, filterwheel = None, stage = None, frequency=1e5):
+    def __init__(self, hcams=None, filterwheel = None, stage = None, stabilisation = False, frequency=1e5):
         
         print('[Main MPA] Start multiposition acquisition')
         
         self.hcams = hcams
         self.filterwheel = filterwheel
         self.stage = stage
+        self.stabilisation = stabilisation
         self.fw_None = True if self.filterwheel is None else False # To properly close the filterwheel
         self.frequency = frequency
         
@@ -60,6 +62,7 @@ class MultiPositionAcquisition:
         
         self.positions = Positions()
         self.positions.load(os.path.join(config_path, "positions.json"))
+        self.positions = self.positions.copy(active_only=True)
         
         self.timepoint_values = [] # Time of the starting of each timepoint
         
@@ -102,6 +105,7 @@ class MultiPositionAcquisition:
         
         self.state = {'camera': 'idle',
                       'acquisition_workers' : 'idle',
+                      'stabilisation_worker' : 'idle',
                       'daq': 'idle'
                       }
         
@@ -177,6 +181,38 @@ class MultiPositionAcquisition:
         self.state['acquisition_workers'] = 'ready'
         
         print("[Main MPA] acquisition workers initialized")
+        
+    def initialize_stabilisation_worker(self):
+        if not self.stabilisation :
+            return
+        
+        if self.acquisition_workers is None :
+            raise RuntimeError("Acquisition worker should be set before stabilisation worker")
+        
+        print("[Main MPA] initialize stabilisation worker")
+        
+        self.stabilisation_thread = QThread()
+        self.stabilisation_thread.setObjectName("StabilisationThread")
+        
+        self.stabilisation_worker = Stabilisation_Worker(
+            worker = self.acquisition_workers[0],
+            positions = self.positions,
+            channel = self.config.channels[0].channel_id,
+            aspect_ratio = self.config.experiment.aspect_ratio,
+            angle = self.config.microscope.tilt_angle,
+            binning = self.config.cameras[0].binning,
+            px_size = self.config.cameras[0].sample_pixel_size,
+            save_dir = self.save_dir)
+        
+        self.stabilisation_worker.moveToThread(
+            self.stabilisation_thread
+            )
+        
+        self.stabilisation_thread.start()
+            
+        self.acquisition_workers[0].set_preview_callback()
+        
+        self.state['stabilisation_worker'] = 'ready'
         
     def initialize_filterwheel(self):
         if self.filterwheel is None :
@@ -258,6 +294,7 @@ class MultiPositionAcquisition:
             
         self.state = {'camera': 'acquiring',
                       'acquisition_workers' : 'processing',
+                      'stabilisation_worker' : 'processing',
                       'daq': 'controll'
                       }
         
@@ -268,6 +305,10 @@ class MultiPositionAcquisition:
         time_start = time.time()
         
         for timepoint in range(timepoints) :
+            # speed = self.stage.get_speed()
+            # acc = self.stage.get_acceleration()
+            # print(f"stage speed :{speed}, acceleration: {acc}")
+            
             self.timepoint_values.append(time.time())
             self.timepoint_bar.update(1)
             self.timepoint += 1
@@ -279,9 +320,9 @@ class MultiPositionAcquisition:
                     time_pos += 1
                     self.position = (self.position % self.n_positions) + 1
                     
-                    self.stage.go_to_position([position.x * 1000, position.y * 1000, position.z * 1000 ])
-                    
-                    # print(f"timepoint {timepoint}, position {position.name}")
+                    # Set the position for acquisition
+                    if self.stage.connected :
+                        self.stage.go_to_position([position.x * 1000, position.y * 1000, position.z * 1000 ])
                     
                     while self.stage.is_moving() :
                         time.sleep(0.01)
@@ -308,15 +349,16 @@ class MultiPositionAcquisition:
                     self.position_bar.refresh()
                     
                     time.sleep(0.011)
-                    
-            self.remaining_time = time_start + (timepoint + 1) * self.config.experiment.time_intervals - time.time()
-            if self.remaining_time >= 0 :
-                self.remaining_time_message.set_description_str(f"{self.remaining_time:.2f}s remaining between frames...")
-                self.remaining_time_message.refresh()
-                time.sleep(self.remaining_time)
-            else :
-                self.remaining_time_message.set_description_str(f"{-self.remaining_time:.2f}s missing between frames...")
-                self.remaining_time_message.refresh()
+            
+            if not timepoint == timepoints - 1 :
+                self.remaining_time = time_start + (timepoint + 1) * self.config.experiment.time_intervals - time.time()
+                if self.remaining_time >= 0 :
+                    self.remaining_time_message.set_description_str(f"{self.remaining_time:.2f}s remaining between frames...")
+                    self.remaining_time_message.refresh()
+                    time.sleep(self.remaining_time)
+                else :
+                    self.remaining_time_message.set_description_str(f"{-self.remaining_time:.2f}s missing between frames...")
+                    self.remaining_time_message.refresh()
 
         self.stop_all()
         
@@ -328,13 +370,15 @@ class MultiPositionAcquisition:
         Stop all acquisition workers and DAQ tasks. Can be called at the end of acquisition
         or via external user action (e.g. GUI button).
         """
+        
+        if self.state['acquisition_workers'] != 'idle' :
+            for worker in self.acquisition_workers:
+                worker.stop()
 
-        for worker in self.acquisition_workers:
-            worker.stop()
-            
-        for cam in self.cameras_acquisition :
-            cam.stop_acquisition()
-            cam.release_camera()
+        if self.state['camera'] != 'idle' :
+            for cam in self.cameras_acquisition :
+                cam.stop_acquisition()
+                cam.release_camera()
         
         self.count_worker.stop()
         
@@ -356,16 +400,24 @@ class MultiPositionAcquisition:
         
         self.state = {'camera': 'idle',
                       'acquisition_workers' : 'idle',
+                      'stabilisation_worker' : 'idle',
                       'daq': 'idle'
                       }
 
 ##############################################################################
 
+from PySide6.QtCore import QCoreApplication
+
 if __name__ == "__main__":
-    MPA = MultiPositionAcquisition()
+    app = QCoreApplication.instance()
+    if app is None:
+        app = QCoreApplication([])
+        
+    MPA = MultiPositionAcquisition(stabilisation=True)
     MPA.initialize_cameras()
     MPA.initialize_laser()
     MPA.initialize_acquisition_workers()
+    MPA.initialize_stabilisation_worker()
     MPA.initialize_filterwheel()
     MPA.configure_daq()
     MPA.initialize_count_worker()

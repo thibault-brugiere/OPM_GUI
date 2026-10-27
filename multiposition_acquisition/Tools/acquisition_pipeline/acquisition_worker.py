@@ -16,7 +16,8 @@ _STOP = object()
 def _drain_queue(q: "queue.Queue"):
     try:
         while True:
-            q.get_nowait()
+            if q is not None :
+                q.get_nowait()
     except queue.Empty:
         pass
     
@@ -202,11 +203,11 @@ class AcquisitionWorker(QObject):
                         pos = volume_id % self.n_positions
                         timepoint = int(volume_id / self.n_positions)
                         
-                        preview_data = {
-                            "volume_id": volume_id,
-                            "channel": current_channel,
-                            "shape": current_buffer.shape
-                        }
+                        # preview_data = {
+                        #     "volume_id": volume_id,
+                        #     "channel": current_channel,
+                        #     "shape": current_buffer.shape
+                        # }
                         
                         preview_data = {
                             "volume_id": timepoint,
